@@ -1,11 +1,11 @@
 'use client';
 
-import DashboardLayout from '@/layouts/DashboardLayout';
+import TourworldLayoutComponent from '@/layouts/TourworldLayout';
 
 export default function DashboardLayoutRoute({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <DashboardLayout>{children}</DashboardLayout>;
+  return <TourworldLayoutComponent>{children}</TourworldLayoutComponent>;
 }
