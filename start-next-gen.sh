@@ -23,8 +23,8 @@ log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 
 # ── 서버 목록 ──
 SERVERS=(
-  "Next.js|3000|client"
-  "Express|3001|server"
+  "Express|3000|server"
+  "Next.js|3001|client"
 )
 
 start_monorepo() {
@@ -74,8 +74,8 @@ start_monorepo() {
     echo ""
     log_success "TourWorld Next-Gen 모노레포 시작 완료!"
     echo ""
-    echo -e "  ${CYAN}📱 Next.js Frontend:${NC} http://localhost:3000"
-    echo -e "  ${CYAN}🔧 Express Backend:${NC}  http://localhost:3001/api"
+    echo -e "  ${CYAN}🔧 Express Backend:${NC}  http://localhost:3000"
+    echo -e "  ${CYAN}📱 Next.js Frontend:${NC} http://localhost:3001"
     echo -e "  ${CYAN}📋 로그 파일:${NC}          $LOG_DIR/monorepo.log"
     echo ""
     log_info "PID: $pid"
@@ -118,21 +118,21 @@ check_status() {
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
   if ss -tlnp 2>/dev/null | grep -q ":3000" && ss -tlnp 2>/dev/null | grep -q ":3001"; then
-    log_success "Next.js Frontend (:3000) — Online"
-    log_success "Express Backend (:3001) — Online"
+    log_success "Express Backend (:3000) — Online"
+    log_success "Next.js Frontend (:3001) — Online"
     echo ""
-    log_info "Next.js:  http://localhost:3000"
-    log_info "Express:  http://localhost:3001"
+    log_info "Express:  http://localhost:3000"
+    log_info "Next.js:  http://localhost:3001"
   elif ss -tlnp 2>/dev/null | grep -q ":3000"; then
-    log_success "Next.js Frontend (:3000) — Online"
-    log_error "Express Backend (:3001) — Offline"
-    echo ""
-    log_info "Express 서버가 실행되지 않았습니다."
-  elif ss -tlnp 2>/dev/null | grep -q ":3001"; then
-    log_error "Next.js Frontend (:3000) — Offline"
-    log_success "Express Backend (:3001) — Online"
+    log_success "Express Backend (:3000) — Online"
+    log_error "Next.js Frontend (:3001) — Offline"
     echo ""
     log_info "Next.js 서버가 실행되지 않았습니다."
+  elif ss -tlnp 2>/dev/null | grep -q ":3001"; then
+    log_error "Express Backend (:3000) — Offline"
+    log_success "Next.js Frontend (:3001) — Online"
+    echo ""
+    log_info "Express 서버가 실행되지 않았습니다."
   else
     log_error "모든 서버가オフ라인 상태입니다."
     echo ""
