@@ -24,7 +24,7 @@ log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 # ── 서버 목록 ──
 SERVERS=(
   "Next.js|3000|client"
-  "Express|3000|server"
+  "Express|3001|server"
 )
 
 start_monorepo() {
@@ -40,6 +40,12 @@ start_monorepo() {
   # 포트 확인
   if lsof -i ":3000" -P 2>/dev/null | grep -q LISTEN; then
     log_warn "포트 3000이 이미 사용 중입니다."
+    log_info "기존 프로세스를 중지하려면 './start-next-gen.sh stop' 을 실행하세요."
+    return 1
+  fi
+
+  if lsof -i ":3001" -P 2>/dev/null | grep -q LISTEN; then
+    log_warn "포트 3001이 이미 사용 중입니다."
     log_info "기존 프로세스를 중지하려면 './start-next-gen.sh stop' 을 실행하세요."
     return 1
   fi
@@ -64,7 +70,7 @@ start_monorepo() {
   sleep 5
 
   # 상태 확인
-  if lsof -i ":3000" -P 2>/dev/null | grep -q LISTEN; then
+  if lsof -i ":3000" -P 2>/dev/null | grep -q LISTEN && lsof -i ":3001" -P 2>/dev/null | grep -q LISTEN; then
     echo ""
     log_success "TourWorld Next-Gen 모노레포 시작 완료!"
     echo ""
@@ -97,6 +103,11 @@ stop_monorepo() {
     [ -n "$pid" ] && kill "$pid" 2>/dev/null
   fi
 
+  if lsof -i ":3001" -P 2>/dev/null | grep -q LISTEN; then
+    local pid=$(lsof -i ":3001" -P 2>/dev/null | grep LISTEN | awk '{print $2}' | head -1)
+    [ -n "$pid" ] && kill "$pid" 2>/dev/null
+  fi
+
   log_success "모든 서버가 중지되었습니다."
   echo ""
 }
@@ -106,13 +117,24 @@ check_status() {
   echo -e "${CYAN}📊 TourWorld Next-Gen 모노레포 상태${NC}"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-  if lsof -i ":3000" -P 2>/dev/null | grep -q LISTEN; then
+  if lsof -i ":3000" -P 2>/dev/null | grep -q LISTEN && lsof -i ":3001" -P 2>/dev/null | grep -q LISTEN; then
     log_success "Next.js Frontend (:3000) — Online"
-    log_success "Express Backend (:3000) — Online"
+    log_success "Express Backend (:3001) — Online"
     echo ""
-    log_info "접속: http://localhost:3000"
+    log_info "Next.js:  http://localhost:3000"
+    log_info "Express:  http://localhost:3001"
+  elif lsof -i ":3000" -P 2>/dev/null | grep -q LISTEN; then
+    log_success "Next.js Frontend (:3000) — Online"
+    log_error "Express Backend (:3001) — Offline"
+    echo ""
+    log_info "Express 서버가 실행되지 않았습니다."
+  elif lsof -i ":3001" -P 2>/dev/null | grep -q LISTEN; then
+    log_error "Next.js Frontend (:3000) — Offline"
+    log_success "Express Backend (:3001) — Online"
+    echo ""
+    log_info "Next.js 서버가 실행되지 않았습니다."
   else
-    log_error "서버가オフ라인 상태입니다."
+    log_error "모든 서버가オフ라인 상태입니다."
     echo ""
     log_info "시작하려면 './start-next-gen.sh start' 를 실행하세요."
   fi
