@@ -41,3 +41,21 @@ nul
 # Claude Code settings (contains API keys)
 .claude/settings.json
 .claude/worktrees/
+.bkit/
+client/.next/
+
+# Monorepo package dependencies
+air-booking/node_modules/
+frontend/node_modules/
+server/node_modules/
+gateway/node_modules/
+group-roster/node_modules/
+
+# Build caches
+*.tsbuildinfo
+.turbo/
+.parcel-cache/
+
+# Local environment overrides
+*.local
+.env.*.local
