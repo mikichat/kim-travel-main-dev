@@ -7,8 +7,11 @@ import { useState, useEffect } from 'react';
 interface ServerStatus {
   id: string;
   name: string;
+  desc?: string;
   url: string;
-  status: 'online' | 'offline' | 'checking';
+  icon?: string;
+  routes?: { label: string; href: string; icon: string }[];
+  status?: 'online' | 'offline' | 'checking';
 }
 
 const SERVER_IP = typeof window !== 'undefined' ? (window.location.hostname || '192.168.0.15') : '192.168.0.15';
@@ -82,7 +85,7 @@ export default function PortalPage() {
           {servers.map((server) => (
             <div key={server.id} className="rounded-2xl overflow-hidden" style={{ background: '#151f2b', border: '1px solid #1e3a5f' }}>
               <div className="p-6 flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl ${ICON_COLORS[server.icon]} flex items-center justify-center text-white font-bold text-lg`}>
+                <div className={`w-12 h-12 rounded-xl ${ICON_COLORS[server.icon || 'blue']} flex items-center justify-center text-white font-bold text-lg`}>
                   {server.id === 'main' ? 'TW' : server.id === 'landing' ? 'LD' : 'AB'}
                 </div>
                 <div className="flex-1">
@@ -117,7 +120,7 @@ export default function PortalPage() {
                 </div>
 
                 <div className="space-y-2">
-                  {server.routes.map((route, i) => (
+                  {server.routes?.map((route, i) => (
                     <a
                       key={i}
                       href={route.href}

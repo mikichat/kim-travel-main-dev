@@ -627,47 +627,47 @@ export default function TravelGuidePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="md:col-span-2">
             <label className={labelStyle}>여행지 *</label>
-            <input value={destination} onChange={e => setDestination(e.target.value)} placeholder="예: 일본 오사카, 베트남 다낭" style={inputStyle} />
+            <input value={destination} onChange={e => setDestination(e.target.value)} placeholder="예: 일본 오사카, 베트남 다낭" className={inputStyle} />
           </div>
           <div>
             <label className={labelStyle}>시작일 *</label>
-            <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={inputStyle} />
+            <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className={inputStyle} />
           </div>
           <div>
             <label className={labelStyle}>종료일 *</label>
-            <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={inputStyle} />
+            <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className={inputStyle} />
           </div>
           <div>
             <label className={labelStyle}>출발편</label>
-            <input value={flightInfo} onChange={e => setFlightInfo(e.target.value)} placeholder="예: KE115 인천(ICN)09:25 ~ 연길(YNJ)10:50" style={inputStyle} />
+            <input value={flightInfo} onChange={e => setFlightInfo(e.target.value)} placeholder="예: KE115 인천(ICN)09:25 ~ 연길(YNJ)10:50" className={inputStyle} />
           </div>
           <div>
             <label className={labelStyle}>귀국편</label>
-            <input value={flightInfoReturn} onChange={e => setFlightInfoReturn(e.target.value)} placeholder="예: KE116 연길(YNJ)11:50 ~ 인천(ICN)14:30" style={inputStyle} />
+            <input value={flightInfoReturn} onChange={e => setFlightInfoReturn(e.target.value)} placeholder="예: KE116 연길(YNJ)11:50 ~ 인천(ICN)14:30" className={inputStyle} />
           </div>
           <div>
             <label className={labelStyle}>집합 장소</label>
-            <input value={departurePlace} onChange={e => setDeparturePlace(e.target.value)} placeholder="예: 함열스포츠센터, 인천공항 3층" style={inputStyle} />
+            <input value={departurePlace} onChange={e => setDeparturePlace(e.target.value)} placeholder="예: 함열스포츠센터, 인천공항 3층" className={inputStyle} />
           </div>
           <div>
             <label className={labelStyle}>집합 시간</label>
-            <input value={gatheringTime} onChange={e => setGatheringTime(e.target.value)} placeholder="예: 02:00" style={inputStyle} />
+            <input value={gatheringTime} onChange={e => setGatheringTime(e.target.value)} placeholder="예: 02:00" className={inputStyle} />
           </div>
           <div>
             <label className={labelStyle}>경비</label>
-            <input value={expenses} onChange={e => setExpenses(e.target.value)} placeholder="예: 1인 150만원" style={inputStyle} />
+            <input value={expenses} onChange={e => setExpenses(e.target.value)} placeholder="예: 1인 150만원" className={inputStyle} />
           </div>
           <div>
             <label className={labelStyle}>공항 미팅자</label>
-            <input value={airportMeeter} onChange={e => setAirportMeeter(e.target.value)} placeholder="예: 김국진 (010-1234-5678)" style={inputStyle} />
+            <input value={airportMeeter} onChange={e => setAirportMeeter(e.target.value)} placeholder="예: 김국진 (010-1234-5678)" className={inputStyle} />
           </div>
           <div>
             <label className={labelStyle}>현지 가이드 이름</label>
-            <input value={guideName} onChange={e => setGuideName(e.target.value)} placeholder="예: 홍길동" style={inputStyle} />
+            <input value={guideName} onChange={e => setGuideName(e.target.value)} placeholder="예: 홍길동" className={inputStyle} />
           </div>
           <div>
             <label className={labelStyle}>현지 가이드 연락처</label>
-            <input value={guideContact} onChange={e => setGuideContact(e.target.value)} placeholder="예: +86-138-1234-5678" style={inputStyle} />
+            <input value={guideContact} onChange={e => setGuideContact(e.target.value)} placeholder="예: +86-138-1234-5678" className={inputStyle} />
           </div>
           <div className="md:col-span-2">
             <label className={labelStyle}>중요사항</label>
@@ -675,7 +675,8 @@ export default function TravelGuidePage() {
               value={importantNotes}
               onChange={e => setImportantNotes(e.target.value)}
               placeholder="여러 줄 입력 가능"
-              style={{ ...inputStyle, minHeight: '60px', resize: 'vertical' }}
+              className={inputStyle}
+              style={{ minHeight: '60px', resize: 'vertical' }}
             />
           </div>
           <div className="md:col-span-2">

@@ -55,7 +55,7 @@ const HotelCard: React.FC<HotelCardProps> = ({
             className="w-full h-full object-cover"
             onError={(e) => {
               e.currentTarget.src =
-                'https://via.placeholder.com/400x300?text=Hotel+Image';
+                'https://dummyimage.com/400x300?text=Hotel+Image';
             }}
           />
         </div>
@@ -168,7 +168,7 @@ const HotelCard: React.FC<HotelCardProps> = ({
           <div className="flex items-center justify-between">
             <span className="text-gray-600 text-sm">1박 기준</span>
             <span className="text-xl font-bold text-blue-600">
-              {formatPrice(hotel.pricePerNight, hotel.currency)}
+              {formatPrice(hotel.pricePerNight ?? 0, hotel.currency || 'KRW')}
             </span>
           </div>
         </div>

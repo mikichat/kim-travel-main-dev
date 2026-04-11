@@ -134,7 +134,7 @@ export default function AirBookingDashboard() {
       .flat()
       .filter((item) => item.urgency === 'urgent' || item.urgency === 'imminent')
       .sort((a, b) => {
-        const order: Record<BadgeStatus, number> = { urgent: 0, imminent: 1, completed: 2, pending: 3 };
+        const order: Record<BadgeStatus, number> = { urgent: 0, imminent: 1, completed: 2, pending: 3, confirmed: 4, ticketed: 5, cancelled: 6 };
         return order[a.urgency] - order[b.urgency];
       });
 

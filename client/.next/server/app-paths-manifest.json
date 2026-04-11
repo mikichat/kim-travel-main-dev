@@ -1,6 +1,7 @@
 {
-  "/page": "app/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/hotels/route": "app/api/hotels/route.js",
+  "/(dashboard)/hotels/page": "app/(dashboard)/hotels/page.js",
   "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
-  "/(dashboard)/itineraries/page": "app/(dashboard)/itineraries/page.js",
-  "/(dashboard)/hotels/page": "app/(dashboard)/hotels/page.js"
+  "/(dashboard)/hotels/new/page": "app/(dashboard)/hotels/new/page.js"
 }

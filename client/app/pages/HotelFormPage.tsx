@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import HotelForm from '../components/HotelForm';
 import { getHotelById, createHotel, updateHotel } from '../api/hotels';
 import type { Hotel } from '../mocks/data/hotels';
 
+interface HotelFormPageProps {
+  id?: string;
+}
+
 /**
  * Hotel Form Page
  * Page for creating or editing a hotel
  */
-const HotelFormPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
+const HotelFormPage: React.FC<HotelFormPageProps> = ({ id }) => {
+  const router = useRouter();
   const [hotel, setHotel] = useState<Hotel | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
@@ -56,7 +59,7 @@ const HotelFormPage: React.FC = () => {
       } else {
         await createHotel(hotelData);
       }
-      navigate('/hotels');
+      router.push('/hotels');
     } catch {
       setError(
         isEditMode ? '호텔 수정에 실패했습니다' : '호텔 등록에 실패했습니다'
@@ -66,7 +69,7 @@ const HotelFormPage: React.FC = () => {
   };
 
   const handleCancel = () => {
-    navigate('/hotels');
+    router.push('/hotels');
   };
 
   return (

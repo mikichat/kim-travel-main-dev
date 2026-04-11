@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Modal } from '@/components/common/Modal';
+import type { BadgeStatus } from '@/components/common/StatusBadge';
 
 interface Booking {
   id: string;
@@ -27,7 +28,7 @@ interface Booking {
 type StatusFilter = '' | 'pending' | 'confirmed' | 'ticketed' | 'cancelled';
 type SortField = 'created_at' | 'departure_date';
 
-const STATUS_MAP: Record<string, string> = {
+const STATUS_MAP: Record<string, BadgeStatus> = {
   pending: 'pending',
   confirmed: 'confirmed',
   ticketed: 'ticketed',

@@ -1,4 +1,4 @@
-import type { Hotel } from '../mocks/data/hotels';
+import type { Hotel } from './hotels';
 
 // Mock hotels data
 export const mockHotels: Hotel[] = [

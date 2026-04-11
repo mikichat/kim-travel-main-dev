@@ -269,7 +269,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
                     업로드 날짜
                   </label>
                   <p className="text-gray-900">
-                    {formatDate(image.uploadedAt)}
+                    {formatDate(new Date(image.uploadedAt || new Date()))}
                   </p>
                 </div>
 
