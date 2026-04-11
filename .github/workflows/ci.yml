@@ -4,13 +4,15 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - 'tourworld1/**'
       - '*.md'
+      - ' CLAUDE.md'
+      - '.gitignore'
   pull_request:
     branches: [main]
     paths-ignore:
-      - 'tourworld1/**'
       - '*.md'
+      - ' CLAUDE.md'
+      - '.gitignore'
 
 jobs:
   format-check:
@@ -21,44 +23,25 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
+          cache: 'npm'
 
-      - name: Install Prettier
-        run: npm install --no-save prettier@3.8.1
+      - name: Install dependencies
+        run: npm ci
 
       - name: Check formatting
-        run: npx prettier --check "js/**/*.js" "__tests__/**/*.js"
+        run: npm run format:check
 
-  frontend-lint:
-    name: Frontend ESLint
+  lint:
+    name: ESLint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-
-      - name: Install ESLint
-        run: npm install --no-save eslint@9 @eslint/js globals eslint-config-prettier
-
-      - name: Run ESLint (errors only)
-        run: npx eslint "js/**/*.js" "air1/js/**/*.js" "hanatour/js/**/*.js" "in/js/**/*.js" "quote-editor-v1/js/**/*.js" --max-warnings 200
-
-  backend-lint:
-    name: Backend ESLint
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -66,76 +49,113 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-  backend-tests:
-    name: Backend Tests
+  type-check:
+    name: TypeScript Type Check
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests with coverage
-        run: npx jest --coverage --verbose
+      - name: Type check client
+        run: npx tsc --noEmit --workspace=client
 
-  frontend-tests:
-    name: Frontend Tests
+      - name: Type check server
+        run: npx tsc --noEmit --workspace=server
+
+  test-server:
+    name: Server Tests (Vitest)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
 
-      - name: Install Jest
-        run: npm install --no-save jest@30.2.0
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Run tests with coverage
-        run: npx jest --config jest.config.cjs --coverage --verbose
+      - name: Run Prisma generate
+        run: npx prisma generate
+
+      - name: Run tests
+        run: npm run test:coverage
+
+  test-client:
+    name: Client Tests (Vitest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test:coverage
+
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+    needs: [lint, type-check]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Prisma
+        run: npm run db:generate --workspace=server
+
+      - name: Build
+        run: npm run build
 
   e2e-tests:
     name: E2E Tests (Playwright)
     runs-on: ubuntu-latest
-    needs: [backend-tests, frontend-tests]
+    needs: [build]
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
 
-      - name: Install backend dependencies
-        run: cd backend && npm ci
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Install Playwright
-        run: npm install --no-save @playwright/test
-
-      - name: Install Chromium
+      - name: Install Playwright browsers
         run: npx playwright install chromium
 
       - name: Run E2E tests
-        run: npx playwright test --config playwright.config.cjs
+        run: npm run test:e2e
         env:
-          SESSION_SECRET: ci-test-secret
-          DATABASE_PATH: ./backend/test-e2e.db
-
-  docker-build:
-    name: Docker Build Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build Docker image
-        run: docker build -t travel-backend-ci ./backend
+          DATABASE_URL: "file:./test-e2e.db"
+          JWT_SECRET: ci-test-secret
