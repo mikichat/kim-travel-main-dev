@@ -77,7 +77,12 @@
       "Bash(cmd.exe /c \"c:\\\\Users\\\\cmy\\\\kim-travel-main-dev\\\\start-next-gen.bat status\")",
       "Bash(cmd.exe /c \"cd /d c:\\\\Users\\\\cmy\\\\kim-travel-main-dev && start-next-gen.bat status\")",
       "Bash(powershell.exe -Command \"& 'C:\\\\Users\\\\cmy\\\\kim-travel-main-dev\\\\start-next-gen.bat' status\")",
-      "Bash(powershell.exe -Command \"netstat -ano | Select-String ':3000.*LISTENING'\")"
+      "Bash(powershell.exe -Command \"netstat -ano | Select-String ':3000.*LISTENING'\")",
+      "Bash(gh run:*)",
+      "Bash(gh issue:*)",
+      "Bash(gh notification:*)",
+      "Bash(gh pr:*)",
+      "Bash(npm audit:*)"
     ],
     "deny": [],
     "ask": []

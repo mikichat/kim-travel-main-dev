@@ -39,8 +39,7 @@ nul
 **/dist/
 
 # Claude Code settings (contains API keys)
-.claude/settings.json
-.claude/worktrees/
+.claude/
 .bkit/
 client/.next/
 
