@@ -1,0 +1,207 @@
+/* @TASK P2-S4-T1 - Calendar Page Styles */
+
+.calendar-page {
+  display: flex;
+  gap: var(--space-lg);
+}
+
+.calendar-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Filter Chips */
+.calendar-filter {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: var(--font-size-caption);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  min-height: 34px;
+  color: var(--color-text-secondary);
+  transition: all 0.15s;
+}
+
+.filter-chip.active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(37, 99, 235, 0.05);
+  font-weight: 600;
+}
+
+.filter-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* FullCalendar Wrapper */
+.calendar-wrapper {
+  background: var(--color-surface);
+  border-radius: var(--border-radius);
+  padding: var(--space-md);
+}
+
+/* FullCalendar Overrides */
+.fc {
+  font-family: var(--font-family) !important;
+}
+
+.fc .fc-toolbar-title {
+  font-size: var(--font-size-h2) !important;
+  font-weight: 700;
+}
+
+.fc .fc-button {
+  font-family: var(--font-family) !important;
+  font-size: var(--font-size-caption) !important;
+  border-radius: var(--border-radius) !important;
+  min-height: 36px;
+}
+
+.fc .fc-button-primary {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.fc .fc-daygrid-day {
+  min-height: 80px;
+  cursor: pointer;
+}
+
+.fc .fc-daygrid-day:hover {
+  background: var(--color-hover);
+}
+
+.fc .fc-day-today {
+  background: rgba(37, 99, 235, 0.05) !important;
+}
+
+.fc .fc-event {
+  font-size: var(--font-size-small) !important;
+  border-radius: 3px !important;
+  padding: 1px 4px !important;
+  cursor: pointer;
+}
+
+.fc .fc-col-header-cell {
+  padding: var(--space-sm) !important;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+/* Dark mode overrides */
+[data-theme='dark'] .fc .fc-col-header-cell,
+[data-theme='dark'] .fc .fc-daygrid-day-number {
+  color: var(--color-text);
+}
+
+[data-theme='dark'] .fc th,
+[data-theme='dark'] .fc td {
+  border-color: var(--color-border);
+}
+
+/* Sidebar */
+.calendar-sidebar {
+  width: 300px;
+  background: var(--color-surface);
+  border-radius: var(--border-radius);
+  padding: var(--space-lg);
+  height: fit-content;
+  position: sticky;
+  top: var(--space-md);
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.sidebar-header h3 {
+  font-size: var(--font-size-h3);
+  font-weight: 700;
+}
+
+.sidebar-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--color-text-secondary);
+  padding: 4px;
+  min-height: auto;
+  line-height: 1;
+}
+
+.sidebar-empty {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+  text-align: center;
+  padding: var(--space-lg) 0;
+}
+
+.sidebar-events {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.sidebar-event {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.sidebar-event:hover {
+  background: var(--color-hover);
+}
+
+.sidebar-event-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.sidebar-event-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-event-title {
+  font-size: var(--font-size-caption);
+  font-weight: 600;
+}
+
+.sidebar-event-type {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .calendar-page {
+    flex-direction: column;
+  }
+
+  .calendar-sidebar {
+    width: 100%;
+    position: static;
+  }
+}

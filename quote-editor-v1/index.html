@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>여행 견적서 편집기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f5f5f5;
+        }
+
+        /* ==================================================================
+           Editor Layout (Split View)
+           ================================================================== */
+        .editor-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Left Panel: Edit Form */
+        .editor-panel {
+            width: 400px;
+            background-color: #ffffff;
+            border-right: 1px solid #d9d3cc;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        /* Right Panel: Preview */
+        .preview-panel {
+            flex: 1;
+            background-color: #f5f5f5;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ==================================================================
+           Editor Header
+           ================================================================== */
+        .editor-header {
+            padding: 20px 24px;
+            background-color: #fdfaf6;
+            border-bottom: 2px solid #f09641;
+        }
+
+        .editor-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .editor-subtitle {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        /* ==================================================================
+           Form Sections
+           ================================================================== */
+        .form-section {
+            padding: 24px;
+            border-bottom: 1px solid #e3ddd6;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #4b5563;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f09641;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 6px;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            font-family: 'Pretendard', sans-serif;
+            color: #1f2937;
+            background-color: #ffffff;
+            border: 1px solid #d9d3cc;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #f09641;
+            box-shadow: 0 0 0 3px rgba(240, 150, 65, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .form-input-small {
+            font-size: 13px;
+        }
+
+        .form-help {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        /* ==================================================================
+           Action Buttons
+           ================================================================== */
+        .action-buttons {
+            padding: 20px 24px;
+            background-color: #fdfaf6;
+            border-top: 1px solid #d9d3cc;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 20px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:last-child {
+            margin-bottom: 0;
+        }
+
+        .btn-primary {
+            background-color: #f09641;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #d87f2f;
+        }
+
+        .btn-secondary {
+            background-color: #e3ddd6;
+            color: #4b5563;
+        }
+
+        .btn-secondary:hover {
+            background-color: #d9d3cc;
+        }
+
+        .btn-danger {
+            background-color: #c84f3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #a63f30;
+        }
+
+        /* ==================================================================
+           Preview Panel
+           ================================================================== */
+        .preview-header {
+            padding: 16px 24px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #d9d3cc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #4b5563;
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-print {
+            background-color: #f09641;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background-color: #d87f2f;
+        }
+
+        .btn-sync {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-sync:hover {
+            background-color: #2563eb;
+        }
+
+        /* Sync Modal */
+        .sync-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sync-modal.active {
+            display: flex;
+        }
+
+        .sync-modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .sync-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f09641;
+        }
+
+        .sync-modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .sync-modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            line-height: 32px;
+            text-align: center;
+        }
+
+        .sync-modal-close:hover {
+            color: #1f2937;
+        }
+
+        .sync-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .sync-section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+        }
+
+        .sync-description {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .sync-status {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .sync-status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .sync-status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .sync-status.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .sync-textarea {
+            width: 100%;
+            height: 200px;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+
+        .sync-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .sync-btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sync-btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .sync-btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .sync-btn-success {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .sync-btn-success:hover {
+            background-color: #059669;
+        }
+
+        .sync-btn-secondary {
+            background-color: #6b7280;
+            color: white;
+        }
+
+        .sync-btn-secondary:hover {
+            background-color: #4b5563;
+        }
+
+        .preview-iframe-container {
+            flex: 1;
+            padding: 24px;
+            overflow: auto;
+        }
+
+        .preview-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ==================================================================
+           Validation Messages
+           ================================================================== */
+        .validation-message {
+            padding: 12px;
+            margin-bottom: 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .validation-message.show {
+            display: block;
+        }
+
+        .validation-error {
+            background-color: #fee;
+            color: #c84f3c;
+            border: 1px solid #c84f3c;
+        }
+
+        .validation-success {
+            background-color: #efe;
+            color: #28a745;
+            border: 1px solid #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <!-- Left Panel: Editor Form -->
+        <div class="editor-panel">
+            <!-- Header -->
+            <div class="editor-header">
+                <h1 class="editor-title">여행 견적서 편집기</h1>
+                <p class="editor-subtitle">Phase 1: 1페이지 편집</p>
+            </div>
+
+            <!-- Form Content -->
+            <form id="quote-form">
+                <!-- 단체 정보 섹션 -->
+                <div class="form-section">
+                    <h2 class="section-title">단체 정보</h2>
+
+                    <div class="form-group">
+                        <label class="form-label" for="group_name">단체명</label>
+                        <input
+                            type="text"
+                            id="group_name"
+                            name="group_name"
+                            class="form-input"
+                            value="중국 – 광저우 천저우 고의령 망산 PTY"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="travel_dates">여행 일자</label>
+                        <input
+                            type="text"
+                            id="travel_dates"
+                            name="travel_dates"
+                            class="form-input"
+                            value="2025년 11월 14일 ~ 11월 18일"
+                            required
+                        />
+                        <p class="form-help">예: 2025년 11월 14일 ~ 11월 18일</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="destination">여행지</label>
+                        <input
+                            type="text"
+                            id="destination"
+                            name="destination"
+                            class="form-input"
+                            value="중국 – 광저우 천저우 고의령 망산"
+                            required
+                        />
+                    </div>
+                </div>
+
+                <!-- 요금 정보 섹션 -->
+                <div class="form-section">
+                    <h2 class="section-title">1인 여행요금</h2>
+
+                    <!-- 항공편 불러오기 -->
+                    <div class="form-group">
+                        <label class="form-label" for="flight_selector">항공편 불러오기 (선택)</label>
+                        <select
+                            id="flight_selector"
+                            name="flight_selector"
+                            class="form-select"
+                        >
+                            <option value="">직접 입력</option>
+                            <!-- 항공편 목록은 JavaScript로 동적 로드 -->
+                        </select>
+                        <p class="form-help">저장된 항공편을 선택하면 자동으로 입력됩니다</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="airline_name">항공사명</label>
+                        <input
+                            type="text"
+                            id="airline_name"
+                            name="airline_name"
+                            class="form-input"
+                            value="아시아나 항공"
+                            required
+                        />
+                        <p class="form-help">줄바꿈이 필요한 경우: "아시아나 항공"</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="departure_flight">출발편</label>
+                        <input
+                            type="text"
+                            id="departure_flight"
+                            name="departure_flight"
+                            class="form-input"
+                            value="인천 (08:40) - 광저우 (11:15)"
+                            required
+                        />
+                        <p class="form-help">예: 인천 (08:40) - 광저우 (11:15)</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="return_flight">귀국편</label>
+                        <input
+                            type="text"
+                            id="return_flight"
+                            name="return_flight"
+                            class="form-input"
+                            value="광저우 (12:20) - 인천 (17:00)"
+                            required
+                        />
+                        <p class="form-help">예: 광저우 (12:20) - 인천 (17:00)</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="option_type">옵션 타입</label>
+                        <select
+                            id="option_type"
+                            name="option_type"
+                            class="form-select"
+                            required
+                        >
+                            <option value="노옵션">노옵션</option>
+                            <option value="반일옵션">반일옵션</option>
+                            <option value="전일옵션">전일옵션</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="price_amount">1인 요금</label>
+                        <input
+                            type="text"
+                            id="price_amount"
+                            name="price_amount"
+                            class="form-input"
+                            value="1,540,000원"
+                            required
+                        />
+                        <p class="form-help">예: 1,540,000원</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="price_note">요금 안내</label>
+                        <textarea
+                            id="price_note"
+                            name="price_note"
+                            class="form-textarea"
+                            required
+                        >※ 상기 요금은 1인 기준이며 항공 및 세금 변동 시 재확인 필요</textarea>
+                    </div>
+                </div>
+
+                <!-- 담당자 정보 섹션 -->
+                <div class="form-section">
+                    <h2 class="section-title">담당자 정보</h2>
+
+                    <div class="form-group">
+                        <label class="form-label" for="contact_info">담당자 정보</label>
+                        <input
+                            type="text"
+                            id="contact_info"
+                            name="contact_info"
+                            class="form-input"
+                            value="담당자: 김국진 010-2662-9009"
+                            required
+                        />
+                        <p class="form-help">예: 담당자: 김국진 010-2662-9009</p>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Validation Message -->
+            <div id="validation-message" class="validation-message"></div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button type="button" class="btn btn-primary" onclick="updatePreview()">미리보기 업데이트</button>
+                <button type="button" class="btn btn-secondary" onclick="saveToStorage()">저장</button>
+                <button type="button" class="btn btn-secondary" onclick="loadFromStorage()">불러오기</button>
+                <button type="button" class="btn btn-danger" onclick="resetForm()">초기화</button>
+            </div>
+        </div>
+
+        <!-- Right Panel: Preview -->
+        <div class="preview-panel">
+            <div class="preview-header">
+                <h2 class="preview-title">미리보기</h2>
+                <div class="preview-actions">
+                    <button type="button" class="btn-small btn-sync" onclick="openSyncModal()">🔄 데이터 동기화</button>
+                    <button type="button" class="btn-small btn-print" onclick="printPreview()">PDF/인쇄</button>
+                </div>
+            </div>
+            <div class="preview-iframe-container">
+                <iframe
+                    id="preview-iframe"
+                    class="preview-iframe"
+                    src="preview.html"
+                ></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sync Modal -->
+    <div id="syncModal" class="sync-modal">
+        <div class="sync-modal-content">
+            <div class="sync-modal-header">
+                <h2 class="sync-modal-title">🔄 데이터 동기화</h2>
+                <button type="button" class="sync-modal-close" onclick="closeSyncModal()">&times;</button>
+            </div>
+
+            <!-- 현재 상태 -->
+            <div class="sync-section">
+                <h3 class="sync-section-title">📊 현재 상태</h3>
+                <div id="syncCurrentStatus" class="sync-status info">
+                    <strong>현재 포트:</strong> <span id="syncCurrentPort">확인 중...</span><br>
+                    <strong>저장된 항공편:</strong> <span id="syncFlightCount">0</span>개
+                </div>
+            </div>
+
+            <!-- 내보내기 -->
+            <div class="sync-section">
+                <h3 class="sync-section-title">📤 데이터 내보내기</h3>
+                <p class="sync-description">
+                    현재 포트의 모든 항공편 데이터를 JSON으로 내보냅니다.
+                    다른 포트에서 가져오기할 때 사용하세요.
+                </p>
+                <div class="sync-btn-group">
+                    <button type="button" class="sync-btn sync-btn-primary" onclick="exportSyncData()">📤 데이터 내보내기</button>
+                    <button type="button" class="sync-btn sync-btn-success" onclick="copySyncData()" id="syncCopyBtn" disabled>📋 클립보드 복사</button>
+                </div>
+                <textarea id="syncExportArea" class="sync-textarea" readonly placeholder="내보낸 데이터가 여기에 표시됩니다..."></textarea>
+            </div>
+
+            <!-- 가져오기 -->
+            <div class="sync-section">
+                <h3 class="sync-section-title">📥 데이터 가져오기</h3>
+                <p class="sync-description">
+                    다른 포트에서 내보낸 JSON 데이터를 붙여넣고 가져오기를 클릭하세요.
+                    기존 데이터가 덮어씌워집니다.
+                </p>
+                <textarea id="syncImportArea" class="sync-textarea" placeholder="여기에 JSON 데이터를 붙여넣으세요..."></textarea>
+                <div class="sync-btn-group">
+                    <button type="button" class="sync-btn sync-btn-success" onclick="importSyncData()">📥 데이터 가져오기</button>
+                    <button type="button" class="sync-btn sync-btn-secondary" onclick="clearSyncImport()">🗑️ 입력란 지우기</button>
+                </div>
+                <div id="syncImportResult"></div>
+            </div>
+
+            <!-- 빠른 동기화 -->
+            <div class="sync-section">
+                <h3 class="sync-section-title">⚡ Air1에서 불러오기</h3>
+                <p class="sync-description">
+                    <strong>주의:</strong> 이 기능은 동일한 브라우저 탭/창에서 air1/index.html을 먼저 열어야 합니다.
+                </p>
+                <div class="sync-btn-group">
+                    <button type="button" class="sync-btn sync-btn-primary" onclick="openAir1()">🚀 Air1 페이지 열기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Classic scripts (set window globals before modules) -->
+    <script src="../js/toast.js"></script>
+    <script src="../js/flight-sync-manager.js"></script>
+
+    <!-- Module scripts (deferred, execute in document order) -->
+    <script type="module" src="../air1/js/storage-manager.js"></script>
+    <script type="module" src="js/data-binding.js"></script>
+    <script type="module">
+        // ==================================================================
+        // Global Variables
+        // ==================================================================
+        const previewIframe = document.getElementById('preview-iframe');
+        const validationMessage = document.getElementById('validation-message');
+
+        // ==================================================================
+        // Form Data Collection
+        // ==================================================================
+        function collectFormData() {
+            const formData = {
+                quote_id: 'QUOTE-' + Date.now(),
+                flightId: window.flightLoader ? window.flightLoader.getCurrentFlightId() : null,
+                group_info: {
+                    group_name: document.getElementById('group_name').value,
+                    travel_dates: document.getElementById('travel_dates').value,
+                    destination: document.getElementById('destination').value
+                },
+                pricing: {
+                    airline_name: processAirlineName(document.getElementById('airline_name').value),
+                    departure_flight: document.getElementById('departure_flight').value,
+                    return_flight: document.getElementById('return_flight').value,
+                    option_type: document.getElementById('option_type').value,
+                    price_amount: document.getElementById('price_amount').value,
+                    price_note: document.getElementById('price_note').value
+                },
+                contact_info: document.getElementById('contact_info').value
+            };
+
+            return formData;
+        }
+
+        /**
+         * 항공사명 처리 (줄바꿈 포함)
+         * "아시아나 항공" -> "아시아나<br />항공"
+         */
+        function processAirlineName(name) {
+            // 공백을 <br />로 변환 (첫 번째 공백만)
+            return name.replace(/\s+/, '<br />');
+        }
+
+        // ==================================================================
+        // Preview Update
+        // ==================================================================
+        function updatePreview() {
+            const formData = collectFormData();
+
+            // 데이터 검증
+            const validation = validateQuoteData(formData);
+            if (!validation.isValid) {
+                showValidationMessage(validation.errors.join('<br />'), 'error');
+                return;
+            }
+
+            // iframe으로 메시지 전송
+            previewIframe.contentWindow.postMessage({
+                type: 'LOAD_DATA',
+                data: formData
+            }, '*');
+
+            showValidationMessage('미리보기가 업데이트되었습니다.', 'success');
+        }
+
+        // ==================================================================
+        // LocalStorage Functions
+        // ==================================================================
+        function saveToStorage() {
+            const formData = collectFormData();
+
+            // 데이터 검증
+            const validation = validateQuoteData(formData);
+            if (!validation.isValid) {
+                showValidationMessage('데이터가 유효하지 않습니다.<br />' + validation.errors.join('<br />'), 'error');
+                return;
+            }
+
+            // LocalStorage에 저장
+            localStorage.setItem('quote_data', JSON.stringify(formData));
+            showValidationMessage('데이터가 저장되었습니다.', 'success');
+        }
+
+        function loadFromStorage() {
+            const savedData = localStorage.getItem('quote_data');
+
+            if (!savedData) {
+                showValidationMessage('저장된 데이터가 없습니다.', 'error');
+                return;
+            }
+
+            try {
+                const data = JSON.parse(savedData);
+                loadDataToForm(data);
+                updatePreview();
+                showValidationMessage('데이터를 불러왔습니다.', 'success');
+            } catch (error) {
+                showValidationMessage('데이터 불러오기 실패: ' + error.message, 'error');
+            }
+        }
+
+        function loadDataToForm(data) {
+            // 단체 정보
+            if (data.group_info) {
+                document.getElementById('group_name').value = data.group_info.group_name || '';
+                document.getElementById('travel_dates').value = data.group_info.travel_dates || '';
+                document.getElementById('destination').value = data.group_info.destination || '';
+            }
+
+            // 요금 정보
+            if (data.pricing) {
+                // <br /> 태그를 공백으로 변환하여 입력 필드에 표시
+                const airlineName = (data.pricing.airline_name || '').replace(/<br\s*\/?>/gi, ' ');
+                document.getElementById('airline_name').value = airlineName;
+                document.getElementById('departure_flight').value = data.pricing.departure_flight || '';
+                document.getElementById('return_flight').value = data.pricing.return_flight || '';
+                document.getElementById('option_type').value = data.pricing.option_type || '노옵션';
+                document.getElementById('price_amount').value = data.pricing.price_amount || '';
+                document.getElementById('price_note').value = data.pricing.price_note || '';
+            }
+
+            // 담당자 정보
+            if (data.contact_info) {
+                document.getElementById('contact_info').value = data.contact_info;
+            }
+        }
+
+        // ==================================================================
+        // Reset Form
+        // ==================================================================
+        async function resetForm() {
+            const confirmed = await showConfirmModal(
+                '폼 초기화',
+                '모든 입력 내용을 초기화하시겠습니까?',
+                { confirmText: '초기화', danger: true }
+            );
+            if (!confirmed) {
+                return;
+            }
+
+            loadDataToForm(DEFAULT_QUOTE_DATA);
+            updatePreview();
+            showValidationMessage('폼이 초기화되었습니다.', 'success');
+        }
+
+        // ==================================================================
+        // Print Preview
+        // ==================================================================
+        function printPreview() {
+            previewIframe.contentWindow.print();
+        }
+
+        // ==================================================================
+        // Sync Modal Functions
+        // ==================================================================
+        function openSyncModal() {
+            const modal = document.getElementById('syncModal');
+            modal.classList.add('active');
+
+            // 현재 상태 업데이트
+            updateSyncStatus();
+        }
+
+        function closeSyncModal() {
+            const modal = document.getElementById('syncModal');
+            modal.classList.remove('active');
+        }
+
+        function updateSyncStatus() {
+            const port = window.location.port || '80';
+            document.getElementById('syncCurrentPort').textContent = port;
+
+            if (typeof StorageManager !== 'undefined') {
+                const flights = StorageManager.getFlightList();
+                document.getElementById('syncFlightCount').textContent = flights.length;
+            }
+        }
+
+        function exportSyncData() {
+            try {
+                const allData = {};
+
+                // 모든 localStorage 데이터 수집
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    try {
+                        allData[key] = JSON.parse(localStorage.getItem(key));
+                    } catch {
+                        allData[key] = localStorage.getItem(key);
+                    }
+                }
+
+                const jsonStr = JSON.stringify(allData, null, 2);
+                document.getElementById('syncExportArea').value = jsonStr;
+                document.getElementById('syncCopyBtn').disabled = false;
+
+                showToast(`${Object.keys(allData).length}개의 키를 내보냈습니다.`, 'success');
+            } catch (error) {
+                showToast('내보내기 실패: ' + error.message, 'error');
+            }
+        }
+
+        function copySyncData() {
+            const textarea = document.getElementById('syncExportArea');
+            if (!textarea.value) {
+                showToast('먼저 데이터 내보내기를 클릭하세요.', 'warning');
+                return;
+            }
+
+            textarea.select();
+            document.execCommand('copy');
+            showToast('클립보드에 복사되었습니다.', 'success');
+        }
+
+        async function importSyncData() {
+            const textarea = document.getElementById('syncImportArea');
+            const result = document.getElementById('syncImportResult');
+
+            if (!textarea.value.trim()) {
+                showToast('가져올 데이터를 입력하세요.', 'warning');
+                return;
+            }
+
+            try {
+                const data = JSON.parse(textarea.value);
+
+                const flightInfo = data.flight_saves_v2 ? data.flight_saves_v2.length + '개' : '없음';
+                const confirmed = await showConfirmModal(
+                    '데이터 가져오기',
+                    `키 개수: ${Object.keys(data).length}개\n항공편: ${flightInfo}\n\n기존 데이터가 덮어씌워집니다.`,
+                    { confirmText: '가져오기', danger: true }
+                );
+
+                if (!confirmed) return;
+
+                let importedCount = 0;
+                for (const [key, value] of Object.entries(data)) {
+                    localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+                    importedCount++;
+                }
+
+                result.innerHTML = `
+                    <div class="sync-status success" style="margin-top: 15px;">
+                        <strong>가져오기 완료</strong><br>
+                        ${importedCount}개의 키를 가져왔습니다.<br>
+                        항공편 목록이 업데이트되었습니다.
+                    </div>
+                `;
+
+                // FlightLoader 새로고침
+                if (window.flightLoader) {
+                    window.flightLoader.loadFlightOptions();
+                }
+
+                // 상태 업데이트
+                updateSyncStatus();
+
+                // 입력란 비우기
+                setTimeout(async () => {
+                    const clearConfirmed = await showConfirmModal('입력란 초기화', '입력란을 지우시겠습니까?');
+                    if (clearConfirmed) {
+                        textarea.value = '';
+                    }
+                }, 1000);
+
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="sync-status warning" style="margin-top: 15px;">
+                        <strong>가져오기 실패</strong><br>
+                        오류: ${error.message}<br>
+                        올바른 JSON 형식인지 확인하세요.
+                    </div>
+                `;
+            }
+        }
+
+        function clearSyncImport() {
+            document.getElementById('syncImportArea').value = '';
+            document.getElementById('syncImportResult').innerHTML = '';
+        }
+
+        function openAir1() {
+            const port = window.location.port || '80';
+            window.open(`http://localhost:${port}/air1/index.html`, '_blank');
+        }
+
+        // 모달 외부 클릭 시 닫기
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('syncModal');
+            if (event.target === modal) {
+                closeSyncModal();
+            }
+        });
+
+        // ==================================================================
+        // Validation Message Display
+        // ==================================================================
+        function showValidationMessage(message, type) {
+            validationMessage.textContent = '';
+            validationMessage.innerHTML = message;
+            validationMessage.className = 'validation-message show';
+
+            if (type === 'error') {
+                validationMessage.classList.add('validation-error');
+            } else if (type === 'success') {
+                validationMessage.classList.add('validation-success');
+            }
+
+            // 3초 후 자동 숨김
+            setTimeout(() => {
+                validationMessage.classList.remove('show');
+            }, 3000);
+        }
+
+        // ==================================================================
+        // Real-time Input Listeners
+        // ==================================================================
+        document.getElementById('quote-form').addEventListener('input', function(e) {
+            // 입력 필드 변경 시 자동으로 미리보기 업데이트 (옵션)
+            // updatePreview(); // 주석 해제하면 실시간 업데이트
+        });
+
+        // ==================================================================
+        // Initialize
+        // ==================================================================
+        window.addEventListener('load', function() {
+            // iframe 로드 대기 후 초기 데이터 전송
+            previewIframe.addEventListener('load', function() {
+                updatePreview();
+            });
+        });
+
+        // ==================================================================
+        // Window Exposure (onclick handlers in HTML)
+        // ==================================================================
+        window.updatePreview = updatePreview;
+        window.saveToStorage = saveToStorage;
+        window.loadFromStorage = loadFromStorage;
+        window.resetForm = resetForm;
+        window.printPreview = printPreview;
+        window.openSyncModal = openSyncModal;
+        window.closeSyncModal = closeSyncModal;
+        window.exportSyncData = exportSyncData;
+        window.copySyncData = copySyncData;
+        window.importSyncData = importSyncData;
+        window.clearSyncImport = clearSyncImport;
+        window.openAir1 = openAir1;
+    </script>
+    <script type="module" src="js/flight-loader.js"></script>
+</body>
+</html>

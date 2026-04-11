@@ -1,0 +1,225 @@
+# 견적서/내역서 에디터 화면 명세
+# @COMPONENT EstimateEditor.tsx
+# @ROUTE /estimate-editor
+# 기존 3개 에디터 통합: domestic-editor.html, estimate-editor.html, delivery-claim-editor.html
+
+version: "2.0"
+screen: estimate-editor
+component: EstimateEditor.tsx
+
+title: "견적서 / 내역서 에디터"
+description: "국내견적, 해외견적, 정산/배송 문서 DB 저장/불러오기"
+auth: false
+note: "내부망 전용 (인증 불필요)"
+
+data_requirements:
+  resource: estimates
+  fields:
+    - id: UUID
+    - doc_type: "estimate|domestic|settlement|delivery|claim"
+    - recipient: "수신처"
+    - subject: "제목"
+    - sections_json: "비용 항목 JSON"
+    - grand_total: "총액"
+    - status: "draft|sent|confirmed"
+    - created_at: "생성일"
+    - updated_at: "수정일"
+
+layout:
+  type: tabbed
+  tabs:
+    - id: domestic
+      label: "국내견적서"
+      icon: home
+      editor_type: domestic-editor
+    - id: estimate
+      label: "해외견적서"
+      icon: globe
+      editor_type: estimate-editor
+    - id: settlement
+      label: "정산/배송"
+      icon: box
+      editor_type: delivery-claim-editor
+
+sections:
+  editor_frame:
+    layout: two-column
+    left:
+      title: "작업 영역"
+      height: "100%"
+      content:
+        - editor: "편집 가능한 텍스트 영역"
+
+    right:
+      title: "미리보기 & 액션"
+      height: "100%"
+      tabs:
+        - label: "미리보기"
+          content: live-preview
+        - label: "히스토리"
+          content: version-history
+
+features:
+  editor:
+    type: "contenteditable div (기존 코드)"
+    toolbar:
+      - bold: true
+      - italic: true
+      - underline: true
+      - font_size: true
+      - table_insert: true
+      - image_insert: true
+
+  fields:
+    recipient: { type: text, label: "수신처" }
+    subject: { type: text, label: "제목" }
+    sections:
+      type: dynamic-table
+      columns: [item, quantity, unit_price, amount]
+      add_row: true
+      remove_row: true
+
+  calculations:
+    subtotal: "자동 계산"
+    tax: "자동 계산 (옵션)"
+    grand_total: "자동 계산"
+
+  status:
+    options: [draft, sent, confirmed]
+    display: "상태 배지"
+    updateable: true
+
+actions:
+  primary:
+    - id: save
+      label: "저장"
+      icon: save
+      action: save-to-db
+      hotkey: "ctrl+s"
+      modal: save-confirm
+
+    - id: new
+      label: "새 문서"
+      icon: plus
+      action: create-new
+      modal: new-doc-type
+
+  secondary:
+    - id: load
+      label: "불러오기"
+      icon: folder-open
+      modal: load-document
+
+    - id: preview
+      label: "인쇄 미리보기"
+      icon: print
+      action: show-print-preview
+
+    - id: download
+      label: "PDF 다운로드"
+      icon: download
+      action: export-pdf
+
+    - id: print
+      label: "인쇄"
+      icon: printer
+      action: print-document
+
+    - id: email
+      label: "이메일 전송"
+      icon: mail
+      modal: send-email
+
+  export:
+    - id: export-excel
+      label: "엑셀로 내보내기"
+      icon: file-excel
+      action: export-xlsx
+
+    - id: import-excel
+      label: "엑셀 가져오기"
+      icon: upload
+      action: import-xlsx
+
+modals:
+  save-confirm:
+    title: "문서 저장"
+    fields:
+      - recipient: { type: text, required: true }
+      - subject: { type: text, required: true }
+      - status: { type: select, options: [draft, sent, confirmed] }
+      - notes: { type: textarea }
+    actions: [save, save-as, cancel]
+
+  load-document:
+    title: "문서 불러오기"
+    display:
+      type: table
+      columns: [recipient, subject, doc_type, created_at, updated_at, status]
+      sort: [updated_at DESC]
+      pagination: true
+      search: "recipient, subject"
+    actions: [load, delete, cancel]
+
+  new-doc-type:
+    title: "새 문서 유형 선택"
+    options: [domestic, estimate, settlement, delivery, claim]
+    actions: [create, cancel]
+
+  send-email:
+    title: "이메일 전송"
+    fields:
+      - to: { type: email, required: true }
+      - cc: { type: text }
+      - subject: { type: text, required: true }
+      - message: { type: textarea }
+    actions: [send, cancel]
+
+  print-preview:
+    title: "인쇄 미리보기"
+    display: "A4 크기 문서"
+    actions: [print, download-pdf, cancel]
+
+features:
+  import_export:
+    formats:
+      - type: excel
+        support: read-write
+        note: "셀 단위로 임포트/내보내기"
+      - type: pdf
+        support: export-only
+        note: "인쇄 기능과 동일"
+
+  version_history:
+    retention: "최근 10개 버전"
+    features: [view, revert, compare]
+
+  auto_calculations:
+    grand_total: "모든 항목 합계 자동 계산"
+    tax: "세금 옵션 (수동 설정 시 자동 계산)"
+    subtotal: "세금 전 소계"
+
+tests:
+  - id: create-domestic-estimate
+    when: "새 국내견적 생성"
+    then: "빈 템플릿 표시"
+
+  - id: edit-and-save
+    when: "문서 편집 후 저장"
+    then: "DB 저장 + 성공 알림"
+
+  - id: load-document
+    when: "저장된 문서 불러오기"
+    then: "문서 로드 + 에디터에 표시"
+
+  - id: export-pdf
+    when: "PDF 내보내기"
+    then: "다운로드 시작"
+
+  - id: export-import-excel
+    when: "엑셀 임포트/내보내기"
+    then: "셀 데이터 변환 완료"
+
+  - id: calculate-total
+    when: "행 추가/삭제 후 금액 입력"
+    then: "총액 자동 계산"

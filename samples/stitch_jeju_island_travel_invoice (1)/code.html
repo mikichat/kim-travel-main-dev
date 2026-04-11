@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>제주도 여행 예약 내역 (도장 업로드 가능)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+KR:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#2563eb",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0f172a",
+                    },
+                    fontFamily: {
+                        sans: ["Noto Sans KR", "Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.75rem",
+                    },
+                },
+            },
+        };
+    </script>
+<style type="text/tailwindcss">
+        body {
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .stamp-upload-area {
+            @apply flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 transition-all hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-pointer;
+            width: 100px;
+            height: 100px;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="max-w-md mx-auto min-h-screen bg-white dark:bg-slate-900 shadow-xl overflow-hidden flex flex-col">
+<header class="p-6 pb-0">
+<div class="flex justify-between items-center mb-6">
+<div class="flex items-center space-x-2">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-xl">flight_takeoff</span>
+</div>
+<span class="font-bold text-xl tracking-tight text-slate-800 dark:text-white">여행세상</span>
+</div>
+<button class="p-2 bg-slate-100 dark:bg-slate-800 rounded-full">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400">share</span>
+</button>
+</div>
+<h1 class="text-3xl font-bold tracking-tight text-center my-8 text-slate-900 dark:text-white">예약 내역</h1>
+<div class="space-y-2 text-sm text-slate-600 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 pb-6">
+<div class="flex justify-between">
+<span class="font-medium text-slate-400">수신인</span>
+<span class="text-slate-900 dark:text-white font-semibold">이귀운 권사님</span>
+</div>
+<div class="flex justify-between">
+<span class="font-medium text-slate-400">발신인</span>
+<span class="text-slate-900 dark:text-white font-semibold">여행세상</span>
+</div>
+<div class="flex justify-between">
+<span class="font-medium text-slate-400">작성일</span>
+<span class="text-slate-900 dark:text-white font-semibold">2025. 01. 06</span>
+</div>
+</div>
+</header>
+<main class="flex-grow p-4 space-y-4">
+<div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+<div class="flex items-center space-x-2 mb-4">
+<span class="material-symbols-outlined text-primary text-sm">flight</span>
+<h2 class="text-sm font-bold tracking-wider">항공편 여행 일정</h2>
+</div>
+<div class="space-y-6">
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 border-2 border-white dark:border-slate-900 flex items-center justify-center text-xs font-bold">노</div>
+<div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 border-2 border-white dark:border-slate-900 flex items-center justify-center text-xs font-bold">이</div>
+</div>
+<span class="text-xs font-medium text-slate-400">탑승객 01 &amp; 03</span>
+</div>
+<div class="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+<div class="flex justify-between items-center mb-2">
+<span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded-full">OZ8143</span>
+<span class="text-[10px] font-medium text-slate-400">01. 28 (화)</span>
+</div>
+<div class="flex justify-between items-center">
+<div class="text-center">
+<p class="text-xs text-slate-400">광주 (KWJ)</p>
+<p class="text-lg font-bold">12:25</p>
+</div>
+<div class="flex-grow flex flex-col items-center px-4">
+<div class="w-full h-[1px] bg-slate-200 dark:bg-slate-700 relative">
+<span class="material-symbols-outlined absolute left-1/2 -top-2 -translate-x-1/2 text-slate-300 text-sm">flight</span>
+</div>
+</div>
+<div class="text-center">
+<p class="text-xs text-slate-400">제주 (CJU)</p>
+<p class="text-lg font-bold">13:20</p>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+<div class="flex justify-between items-center mb-2">
+<span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded-full">KE1622</span>
+<span class="text-[10px] font-medium text-slate-400">02. 01 (토)</span>
+</div>
+<div class="flex justify-between items-center">
+<div class="text-center">
+<p class="text-xs text-slate-400">제주 (CJU)</p>
+<p class="text-lg font-bold">15:15</p>
+</div>
+<div class="flex-grow flex flex-col items-center px-4">
+<div class="w-full h-[1px] bg-slate-200 dark:bg-slate-700 relative">
+<span class="material-symbols-outlined absolute left-1/2 -top-2 -translate-x-1/2 text-slate-300 text-sm rotate-180">flight</span>
+</div>
+</div>
+<div class="text-center">
+<p class="text-xs text-slate-400">광주 (KWJ)</p>
+<p class="text-lg font-bold">16:10</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 gap-4">
+<div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+<div class="flex items-center space-x-2 mb-3 text-slate-500">
+<span class="material-symbols-outlined text-sm">hotel</span>
+<h3 class="text-xs font-bold tracking-wider">숙박</h3>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-center text-sm">
+<div class="flex flex-col">
+<span class="font-bold">제주시리우스</span>
+<span class="text-[10px] text-slate-400">01. 28 (2박)</span>
+</div>
+<span class="text-xs text-slate-500">예약자: 노기섭</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<div class="flex flex-col">
+<span class="font-bold">제주디아일랜드블루</span>
+<span class="text-[10px] text-slate-400">01. 30 (2박)</span>
+</div>
+<span class="text-xs text-slate-500">예약자: 노기섭</span>
+</div>
+</div>
+</div>
+<div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+<div class="flex items-center space-x-2 mb-3 text-slate-500">
+<span class="material-symbols-outlined text-sm">directions_car</span>
+<h3 class="text-xs font-bold tracking-wider">렌터카</h3>
+</div>
+<div class="flex justify-between items-start">
+<div class="space-y-1">
+<p class="text-sm font-bold">더올뉴그랜져 (휘)</p>
+<p class="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded inline-block">완전자차보험 가입</p>
+</div>
+<span class="text-xs text-slate-500">예약자: 이귀운</span>
+</div>
+</div>
+</div>
+<div class="bg-primary p-6 rounded-2xl shadow-lg shadow-primary/20 text-white mt-4">
+<div class="flex justify-between items-center mb-1">
+<span class="text-xs font-medium opacity-80 tracking-widest">총 결제 금액</span>
+<span class="material-symbols-outlined opacity-60">payments</span>
+</div>
+<div class="text-3xl font-black">₩2,542,600</div>
+<div class="mt-4 pt-4 border-t border-white/20">
+<div class="flex items-center space-x-2 mb-1">
+<span class="material-symbols-outlined text-sm">account_balance</span>
+<p class="text-xs font-bold">결제 정보</p>
+</div>
+<p class="text-[11px] font-medium ml-6">하나은행 611-016420-721</p>
+<p class="text-[10px] opacity-70 ml-6">예금주: (유) 여행세상</p>
+</div>
+</div>
+</main>
+<footer class="p-6 pt-2 pb-10">
+<div class="flex flex-col items-center text-center space-y-6">
+<div class="w-full flex justify-between items-end px-4">
+<div class="text-left text-slate-800 dark:text-slate-100 font-bold tracking-[0.2em] text-lg">
+                        (유) 여행세상<br/>
+<span class="text-sm tracking-normal font-medium text-slate-500">대표이사 김국진</span>
+</div>
+<label class="stamp-upload-area">
+<input accept="image/*" class="hidden" type="file"/>
+<span class="material-symbols-outlined text-slate-400 text-2xl mb-1">add_a_photo</span>
+<span class="text-[10px] font-bold text-slate-400">도장 이미지 업로드</span>
+</label>
+</div>
+<div class="w-full h-px bg-slate-100 dark:bg-slate-800 my-4"></div>
+<div class="flex flex-col items-center text-[10px] text-slate-400 space-y-1">
+<p class="font-semibold text-slate-500 mb-1 uppercase tracking-tight">문의처</p>
+<p>(560-170) 전주시 완산구 서신동 856-1번지</p>
+<p>전화: 063) 271-9090 | 팩스: 063) 271-9030</p>
+<p class="mt-2 font-bold tracking-widest text-slate-300 dark:text-slate-600 uppercase">Travel World Ltd.</p>
+</div>
+</div>
+</footer>
+<div class="sticky bottom-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 p-4 flex justify-between">
+<button class="flex-1 flex flex-col items-center justify-center space-y-1 text-primary">
+<span class="material-symbols-outlined">description</span>
+<span class="text-[10px] font-bold">상세내역</span>
+</button>
+<button class="flex-1 flex flex-col items-center justify-center space-y-1 text-slate-400">
+<span class="material-symbols-outlined">download</span>
+<span class="text-[10px] font-bold">저장</span>
+</button>
+<button class="flex-1 flex flex-col items-center justify-center space-y-1 text-slate-400">
+<span class="material-symbols-outlined">print</span>
+<span class="text-[10px] font-bold">인쇄</span>
+</button>
+<button class="flex-1 flex flex-col items-center justify-center space-y-1 text-slate-400">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="text-[10px] font-bold">문의하기</span>
+</button>
+</div>
+</div>
+
+</body></html>

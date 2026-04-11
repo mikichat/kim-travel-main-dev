@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공항 코드 검증 도구</title>
+    <script src="../js/tailwind.min.js"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">공항 코드 검증 도구</h1>
+
+        <!-- 검색 -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-lg font-semibold mb-4">공항 코드 검색</h2>
+            <div class="flex gap-4">
+                <input type="text" id="searchInput" placeholder="공항 코드 입력 (예: KTI, PNH)"
+                    class="flex-1 p-3 border rounded-lg uppercase" maxlength="3">
+                <button type="button" onclick="searchAirport()" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">
+                    검색
+                </button>
+            </div>
+            <div id="searchResult" class="mt-4"></div>
+        </div>
+
+        <!-- 누락 공항 추가 -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-lg font-semibold mb-4">누락된 공항 추가</h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <input type="text" id="newCode" placeholder="공항 코드 (예: KTI)" class="p-3 border rounded-lg uppercase" maxlength="3">
+                <input type="text" id="newCity" placeholder="도시명 (예: 크라티에)" class="p-3 border rounded-lg">
+                <input type="text" id="newAirport" placeholder="공항명 (예: 크라티에공항)" class="p-3 border rounded-lg">
+                <input type="text" id="newCountry" placeholder="국가 (예: 캄보디아)" class="p-3 border rounded-lg">
+            </div>
+            <button type="button" onclick="addAirport()" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600">
+                추가 (콘솔에 JSON 출력)
+            </button>
+            <div id="addResult" class="mt-4"></div>
+        </div>
+
+        <!-- 통계 -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-lg font-semibold mb-4">공항 데이터 통계</h2>
+            <div id="stats" class="grid grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- 전체 목록 -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold mb-4">전체 공항 목록 (<span id="totalCount">0</span>개)</h2>
+            <div class="mb-4">
+                <select id="regionFilter" onchange="filterByRegion()" class="p-2 border rounded-lg">
+                    <option value="">전체 지역</option>
+                </select>
+            </div>
+            <div id="airportList" class="max-h-96 overflow-y-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-100 sticky top-0">
+                        <tr>
+                            <th class="p-2 text-left">코드</th>
+                            <th class="p-2 text-left">도시</th>
+                            <th class="p-2 text-left">공항명</th>
+                            <th class="p-2 text-left">국가</th>
+                            <th class="p-2 text-left">지역</th>
+                        </tr>
+                    </thead>
+                    <tbody id="airportTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let airportData = {};
+        let allAirports = [];
+
+        // HTML 특수문자 이스케이프
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // 데이터 로드
+        async function loadData() {
+            try {
+                const response = await fetch('./world_airports_by_region.json');
+                if (!response.ok) throw new Error('데이터 로드 실패');
+                airportData = await response.json();
+
+                // 전체 공항 목록 생성
+                allAirports = [];
+                for (const region in airportData) {
+                    airportData[region].forEach(airport => {
+                        allAirports.push({
+                            code: airport['공항코드'],
+                            city: airport['도시'],
+                            airport: airport['공항명(한글)'],
+                            country: airport['국가'],
+                            region: region
+                        });
+                    });
+                }
+
+                // 통계 표시
+                showStats();
+
+                // 지역 필터 옵션 추가
+                const regionFilter = document.getElementById('regionFilter');
+                Object.keys(airportData).forEach(region => {
+                    const option = document.createElement('option');
+                    option.value = region;
+                    option.textContent = `${region} (${airportData[region].length}개)`;
+                    regionFilter.appendChild(option);
+                });
+
+                // 전체 목록 표시
+                renderAirportList(allAirports);
+                document.getElementById('totalCount').textContent = allAirports.length;
+
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+            }
+        }
+
+        function showStats() {
+            const stats = document.getElementById('stats');
+            stats.innerHTML = '';
+            for (const region in airportData) {
+                const div = document.createElement('div');
+                div.className = 'bg-gray-50 p-3 rounded';
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'font-semibold';
+                nameDiv.textContent = region;
+
+                const countDiv = document.createElement('div');
+                countDiv.className = 'text-2xl text-blue-600';
+                countDiv.textContent = airportData[region].length + '개';
+
+                div.appendChild(nameDiv);
+                div.appendChild(countDiv);
+                stats.appendChild(div);
+            }
+        }
+
+        function searchAirport() {
+            const code = document.getElementById('searchInput').value.toUpperCase().trim();
+            if (!code) return;
+
+            const result = document.getElementById('searchResult');
+            result.innerHTML = '';
+            const airport = allAirports.find(a => a.code === code);
+
+            if (airport) {
+                const div = document.createElement('div');
+                div.className = 'bg-green-100 text-green-800 p-4 rounded-lg';
+
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'font-bold text-lg';
+                titleDiv.textContent = `${airport.code} - ${airport.city}`;
+
+                const detailDiv = document.createElement('div');
+                detailDiv.textContent = `${airport.airport} (${airport.country})`;
+
+                const regionDiv = document.createElement('div');
+                regionDiv.className = 'text-sm text-green-600';
+                regionDiv.textContent = `지역: ${airport.region}`;
+
+                div.appendChild(titleDiv);
+                div.appendChild(detailDiv);
+                div.appendChild(regionDiv);
+                result.appendChild(div);
+            } else {
+                const div = document.createElement('div');
+                div.className = 'bg-red-100 text-red-800 p-4 rounded-lg';
+
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'font-bold';
+                titleDiv.textContent = `${code} - 데이터베이스에 없음!`;
+
+                const msgDiv = document.createElement('div');
+                msgDiv.textContent = '아래에서 추가해주세요.';
+
+                div.appendChild(titleDiv);
+                div.appendChild(msgDiv);
+                result.appendChild(div);
+            }
+        }
+
+        function addAirport() {
+            const code = document.getElementById('newCode').value.toUpperCase().trim();
+            const city = document.getElementById('newCity').value.trim();
+            const airport = document.getElementById('newAirport').value.trim();
+            const country = document.getElementById('newCountry').value.trim();
+
+            if (!code || !city) {
+                alert('공항 코드와 도시명은 필수입니다.');
+                return;
+            }
+
+            const newEntry = {
+                "국가": country || "미지정",
+                "도시": city,
+                "공항명(한글)": airport || `${city}공항`,
+                "공항코드": code
+            };
+
+            const addResult = document.getElementById('addResult');
+            addResult.innerHTML = '';
+
+            const div = document.createElement('div');
+            div.className = 'bg-blue-100 text-blue-800 p-4 rounded-lg';
+
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'font-bold';
+            titleDiv.textContent = '콘솔에 JSON 출력됨';
+
+            const pre = document.createElement('pre');
+            pre.className = 'text-xs mt-2 bg-white p-2 rounded overflow-x-auto';
+            pre.textContent = JSON.stringify(newEntry, null, 2);
+
+            const helpDiv = document.createElement('div');
+            helpDiv.className = 'text-sm mt-2';
+            helpDiv.textContent = '이 내용을 world_airports_by_region.json에 추가하세요.';
+
+            div.appendChild(titleDiv);
+            div.appendChild(pre);
+            div.appendChild(helpDiv);
+            addResult.appendChild(div);
+        }
+
+        function filterByRegion() {
+            const region = document.getElementById('regionFilter').value;
+            if (region) {
+                const filtered = allAirports.filter(a => a.region === region);
+                renderAirportList(filtered);
+            } else {
+                renderAirportList(allAirports);
+            }
+        }
+
+        function renderAirportList(airports) {
+            const tbody = document.getElementById('airportTableBody');
+            tbody.innerHTML = '';
+
+            airports.forEach(a => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b hover:bg-gray-50';
+
+                const fields = [
+                    { value: a.code, classes: 'p-2 font-mono font-bold' },
+                    { value: a.city, classes: 'p-2' },
+                    { value: a.airport, classes: 'p-2 text-gray-600' },
+                    { value: a.country, classes: 'p-2' },
+                    { value: a.region, classes: 'p-2 text-gray-500' },
+                ];
+
+                fields.forEach(field => {
+                    const td = document.createElement('td');
+                    td.className = field.classes;
+                    td.textContent = field.value || '';
+                    tr.appendChild(td);
+                });
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Enter 키 검색
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchAirport();
+        });
+
+        // 페이지 로드
+        loadData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+air1/code_sandbox_light_70958ee4_1762915877.zip
+node_modules/
+backend/node_modules
+backend/logs/
+
+# Environment variables
+**/.env
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploaded files
+backend/uploads/
+
+# Log files
+*.log
+backend/hwp_debug.txt
+backend/hwp_result.json
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+
+# Windows reserved names
+nul
+
+# Test coverage and results
+**/coverage/
+**/test-results/
+
+# Build outputs
+**/dist/
+
+# Claude Code settings (contains API keys)
+.claude/settings.json
+.claude/worktrees/

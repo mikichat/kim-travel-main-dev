@@ -1,0 +1,48 @@
+version: "2.0"
+
+screen:
+  name: 로그인
+  route: /login
+  layout: full-width
+  auth: false
+
+data_requirements:
+  - resource: users
+    needs: [email]
+    auth_required: false
+
+components:
+  - id: login_form
+    type: form
+    position: main
+    function: 이메일/비밀번호 인증 폼
+    data_source:
+      resource: users
+    events:
+      - on: submit
+        do: 로그인 API 호출, 성공 시 /dashboard로 이동
+      - on: input:error
+        do: 에러 메시지 표시 (잘못된 이메일/비밀번호)
+
+connections:
+  navigations:
+    - from: login_form
+      to: /dashboard
+
+tests:
+  - name: 정상 로그인
+    when: 올바른 이메일/비밀번호 입력 후 로그인 클릭
+    then:
+      - /dashboard로 이동
+      - 세션 쿠키 설정됨
+
+  - name: 로그인 실패
+    when: 잘못된 비밀번호 입력 후 로그인 클릭
+    then:
+      - 에러 메시지 표시
+      - 로그인 화면 유지
+
+  - name: 3회 실패 잠금
+    when: 3회 연속 로그인 실패
+    then:
+      - 계정 잠금 안내 메시지 표시

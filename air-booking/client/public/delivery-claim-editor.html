@@ -1,0 +1,2015 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>납품확인서 / 대금청구서</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=Pretendard:wght@300;400;500;600;700;900&display=swap');
+:root { --primary:#1a3a5c; --border:#333; --bl:#bbb; --bg:#f2f4f7; }
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+/* ── 툴바 ── */
+.toolbar{background:var(--primary);color:#fff;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(0,0,0,.3);}
+.toolbar-title{font-size:15px;font-weight:700;}
+.toolbar-sub{font-size:11px;color:rgba(255,255,255,.55);margin-top:2px;}
+.toolbar-btns{display:flex;gap:8px;}
+.tbtn{padding:7px 18px;border-radius:5px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.tbtn-outline{background:transparent;border:1.5px solid rgba(255,255,255,.4);color:#fff;}
+.tbtn-outline:hover{background:rgba(255,255,255,.12);}
+.tbtn-save{background:#1a7a4c;color:#fff;}
+.tbtn-save:hover{background:#1d9056;}
+.tbtn-print{background:#c9a227;color:#1a3a5c;font-weight:700;}
+.tbtn-print:hover{background:#e0b830;}
+.tbtn-load{background:#2c6fbb;color:#fff;}
+.tbtn-load:hover{background:#3580d0;}
+.tbtn-danger{background:#c0392b;color:#fff;}
+.tbtn-danger:hover{background:#e04838;}
+
+/* ── 문서 타입 토글 ── */
+.doc-type-toggle{display:flex;gap:0;margin-right:16px;}
+.doc-type-btn{padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,.4);background:transparent;color:rgba(255,255,255,.7);font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.doc-type-btn:first-child{border-radius:5px 0 0 5px;}
+.doc-type-btn:last-child{border-radius:0 5px 5px 0;border-left:none;}
+.doc-type-btn.active{background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.7);}
+
+/* ── 저장 목록 드롭다운 ── */
+.load-dropdown{position:relative;display:inline-block;}
+.load-menu{display:none;position:absolute;top:100%;right:0;background:#fff;border:1px solid #ccc;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.15);min-width:360px;max-height:400px;overflow-y:auto;z-index:300;margin-top:4px;}
+.load-menu.show{display:block;}
+.load-menu-item{padding:10px 14px;border-bottom:1px solid #eee;cursor:pointer;font-size:12px;color:#333;display:flex;justify-content:space-between;align-items:center;}
+.load-menu-item:hover{background:#f0f4fa;}
+.load-menu-item:last-child{border-bottom:none;}
+.load-menu-item .lm-title{font-weight:700;color:#1a3a5c;}
+.load-menu-item .lm-sub{font-size:11px;color:#888;}
+.load-menu-item .lm-type{font-size:10px;padding:2px 6px;border-radius:3px;font-weight:700;}
+.lm-type.del{background:#e8f5e9;color:#2e7d32;}
+.lm-type.clm{background:#fff3e0;color:#e65100;}
+.load-menu-empty{padding:20px;text-align:center;color:#999;font-size:12px;}
+.lm-del{background:none;border:1px solid #ddd;color:#bbb;font-size:10px;padding:2px 6px;border-radius:3px;cursor:pointer;margin-left:8px;}
+.lm-del:hover{border-color:#e74c3c;color:#e74c3c;}
+
+/* ── 페이지 ── */
+body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;font-size:13px;color:#111;}
+.page-wrap{max-width:860px;margin:28px auto 60px;padding:0 16px;}
+.doc{background:#fff;border:1px solid #ccc;padding:36px 40px 40px;box-shadow:0 2px 16px rgba(0,0,0,.08);}
+
+/* ── 제목 ── */
+.doc-title{text-align:center;font-size:26px;font-weight:900;letter-spacing:12px;border-bottom:3px double var(--border);padding-bottom:14px;margin-bottom:20px;}
+
+/* ── 공통 테이블 ── */
+.info-table{width:100%;border-collapse:collapse;margin-bottom:16px;border:1px solid var(--border);}
+.info-table th{background:#e8ecf2;font-weight:700;font-size:12px;padding:7px 12px;border:1px solid var(--bl);text-align:center;white-space:nowrap;width:90px;}
+.info-table td{border:1px solid var(--bl);padding:5px 10px;}
+.info-table td input{width:100%;border:none;outline:none;font-size:13px;font-family:'Noto Sans KR',sans-serif;background:transparent;color:#111;}
+.info-table td input:focus{background:#fffde7;border-radius:3px;}
+
+/* ── 2단 헤더 레이아웃 ── */
+.header-row{display:flex;gap:16px;margin-bottom:16px;align-items:stretch;}
+.header-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:0;}
+.header-right{width:320px;flex-shrink:0;display:flex;flex-direction:column;}
+.header-left .info-table,.header-right .info-table{margin-bottom:0;}
+.header-right .info-table{flex:1;}
+.header-left .ea-table{flex:1;}
+
+/* ── 공급자 헤더 ── */
+.supplier-header{background:#1a3a5c;color:#fff;font-weight:700;font-size:12px;padding:6px 14px;letter-spacing:1px;border:1px solid var(--primary);}
+.header-right .supplier-header{font-size:11px;padding:5px 12px;}
+.header-right .info-table th{font-size:11px;padding:5px 8px;width:72px;}
+.header-right .info-table td input{font-size:12px;}
+
+/* ── 견적금액 강조 행 ── */
+.ea-table{margin-bottom:0!important;border:2px solid #1a3a5c!important;margin-top:-1px!important;}
+.ea-row th{background:#1a3a5c!important;color:#fff!important;font-size:13px;font-weight:900;letter-spacing:2px;border:none!important;vertical-align:middle;}
+.ea-row td{background:#eef2f8!important;border:none!important;border-left:2px solid #1a3a5c!important;padding:8px 14px!important;}
+.ea-amount{font-size:22px;font-weight:900;color:#1a3a5c;}
+.ea-won{font-size:14px;font-weight:700;color:#333;margin-right:14px;}
+.ea-per-inline{font-size:12px;color:#555;}
+.ea-per-inline b{font-size:14px;font-weight:900;color:#1a3a5c;}
+.ea-line1{display:flex;align-items:baseline;gap:4px;flex-wrap:nowrap;}
+.ea-line2{font-size:10px;color:#888;margin-top:2px;}
+
+/* ── 여행 개요 ── */
+.overview-wrap{display:flex;gap:0;margin-bottom:16px;}
+.overview-wrap .overview-left{flex:1.2;}
+.overview-wrap .overview-right{flex:0.8;}
+.overview-table{width:100%;border-collapse:collapse;border:1px solid var(--bl);table-layout:fixed;}
+.overview-table th{background:#e8ecf2;font-weight:700;font-size:11px;padding:7px 10px;border:1px solid var(--bl);text-align:center;color:#1a3a5c;white-space:nowrap;}
+.overview-table td{border:1px solid var(--bl);padding:5px 10px;overflow:hidden;}
+.overview-table td input,.overview-table td select{width:100%;border:none;outline:none;font-size:13px;font-family:'Noto Sans KR',sans-serif;background:transparent;font-weight:600;}
+.overview-table td input:focus,.overview-table td select:focus{background:#fffde7;border-radius:3px;}
+
+/* ── 섹션 헤더 ── */
+.section-label{background:#1a3a5c;color:#fff;font-size:12px;font-weight:700;padding:5px 12px;letter-spacing:.5px;margin-top:10px;display:flex;align-items:center;justify-content:space-between;}
+.section-sub{font-size:11px;font-weight:400;color:#b0c8e0;}
+
+/* ── 비용 테이블 ── */
+table.detail{width:100%;border-collapse:collapse;font-size:12px;}
+table.detail thead th{background:#e8ecf2;border:1px solid var(--bl);padding:6px 8px;font-size:11px;font-weight:700;text-align:center;color:#1a3a5c;white-space:nowrap;}
+table.detail tbody td{border:1px solid #ddd;padding:5px 7px;vertical-align:middle;}
+table.detail tbody td input{width:100%;border:none;outline:none;font-size:12px;font-family:'Noto Sans KR',sans-serif;background:transparent;padding:1px 2px;}
+table.detail tbody td input:focus{background:#fffde7;border-radius:2px;}
+table.detail tbody td input.r{text-align:right;font-weight:600;}
+table.detail tbody td.c-amt{text-align:right;font-weight:600;color:#1a3a5c;white-space:nowrap;background:#f7f8fa;padding-right:10px;}
+table.detail tbody td.c-del{text-align:center;width:40px;}
+table.detail tbody tr:hover td{background:#fdfbf0;}
+table.detail tbody tr:hover td.c-amt{background:#f0f2e8;}
+.btn-del{background:none;border:1px solid #ddd;color:#bbb;font-size:11px;padding:2px 7px;border-radius:3px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.btn-del:hover{border-color:#e74c3c;color:#e74c3c;background:#fff5f5;}
+.add-row-bar{border:1px solid #ddd;border-top:none;padding:5px 8px;background:#fafafa;}
+.btn-add-row{background:none;border:1px dashed #bbb;color:#888;font-size:11px;padding:3px 12px;border-radius:3px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.btn-add-row:hover{border-color:#1a3a5c;color:#1a3a5c;background:#eef2f8;}
+
+/* ── 합계 블록 ── */
+.total-block{margin-top:14px;border:1px solid var(--border);}
+.t-row{display:flex;align-items:center;border-bottom:1px solid #ddd;}
+.t-row:last-child{border-bottom:none;}
+.t-label{background:#e8ecf2;font-weight:700;padding:8px 16px;width:220px;flex-shrink:0;font-size:12px;border-right:1px solid #bbb;}
+.t-val{flex:1;padding:8px 16px;font-weight:700;text-align:right;color:#1a3a5c;font-size:14px;}
+.t-val.grand{font-size:18px;font-weight:900;color:#c0392b;}
+.t-input-wrap{flex:1;padding:5px 16px;display:flex;align-items:center;justify-content:flex-end;gap:6px;}
+.t-input-wrap input{text-align:right;border:1px solid #ddd;border-radius:4px;padding:5px 10px;font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;width:200px;outline:none;color:#1a3a5c;}
+.t-input-wrap input:focus{border-color:#1a3a5c;background:#fffde7;}
+
+/* ── 확인문구 ── */
+.confirm-phrase{text-align:center;font-size:14px;font-weight:700;color:#1a3a5c;margin:24px 0 16px;letter-spacing:.5px;}
+
+/* ── 서명란 ── */
+.sign-section{margin-top:20px;}
+.sign-date{text-align:center;font-size:14px;font-weight:600;margin-bottom:16px;}
+.sign-date input{border:none;outline:none;font-size:14px;font-family:'Noto Sans KR',sans-serif;font-weight:600;text-align:center;background:transparent;color:#111;width:240px;}
+.sign-date input:focus{background:#fffde7;border-radius:3px;}
+.sign-block{display:flex;justify-content:flex-end;gap:24px;}
+.sign-item{border:1px solid var(--bl);width:200px;text-align:center;}
+.sign-label{background:#e8ecf2;font-size:11px;font-weight:700;padding:5px;border-bottom:1px solid var(--bl);}
+.sign-name{padding:6px 8px;border-bottom:1px solid var(--bl);}
+.sign-name input{width:100%;border:none;outline:none;text-align:center;font-size:13px;font-family:'Noto Sans KR',sans-serif;background:transparent;}
+.sign-name input:focus{background:#fffde7;}
+.sign-box{height:80px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px;position:relative;cursor:pointer;overflow:hidden;}
+.sign-box img{max-width:100%;max-height:76px;object-fit:contain;}
+.sign-box-hint{color:#bbb;font-size:11px;}
+.seal-upload{display:none;}
+
+/* ── 청구 전용 섹션 ── */
+.claim-only{display:none;}
+.show-claim .claim-only{display:block;}
+
+.bank-section{margin-top:20px;border:1px solid var(--bl);}
+.bank-header{background:#e8ecf2;font-weight:700;font-size:12px;padding:6px 12px;border-bottom:1px solid var(--bl);letter-spacing:.5px;}
+.bank-body{padding:12px 14px;}
+.bank-row{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.bank-row:last-child{margin-bottom:0;}
+.bank-label{font-size:12px;font-weight:700;color:#1a3a5c;width:72px;flex-shrink:0;}
+.bank-input{flex:1;border:1px solid #ddd;border-radius:4px;padding:5px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;color:#111;}
+.bank-input:focus{border-color:#1a3a5c;background:#fffde7;}
+
+.attach-section{margin-top:16px;border:1px solid var(--bl);}
+.attach-header{background:#e8ecf2;font-weight:700;font-size:12px;padding:6px 12px;border-bottom:1px solid var(--bl);letter-spacing:.5px;}
+.attach-body{padding:10px 14px;display:flex;gap:20px;flex-wrap:wrap;}
+.attach-item{display:flex;align-items:center;gap:6px;font-size:13px;}
+.attach-item input[type=checkbox]{width:16px;height:16px;accent-color:#1a3a5c;cursor:pointer;}
+.attach-item label{cursor:pointer;font-weight:500;}
+
+/* ── 데이터 가져오기 ── */
+.tbtn-import{background:#2c6fbb;color:#fff;}
+.tbtn-import:hover{background:#3580d0;}
+.import-dropdown{position:relative;display:inline-block;}
+.import-menu{display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #ccc;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.15);min-width:220px;z-index:300;margin-top:4px;}
+.import-menu.show{display:block;}
+.import-menu-item{padding:10px 14px;cursor:pointer;font-size:12px;color:#333;border-bottom:1px solid #eee;}
+.import-menu-item:hover{background:#f0f4fa;}
+.import-menu-item:last-child{border-bottom:none;}
+
+/* 데이터 선택 모달 */
+.picker-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:500;}
+.picker-overlay.show{display:flex;align-items:center;justify-content:center;}
+.picker-modal{background:#fff;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.25);width:640px;max-height:80vh;display:flex;flex-direction:column;font-family:'Noto Sans KR',sans-serif;}
+.picker-header{background:var(--primary);color:#fff;padding:12px 20px;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:space-between;}
+.picker-header h3{font-size:14px;font-weight:700;}
+.picker-close{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;}
+.picker-search{padding:12px 16px;border-bottom:1px solid #eee;}
+.picker-search input{width:100%;border:1px solid #ddd;border-radius:5px;padding:8px 12px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;}
+.picker-search input:focus{border-color:var(--primary);}
+.picker-list{flex:1;overflow-y:auto;max-height:50vh;}
+.picker-item{padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .1s;}
+.picker-item:hover{background:#f0f4fa;}
+.picker-item-title{font-weight:700;font-size:13px;color:var(--primary);}
+.picker-item-sub{font-size:11px;color:#888;margin-top:2px;}
+.picker-empty{padding:30px;text-align:center;color:#999;font-size:13px;}
+.picker-footer{padding:12px 16px;border-top:1px solid #eee;display:flex;align-items:center;justify-content:space-between;background:#f7f8fa;border-radius:0 0 10px 10px;}
+.picker-select-info{font-size:12px;font-weight:700;color:var(--primary);}
+.picker-confirm-btn{padding:8px 20px;border-radius:5px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:var(--primary);color:#fff;font-family:'Noto Sans KR',sans-serif;}
+.picker-confirm-btn:hover{background:#24527a;}
+.picker-item-check{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .1s;}
+.picker-item-check:hover{background:#f0f4fa;}
+.picker-item-check.selected{background:#e8f0fe;}
+.picker-item-check input[type=checkbox]{width:18px;height:18px;accent-color:var(--primary);cursor:pointer;margin-top:2px;flex-shrink:0;}
+.picker-item-check .picker-item-body{flex:1;min-width:0;}
+
+/* ── 스케줄 셀 ── */
+.sched-date{font-size:11px;color:#333;white-space:nowrap;vertical-align:top;padding:4px 6px!important;}
+.sched-date div{padding:1px 0;}
+.sched-route{font-size:12px;font-weight:600;color:#1a3a5c;vertical-align:top;padding:4px 6px!important;}
+.sched-route div{padding:1px 0;}
+.sched-input{width:100%;border:none;outline:none;font-size:12px;font-family:'Noto Sans KR',sans-serif;background:transparent;color:inherit;padding:2px 0;}
+.sched-input:focus{background:#fffde7;border-radius:2px;}
+.sched-input.route-input{font-weight:600;color:#1a3a5c;}
+.sched-date .sched-input{font-size:11px;color:#333;width:130px;}
+.tax-select{border:1px solid #ddd;border-radius:3px;padding:3px 4px;font-size:11px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;outline:none;background:#fff;color:#1a3a5c;text-align:center;width:100%;}
+.tax-select:focus{border-color:#1a3a5c;background:#fffde7;}
+.tax-select option[value="exempt"]{color:#2c6fbb;}
+.tax-select option[value="taxable"]{color:#c0392b;}
+.vat-incl-wrap{display:flex;align-items:center;justify-content:center;gap:2px;margin-top:3px;cursor:pointer;}
+.vat-incl{width:13px;height:13px;accent-color:#c0392b;cursor:pointer;}
+.vat-incl-label{font-size:9px;color:#c0392b;font-weight:700;white-space:nowrap;}
+
+/* ── 부가세 토글 스위치 ── */
+.vat-switch{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0;}
+.vat-switch input{opacity:0;width:0;height:0;}
+.vat-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:20px;transition:.2s;}
+.vat-slider:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;}
+.vat-switch input:checked+.vat-slider{background:#1a7a4c;}
+.vat-switch input:checked+.vat-slider:before{transform:translateX(16px);}
+.vat-off .t-label span:first-child,.vat-off .t-val{opacity:.4;text-decoration:line-through;}
+
+/* ── 과세/부가세 편집 가능 입력 ── */
+.tax-editable-input{width:140px;border:1px solid transparent;border-radius:3px;padding:2px 6px;font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;color:#1a3a5c;text-align:right;outline:none;background:transparent;transition:border-color .2s,background .2s;}
+.tax-editable-input:hover{border-color:#ddd;background:#fafafa;}
+.tax-editable-input:focus{border-color:#c0392b;background:#fff8f8;color:#c0392b;}
+.tax-editable-input.manual{color:#c0392b;font-weight:800;}
+
+/* ── 특기사항 ── */
+.notice-section{margin-top:20px;border:1px solid var(--bl);}
+.notice-header{background:#e8ecf2;font-weight:700;font-size:12px;padding:6px 12px;border-bottom:1px solid var(--bl);letter-spacing:.5px;}
+.notice-list{list-style:none;padding:8px 12px;}
+.notice-item{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px dashed #eee;font-size:12px;}
+.notice-item:last-child{border-bottom:none;}
+.notice-item::before{content:'·';font-weight:900;color:#1a3a5c;flex-shrink:0;}
+.notice-item input{flex:1;border:none;outline:none;font-size:12px;font-family:'Noto Sans KR',sans-serif;background:transparent;color:#333;padding:1px 4px;}
+.notice-item input:focus{background:#fffde7;border-radius:2px;}
+.notice-add-bar{padding:6px 12px;border-top:1px solid #eee;}
+
+/* ── 인쇄 전용 B+C 헤더 (화면에서 숨김) ── */
+.print-bc-header,.print-bc-recipient{display:none;}
+
+/* ── 인쇄 ── */
+@media print{
+  /* ── UI 숨김 ── */
+  .toolbar,.add-row-bar,.notice-add-bar,.btn-del,.load-dropdown,.doc-type-toggle,.c-del,.print-settings-overlay,.seal-upload-btn,.vat-switch,.picker-overlay,.import-dropdown{display:none!important;}
+  .tax-editable-input{border:none!important;background:transparent!important;color:#1a3a5c!important;pointer-events:none;}
+  .vat-off{display:none!important;}
+  .tax-select{display:none!important;}
+  .vat-incl-wrap{display:none!important;}
+  table.detail thead th:nth-child(4),table.detail tbody td:nth-child(4){display:none!important;}
+
+  /* ── 원본 제목/헤더 유지 ── */
+
+  /* ── 기본 설정 ── */
+  body{background:#fff;font-family:'Pretendard','Noto Sans KR',sans-serif;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  @page{size:A4 portrait;margin:14mm 12mm 12mm 12mm;}
+
+  /* ── input/select 투명화 ── */
+  input{border:none!important;outline:none!important;background:transparent!important;padding:0!important;color:#111!important;}
+  select{-webkit-appearance:none;appearance:none;border:none!important;background:transparent!important;}
+
+  /* ── 레이아웃 ── */
+  .page-wrap{margin:0;padding:0;max-width:100%;}
+  .doc{border:none;box-shadow:none;padding:24px 28px 24px;font-size:11px;}
+
+  /* ── 인쇄용 폰트 축소 ── */
+  .info-table th{font-size:10px;padding:5px 8px;}
+  .info-table td input{font-size:11px;}
+  .overview-table th{font-size:10px;padding:5px 8px;}
+  .overview-table td input{font-size:11px;}
+
+  /* ═══ 비용 테이블 (B안: 미니멀 라인) ═══ */
+  table.detail{font-size:11px;border:none;margin-top:4px;}
+  table.detail thead th{font-size:8px;padding:7px 8px;background:transparent!important;color:#1a3a5c!important;border:none!important;border-bottom:2px solid #1a3a5c!important;font-weight:700;text-transform:uppercase;letter-spacing:.8px;}
+  table.detail tbody td{padding:7px 8px;border:none!important;border-bottom:1px solid #f0f0f0!important;}
+  table.detail tbody td input{font-size:11px;}
+  table.detail tbody td input.r{font-weight:700;font-size:11px;}
+  table.detail tbody td.c-amt{text-align:right;font-weight:700;font-size:11px;color:#1a3a5c!important;background:transparent!important;padding-right:8px;}
+  table.detail tbody tr:hover td{background:transparent!important;}
+  table.detail tbody tr:last-child td{border-bottom:2px solid #1a3a5c!important;}
+  table.detail tbody tr{orphans:2;widows:2;}
+
+  /* ═══ ⑤ 합계 블록 → 우측 정렬 콤팩트 박스 ═══ */
+  .total-block{margin-top:8px;border:none!important;display:flex;flex-direction:column;align-items:flex-end;}
+  .t-row{border-bottom:1px solid #f0f0f0!important;display:flex;justify-content:space-between;width:260px;}
+  .t-row:last-child{border-bottom:none!important;}
+  .t-label{background:transparent!important;border:none!important;font-size:10px;font-weight:600;padding:5px 0;color:#555;width:auto;}
+  .t-val{font-size:11px;font-weight:700;padding:5px 0;color:#1a3a5c!important;text-align:right;width:auto;}
+  .t-val.grand{font-size:16px;font-weight:900;color:#1a3a5c!important;}
+  .t-row:last-child{border-bottom:none!important;border-top:2px solid #1a3a5c!important;padding-top:6px;margin-top:4px;}
+  .t-row:last-child .t-label{font-size:12px;font-weight:900;}
+  .t-input-wrap input{font-size:11px;font-weight:700;border:none!important;color:#1a3a5c!important;}
+
+  /* ═══ 확인 문구 ═══ */
+  .confirm-phrase{text-align:center;font-size:11px;color:#555;padding:16px 0 8px;margin-top:12px;}
+
+  /* ═══ ⑥ 서명란 → B+C 1줄 (우측 정렬 + 작은 직인) ═══ */
+  .sign-section{margin-top:8px;}
+  .sign-date{font-size:11px;margin-top:0;text-align:center;}
+  .sign-date input{font-size:11px;}
+  .sign-block{display:flex!important;justify-content:flex-end;align-items:center;gap:16px;margin-top:8px;padding-bottom:12px;border-bottom:1px solid #eee;}
+  .sign-item{display:flex!important;align-items:center;gap:12px;border:none!important;width:auto;}
+  .sign-label{display:none!important;}
+  .sign-name{padding:0;border:none!important;}
+  .sign-name input{font-size:11px;text-align:right;}
+  .sign-box{width:56px!important;height:56px!important;min-width:56px;border:1.5px solid #c0392b!important;border-radius:50%;color:#c0392b!important;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .sign-box-hint{font-size:8px;}
+  .seal-upload{display:none!important;}
+
+  /* 직인 이미지 */
+  .seal-area{width:56px!important;height:56px!important;border-radius:50%;overflow:hidden;}
+  .seal-area img{max-width:52px!important;max-height:52px!important;}
+
+  /* ═══ 특기사항 ═══ */
+  .notice-section{margin-top:12px;border:none!important;border-top:1px solid #eee!important;}
+  .notice-header{background:transparent!important;border:none!important;font-size:8px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:2px;padding:8px 0 4px;}
+  .notice-list{padding:2px 0;}
+  .notice-item{font-size:9px;color:#888;padding:3px 0;border-bottom:none!important;}
+  .notice-item::before{color:#aaa!important;}
+  .notice-item input{font-size:9px;color:#888!important;}
+
+  /* ═══ 입금계좌 ═══ */
+  .bank-section{margin-top:12px;border:none!important;border-top:1px solid #eee!important;}
+  .bank-header{background:transparent!important;border:none!important;font-size:8px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:2px;padding:6px 0 4px;}
+  .bank-row{margin-bottom:3px;}
+  .bank-label{font-size:9px;width:56px;color:#555;}
+  .bank-input{border:none!important;font-size:10px;}
+
+  /* ═══ 첨부서류 ═══ */
+  .attach-section{margin-top:10px;border:none!important;border-top:1px solid #eee!important;}
+  .attach-header{background:transparent!important;border:none!important;font-size:8px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:2px;padding:6px 0 4px;}
+  .attach-item{font-size:10px;}
+  .attach-item input[type=checkbox]{width:12px;height:12px;}
+
+  /* ═══ 페이지 나눔 제어 ═══ */
+  table.detail,table.detail tbody{page-break-inside:auto;}
+  table.detail tr{page-break-inside:avoid;page-break-after:auto;}
+  table.detail thead{display:table-header-group;}
+  .total-block{page-break-inside:avoid;}
+  .notice-section{page-break-inside:avoid;}
+  .sign-section{page-break-inside:avoid;}
+  .bank-section{page-break-inside:avoid;}
+  .attach-section{page-break-inside:avoid;}
+  .header-row{page-break-inside:avoid;}
+  .ea-table{page-break-inside:avoid;}
+  .overview-table{page-break-inside:avoid;}
+}
+
+/* ── 인쇄 설정 패널 ── */
+.print-settings-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:500;}
+.print-settings-overlay.show{display:flex;align-items:center;justify-content:center;}
+.print-settings{background:#fff;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.25);width:480px;max-height:90vh;overflow-y:auto;font-family:'Noto Sans KR',sans-serif;}
+.ps-header{background:var(--primary);color:#fff;padding:14px 20px;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:space-between;}
+.ps-header h3{font-size:14px;font-weight:700;letter-spacing:1px;}
+.ps-close{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 4px;}
+.ps-body{padding:20px;}
+.ps-section{margin-bottom:18px;}
+.ps-section-title{font-size:12px;font-weight:700;color:var(--primary);margin-bottom:10px;padding-bottom:4px;border-bottom:2px solid #e8ecf2;}
+.ps-row{display:flex;gap:12px;margin-bottom:8px;}
+.ps-field{flex:1;}
+.ps-field label{display:block;font-size:11px;font-weight:600;color:#666;margin-bottom:3px;}
+.ps-field input[type=range]{width:100%;accent-color:var(--primary);}
+.ps-field .ps-val{font-size:12px;font-weight:700;color:var(--primary);float:right;margin-top:-16px;}
+.ps-presets{display:flex;gap:6px;margin-bottom:14px;}
+.ps-preset{padding:6px 14px;border:1.5px solid #ddd;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;color:#555;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.ps-preset:hover{border-color:var(--primary);color:var(--primary);}
+.ps-preset.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+.ps-footer{padding:14px 20px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:8px;}
+.ps-btn{padding:8px 20px;border-radius:5px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.ps-btn-cancel{background:#f0f0f0;color:#555;}
+.ps-btn-cancel:hover{background:#e0e0e0;}
+.ps-btn-print{background:var(--primary);color:#fff;}
+.ps-btn-print:hover{background:#24527a;}
+.ps-tabs{display:flex;gap:0;margin-bottom:12px;}
+.ps-tab{flex:1;padding:7px 0;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid #ddd;background:#f7f8fa;color:#888;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.ps-tab:first-child{border-radius:5px 0 0 5px;}
+.ps-tab:last-child{border-radius:0 5px 5px 0;border-left:none;}
+.ps-tab.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+.ps-tab-content{padding-top:4px;}
+.ps-preview{background:#f7f8fa;border:1px solid #ddd;border-radius:6px;padding:12px;margin-top:10px;text-align:center;}
+.ps-preview-page{display:inline-block;width:120px;height:170px;background:#fff;border:1px solid #bbb;box-shadow:0 1px 4px rgba(0,0,0,.1);position:relative;}
+.ps-preview-content{position:absolute;background:#e8ecf2;border-radius:2px;top:6%;bottom:5%;left:6%;right:6%;transition:all .2s ease;}
+
+/* 토스트 */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a3a5c;color:#fff;padding:10px 24px;border-radius:24px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;pointer-events:none;transition:opacity .25s;z-index:9999;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- 툴바 -->
+<div class="toolbar">
+  <div>
+    <div class="toolbar-title">납품확인서 / 대금청구서</div>
+    <div class="toolbar-sub">수정 후 [DB 저장] · [인쇄/PDF]로 제출용 출력</div>
+  </div>
+  <div class="toolbar-btns">
+    <div class="doc-type-toggle">
+      <button class="doc-type-btn active" data-type="delivery" onclick="setDocType('delivery')">납품확인서</button>
+      <button class="doc-type-btn" data-type="claim" onclick="setDocType('claim')">대금청구서</button>
+    </div>
+    <div class="import-dropdown">
+      <button class="tbtn tbtn-import" onclick="toggleImportMenu()">데이터 가져오기 ▾</button>
+      <div class="import-menu" id="importMenu">
+        <div class="import-menu-item" onclick="openBookingPicker()">예약 정보에서 가져오기</div>
+        <div class="import-menu-item" onclick="openSchedulePicker()">항공 스케줄에서 가져오기</div>
+        <div class="import-menu-item" onclick="openEstimatePicker()">견적서에서 가져오기</div>
+      </div>
+    </div>
+    <button class="tbtn tbtn-outline" onclick="addNotice()">+ 특기사항</button>
+    <div class="load-dropdown">
+      <button class="tbtn tbtn-load" onclick="toggleLoadMenu()">불러오기 ▾</button>
+      <div class="load-menu" id="loadMenu"></div>
+    </div>
+    <button class="tbtn tbtn-save" onclick="saveToDb()">DB 저장</button>
+    <button class="tbtn tbtn-outline" onclick="newDoc()">새 문서</button>
+    <button class="tbtn tbtn-outline" onclick="saveHTML()">HTML 저장</button>
+    <button class="tbtn tbtn-print" onclick="autoFitPrint()">인쇄 / PDF</button>
+    <button class="tbtn tbtn-outline" onclick="openPrintSettings()" title="인쇄 여백/글꼴 수동 설정">⚙</button>
+  </div>
+</div>
+
+<div class="page-wrap">
+<div class="doc" id="mainDoc">
+
+  <!-- 인쇄 전용 B+C 헤더 (화면에서는 숨김) -->
+  <div class="print-bc-header">
+    <div class="print-bc-left">
+      <div class="print-bc-company" id="printCompany">여행세상</div>
+      <div class="print-bc-sub"><span id="printBizNo">사업자 405-81-02196</span> · <span id="printAddress">전북특별자치도 전주시 완산구 서신로 8</span> · <span id="printPhone2">063-271-9090</span></div>
+    </div>
+    <div class="print-bc-right">
+      <div class="print-bc-doctype" id="printDocType">납품확인서</div>
+      <div class="print-bc-docno" id="printDocNo"></div>
+    </div>
+  </div>
+  <div class="print-bc-recipient">
+    <span class="print-bc-recip-label">수신</span>
+    <span class="print-bc-recip-value" id="printRecipient"></span>
+  </div>
+
+  <!-- 제목 -->
+  <div class="doc-title" id="docTitle">납&nbsp;&nbsp;품&nbsp;&nbsp;확&nbsp;&nbsp;인&nbsp;&nbsp;서</div>
+
+  <!-- 2단 헤더: 좌=수신/계약정보, 우=공급자 -->
+  <div class="header-row">
+    <div class="header-left">
+      <table class="info-table">
+        <tr>
+          <th>수&nbsp;&nbsp;&nbsp;신</th>
+          <td><input id="recipient" placeholder="기관명 입력 (예: ○○교육청장 귀중)"></td>
+        </tr>
+        <tr>
+          <th>계약번호</th>
+          <td><input id="contractNumber" placeholder="계약번호 입력"></td>
+        </tr>
+        <tr>
+          <th>계약일자</th>
+          <td><input id="contractDate" type="date"></td>
+        </tr>
+        <tr>
+          <th>계약명</th>
+          <td><input id="contractName" placeholder="계약 명칭 입력"></td>
+        </tr>
+        <tr>
+          <th>완료일자</th>
+          <td><input id="completionDate" type="date"></td>
+        </tr>
+      </table>
+      <!-- 견적금액 강조 행 -->
+      <table class="info-table ea-table">
+        <tr class="ea-row">
+          <th>계약금액</th>
+          <td>
+            <div class="ea-line1">
+              <span class="ea-amount" id="headerGrandTotal">—</span><span class="ea-won">원</span>
+              <span class="ea-per-inline">1인당 <b id="perPersonDisplay">—</b> 원</span>
+            </div>
+            <div class="ea-line2" id="headerAmountKorean">한글 금액 자동 생성</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="header-right">
+      <div class="supplier-header">공급자 정보</div>
+      <table class="info-table" style="margin-top:0;border-top:none;">
+        <tr>
+          <th>상호명</th>
+          <td><input id="companyName" value="(주)여행세상"></td>
+        </tr>
+        <tr>
+          <th>대표자</th>
+          <td><input id="ceoName" value="김국진 (인)"></td>
+        </tr>
+        <tr>
+          <th>사업자</th>
+          <td><input id="bizNo" placeholder="000-00-00000"></td>
+        </tr>
+        <tr>
+          <th>전&nbsp;&nbsp;화</th>
+          <td><input id="phone" placeholder="대표 전화번호"></td>
+        </tr>
+        <tr>
+          <th>담당자</th>
+          <td><input id="manager" placeholder="담당자명"></td>
+        </tr>
+        <tr>
+          <th>이메일</th>
+          <td><input id="email" placeholder="이메일 주소"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 용역 정보 -->
+  <div class="overview-wrap">
+    <table class="overview-table overview-left">
+      <colgroup><col style="width:72px"><col style="width:auto"></colgroup>
+      <tr><th>행 사 명</th><td><input id="groupName" placeholder="행사명 입력"></td></tr>
+      <tr><th>여 행 지</th><td><input id="itinerary" placeholder="목적지 입력"></td></tr>
+      <tr><th>용역기간</th><td><input id="servicePeriod" placeholder="예: 2026.05.10~12 (2박3일)"></td></tr>
+    </table>
+    <table class="overview-table overview-right">
+      <colgroup><col style="width:72px"><col style="width:auto"></colgroup>
+      <tr><th>참가인원</th><td>총 <input id="paxSize" type="number" value="1" oninput="recalcAll()" style="width:44px;text-align:center;border:none;outline:none;font-size:13px;font-family:'Noto Sans KR',sans-serif;background:#fffde7;border-radius:3px;padding:1px 4px;font-weight:600;"> 명</td></tr>
+      <tr><th>학&nbsp;&nbsp;&nbsp;생</th><td><input id="studentCount" type="number" placeholder="0" style="width:50px;text-align:center;"> 명</td></tr>
+      <tr><th>교사/인솔</th><td><input id="teacherCount" type="number" placeholder="0" style="width:40px;text-align:center;"> 명 &nbsp;인솔 <input id="escortCount" type="number" placeholder="0" style="width:36px;text-align:center;"> 명</td></tr>
+    </table>
+  </div>
+
+  <!-- 용역 내역 -->
+  <div class="section-label">
+    <span>용역 내역</span>
+    <span class="section-sub" id="sub_service"></span>
+  </div>
+  <table class="detail">
+    <thead><tr>
+      <th style="width:34px;">No</th>
+      <th style="width:80px;">날짜</th>
+      <th style="width:auto;">항공 스케줄</th>
+      <th style="width:48px;">과세</th>
+      <th style="width:50px;">수량</th>
+      <th style="width:100px;">단가 (원)</th>
+      <th style="width:100px;">금액 (원)</th>
+      <th style="width:40px;"></th>
+    </tr></thead>
+    <tbody id="serviceRows">
+    </tbody>
+  </table>
+  <div class="add-row-bar"><button class="btn-add-row" onclick="addServiceRow()">+ 항목 추가</button></div>
+
+  <!-- 합계 블록 -->
+  <div class="total-block">
+    <div class="t-row">
+      <div class="t-label">면세 소계</div>
+      <div class="t-val"><span id="exemptTotalVal">—</span> 원</div>
+    </div>
+    <div class="t-row">
+      <div class="t-label">과세 소계</div>
+      <div class="t-val"><input id="taxableTotalInput" class="tax-editable-input" value="0" onfocus="onTaxFocus('taxable')" oninput="onTaxManualInput('taxable')" onblur="onTaxBlur('taxable')"> 원</div>
+    </div>
+    <div class="t-row">
+      <div class="t-label">부가가치세 (과세분 10%)</div>
+      <div class="t-val"><input id="vatAmountInput" class="tax-editable-input" value="0" onfocus="onTaxFocus('vat')" oninput="onTaxManualInput('vat')" onblur="onTaxBlur('vat')"> 원</div>
+    </div>
+    <div class="t-row">
+      <div class="t-label">공급가액 합계</div>
+      <div class="t-val"><span id="supplyAmountVal">—</span> 원</div>
+    </div>
+    <div class="t-row">
+      <div class="t-label">합계금액</div>
+      <div class="t-val grand"><span id="grandTotalVal">—</span> 원</div>
+    </div>
+  </div>
+
+  <!-- 확인 문구 -->
+  <div class="confirm-phrase" id="confirmPhrase">상기와 같이 용역을 완료하였음을 확인합니다.</div>
+
+  <!-- 서명란 -->
+  <div class="sign-section">
+    <div class="sign-date">
+      <input id="signDate" placeholder="20   년     월     일">
+    </div>
+    <div class="sign-block">
+      <div class="sign-item">
+        <div class="sign-label">공급자</div>
+        <div class="sign-name"><input id="signSupplier" value="(주)여행세상 대표 김국진 (인)"></div>
+        <div class="sign-box" id="sealBox" onclick="document.getElementById('sealUploadInput').click()" title="클릭하여 직인 이미지 업로드">
+          <span class="sign-box-hint" id="sealHint">직인 업로드 (클릭)</span>
+          <img id="sealImage" style="display:none;">
+        </div>
+        <input type="file" id="sealUploadInput" accept="image/*" class="seal-upload" onchange="handleSealUpload(this)">
+      </div>
+    </div>
+  </div>
+
+  <!-- 특기사항 -->
+  <div class="notice-section">
+    <div class="notice-header">특기사항 / NOTICE</div>
+    <ul class="notice-list" id="noticeList"></ul>
+    <div class="notice-add-bar">
+      <button class="btn-add-row" onclick="addNotice()">+ 특기사항 추가</button>
+    </div>
+  </div>
+
+  <!-- 청구 전용: 입금계좌 -->
+  <div class="bank-section claim-only">
+    <div class="bank-header">입금 계좌 정보</div>
+    <div class="bank-body">
+      <div class="bank-row">
+        <span class="bank-label">은행명</span>
+        <input id="bankName" class="bank-input" placeholder="예: 국민은행">
+      </div>
+      <div class="bank-row">
+        <span class="bank-label">계좌번호</span>
+        <input id="accountNumber" class="bank-input" placeholder="예: 123-456-789012">
+      </div>
+      <div class="bank-row">
+        <span class="bank-label">예금주</span>
+        <input id="accountHolder" class="bank-input" placeholder="예: (주)여행세상">
+      </div>
+    </div>
+  </div>
+
+  <!-- 청구 전용: 첨부서류 -->
+  <div class="attach-section claim-only">
+    <div class="attach-header">첨부 서류</div>
+    <div class="attach-body">
+      <div class="attach-item">
+        <input type="checkbox" id="attachTax" checked>
+        <label for="attachTax">세금계산서</label>
+      </div>
+      <div class="attach-item">
+        <input type="checkbox" id="attachBiz" checked>
+        <label for="attachBiz">사업자등록증</label>
+      </div>
+      <div class="attach-item">
+        <input type="checkbox" id="attachBank" checked>
+        <label for="attachBank">통장사본</label>
+      </div>
+      <div class="attach-item">
+        <input type="checkbox" id="attachDelivery">
+        <label for="attachDelivery">납품확인서</label>
+      </div>
+      <div class="attach-item">
+        <input type="checkbox" id="attachContract">
+        <label for="attachContract">계약서 사본</label>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /doc -->
+</div><!-- /page-wrap -->
+
+<!-- 데이터 가져오기 모달 -->
+<div class="picker-overlay" id="pickerOverlay" onclick="if(event.target===this)closePicker()">
+  <div class="picker-modal">
+    <div class="picker-header">
+      <h3 id="pickerTitle">데이터 선택</h3>
+      <button class="picker-close" onclick="closePicker()">&times;</button>
+    </div>
+    <div class="picker-search">
+      <input type="text" id="pickerSearchInput" placeholder="검색어 입력..." oninput="filterPickerList()">
+    </div>
+    <div class="picker-list" id="pickerList">
+      <div class="picker-empty">불러오는 중...</div>
+    </div>
+    <div class="picker-footer" id="pickerFooter" style="display:none;">
+      <div class="picker-select-info"><span id="pickerSelectCount">0</span>건 선택됨</div>
+      <button class="picker-confirm-btn" onclick="confirmPickerSelection()">선택 항목 가져오기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 인쇄 설정 패널 -->
+<div class="print-settings-overlay" id="printSettingsOverlay" onclick="if(event.target===this)closePrintSettings()">
+  <div class="print-settings">
+    <div class="ps-header">
+      <h3>인쇄 설정</h3>
+      <button class="ps-close" onclick="closePrintSettings()">&times;</button>
+    </div>
+    <div class="ps-body">
+      <div class="ps-section">
+        <div class="ps-section-title">빠른 설정</div>
+        <div class="ps-presets">
+          <button class="ps-preset" onclick="applyPreset('compact')">좁게</button>
+          <button class="ps-preset active" onclick="applyPreset('normal')">보통</button>
+          <button class="ps-preset" onclick="applyPreset('wide')">넓게</button>
+        </div>
+      </div>
+      <div class="ps-section">
+        <div class="ps-section-title">페이지 여백 (mm)</div>
+        <div class="ps-tabs">
+          <button class="ps-tab active" onclick="switchPageTab('first')">첫 페이지</button>
+          <button class="ps-tab" onclick="switchPageTab('rest')">이후 페이지</button>
+        </div>
+        <div class="ps-tab-content" id="tabFirst">
+          <div class="ps-row">
+            <div class="ps-field">
+              <label>상단 <span class="ps-val" id="valTop">12</span></label>
+              <input type="range" id="marginTop" min="5" max="30" value="12" oninput="updatePrintPreview()">
+            </div>
+            <div class="ps-field">
+              <label>하단 <span class="ps-val" id="valBottom">14</span></label>
+              <input type="range" id="marginBottom" min="5" max="30" value="14" oninput="updatePrintPreview()">
+            </div>
+          </div>
+          <div class="ps-row">
+            <div class="ps-field">
+              <label>좌측 <span class="ps-val" id="valLeft">12</span></label>
+              <input type="range" id="marginLeft" min="5" max="25" value="12" oninput="updatePrintPreview()">
+            </div>
+            <div class="ps-field">
+              <label>우측 <span class="ps-val" id="valRight">12</span></label>
+              <input type="range" id="marginRight" min="5" max="25" value="12" oninput="updatePrintPreview()">
+            </div>
+          </div>
+        </div>
+        <div class="ps-tab-content" id="tabRest" style="display:none;">
+          <div class="ps-row">
+            <div class="ps-field">
+              <label>상단 <span class="ps-val" id="valTop2">18</span></label>
+              <input type="range" id="marginTop2" min="5" max="30" value="18" oninput="updatePrintPreview()">
+            </div>
+            <div class="ps-field">
+              <label>하단 <span class="ps-val" id="valBottom2">14</span></label>
+              <input type="range" id="marginBottom2" min="5" max="30" value="14" oninput="updatePrintPreview()">
+            </div>
+          </div>
+          <div class="ps-row">
+            <div class="ps-field">
+              <label>좌측 <span class="ps-val" id="valLeft2">12</span></label>
+              <input type="range" id="marginLeft2" min="5" max="25" value="12" oninput="updatePrintPreview()">
+            </div>
+            <div class="ps-field">
+              <label>우측 <span class="ps-val" id="valRight2">12</span></label>
+              <input type="range" id="marginRight2" min="5" max="25" value="12" oninput="updatePrintPreview()">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ps-section">
+        <div class="ps-section-title">글자 크기</div>
+        <div class="ps-row">
+          <div class="ps-field">
+            <label>본문 <span class="ps-val" id="valFont">12</span>px</label>
+            <input type="range" id="fontSize" min="9" max="15" value="12" oninput="updatePrintPreview()">
+          </div>
+          <div class="ps-field">
+            <label>테이블 <span class="ps-val" id="valTable">11</span>px</label>
+            <input type="range" id="tableFontSize" min="8" max="14" value="11" oninput="updatePrintPreview()">
+          </div>
+        </div>
+      </div>
+      <div class="ps-preview">
+        <div style="display:flex;justify-content:center;gap:16px;">
+          <div style="text-align:center;">
+            <div class="ps-preview-page" id="previewPage1">
+              <div class="ps-preview-content" id="previewContent1"></div>
+              <div style="position:absolute;bottom:-16px;width:100%;text-align:center;font-size:9px;color:#999;">1페이지</div>
+            </div>
+          </div>
+          <div style="text-align:center;">
+            <div class="ps-preview-page" id="previewPage2">
+              <div class="ps-preview-content" id="previewContent2"></div>
+              <div style="position:absolute;bottom:-16px;width:100%;text-align:center;font-size:9px;color:#999;">2페이지~</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:#888;margin-top:22px;">A4 페이지 미리보기</div>
+      </div>
+    </div>
+    <div class="ps-footer">
+      <button class="ps-btn ps-btn-cancel" onclick="closePrintSettings()">취소</button>
+      <button class="ps-btn ps-btn-print" onclick="applyAndPrint()">인쇄하기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── 상태 ──
+let currentDocType = 'delivery';
+let currentDocId = null;
+let sealDataUrl = null;
+let printStyle = null;
+
+// ── 인쇄 설정 ──
+const PRINT_PRESETS = {
+  compact: { top:8,  bottom:8,  left:8,  right:8,  top2:10, bottom2:8,  left2:8,  right2:8,  font:11, table:10 },
+  normal:  { top:12, bottom:14, left:12, right:12, top2:18, bottom2:14, left2:12, right2:12, font:12, table:11 },
+  wide:    { top:18, bottom:18, left:16, right:16, top2:22, bottom2:18, left2:16, right2:16, font:13, table:12 },
+};
+
+// ── 자동 여백 인쇄 ──
+// ── 인쇄 전 B+C 헤더 동기화 ──
+function syncPrintHeader() {
+  const v = id => (document.getElementById(id)?.value || '').trim();
+  // 회사명
+  const company = v('companyName').replace(/^\(주\)/, '').trim();
+  document.getElementById('printCompany').textContent = company || '여행세상';
+  // 사업자/전화
+  const biz = v('bizNo');
+  if (biz) document.getElementById('printBizNo').textContent = '사업자 ' + biz;
+  const phone = v('phone');
+  if (phone) document.getElementById('printPhone2').textContent = phone;
+  // 문서 타입
+  const docType = document.getElementById('docTitle').textContent.replace(/\s/g, '');
+  document.getElementById('printDocType').textContent = docType;
+  // 문서 번호
+  const dt = v('contractDate') || new Date().toISOString().slice(0,10);
+  const prefix = docType.includes('청구') ? 'CLM' : 'DLV';
+  document.getElementById('printDocNo').textContent = prefix + '-' + dt.replace(/-/g,'') + '-001';
+  // 수신
+  document.getElementById('printRecipient').textContent = v('recipient') || '';
+}
+
+function autoFitPrint() {
+  const doc = document.querySelector('.doc');
+  const MM = 3.7795;
+
+  const tiers = [
+    { top:18, bottom:16, left:14, right:14, top2:18, bottom2:16, left2:14, right2:14 },
+    { top:14, bottom:12, left:12, right:12, top2:14, bottom2:12, left2:12, right2:12 },
+    { top:10, bottom:10, left:10, right:10, top2:10, bottom2:10, left2:10, right2:10 },
+    { top:8,  bottom:8,  left:8,  right:8,  top2:8,  bottom2:8,  left2:8,  right2:8  },
+  ];
+
+  const saved = { w: doc.style.width, mw: doc.style.maxWidth, pos: doc.style.position };
+  let chosen = tiers[tiers.length - 1];
+
+  for (const t of tiers) {
+    const printW = (210 - t.left - t.right) * MM;
+    const pageH  = (297 - t.top - t.bottom) * MM;
+
+    doc.style.width = printW + 'px';
+    doc.style.maxWidth = printW + 'px';
+    doc.style.position = 'absolute';
+
+    const contentH = doc.scrollHeight;
+    if (contentH <= pageH) { chosen = t; break; }
+  }
+
+  doc.style.width = saved.w;
+  doc.style.maxWidth = saved.mw;
+  doc.style.position = saved.pos;
+
+  if (printStyle) printStyle.remove();
+  printStyle = document.createElement('style');
+  printStyle.id = 'dynamicPrintStyle';
+  printStyle.textContent = `
+    @media print {
+      @page { margin: ${chosen.top2}mm ${chosen.right2}mm ${chosen.bottom2}mm ${chosen.left2}mm !important; }
+      @page :first { margin: ${chosen.top}mm ${chosen.right}mm ${chosen.bottom}mm ${chosen.left}mm !important; }
+    }
+  `;
+  document.head.appendChild(printStyle);
+  setTimeout(() => window.print(), 200);
+}
+
+function openPrintSettings() {
+  document.getElementById('printSettingsOverlay').classList.add('show');
+  updatePrintPreview();
+}
+function closePrintSettings() {
+  document.getElementById('printSettingsOverlay').classList.remove('show');
+}
+
+function switchPageTab(tab) {
+  document.querySelectorAll('.ps-tab').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.ps-tab[onclick*="${tab}"]`).classList.add('active');
+  document.getElementById('tabFirst').style.display = tab === 'first' ? 'block' : 'none';
+  document.getElementById('tabRest').style.display = tab === 'rest' ? 'block' : 'none';
+}
+
+function applyPreset(name) {
+  const p = PRINT_PRESETS[name];
+  document.getElementById('marginTop').value = p.top;
+  document.getElementById('marginBottom').value = p.bottom;
+  document.getElementById('marginLeft').value = p.left;
+  document.getElementById('marginRight').value = p.right;
+  document.getElementById('marginTop2').value = p.top2;
+  document.getElementById('marginBottom2').value = p.bottom2;
+  document.getElementById('marginLeft2').value = p.left2;
+  document.getElementById('marginRight2').value = p.right2;
+  document.getElementById('fontSize').value = p.font;
+  document.getElementById('tableFontSize').value = p.table;
+  document.querySelectorAll('.ps-preset').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.ps-preset[onclick*="${name}"]`).classList.add('active');
+  updatePrintPreview();
+}
+
+function updatePrintPreview() {
+  const v = id => document.getElementById(id).value;
+  const top = v('marginTop'), bottom = v('marginBottom'), left = v('marginLeft'), right = v('marginRight');
+  const top2 = v('marginTop2'), bottom2 = v('marginBottom2'), left2 = v('marginLeft2'), right2 = v('marginRight2');
+  const font = v('fontSize'), table = v('tableFontSize');
+
+  document.getElementById('valTop').textContent = top;
+  document.getElementById('valBottom').textContent = bottom;
+  document.getElementById('valLeft').textContent = left;
+  document.getElementById('valRight').textContent = right;
+  document.getElementById('valTop2').textContent = top2;
+  document.getElementById('valBottom2').textContent = bottom2;
+  document.getElementById('valLeft2').textContent = left2;
+  document.getElementById('valRight2').textContent = right2;
+  document.getElementById('valFont').textContent = font;
+  document.getElementById('valTable').textContent = table;
+
+  const el1 = document.getElementById('previewContent1');
+  el1.style.top = (top / 297 * 100).toFixed(1) + '%';
+  el1.style.bottom = (bottom / 297 * 100).toFixed(1) + '%';
+  el1.style.left = (left / 210 * 100).toFixed(1) + '%';
+  el1.style.right = (right / 210 * 100).toFixed(1) + '%';
+
+  const el2 = document.getElementById('previewContent2');
+  el2.style.top = (top2 / 297 * 100).toFixed(1) + '%';
+  el2.style.bottom = (bottom2 / 297 * 100).toFixed(1) + '%';
+  el2.style.left = (left2 / 210 * 100).toFixed(1) + '%';
+  el2.style.right = (right2 / 210 * 100).toFixed(1) + '%';
+
+  document.querySelectorAll('.ps-preset').forEach(btn => btn.classList.remove('active'));
+  for (const [name, p] of Object.entries(PRINT_PRESETS)) {
+    if (p.top==top && p.bottom==bottom && p.left==left && p.right==right &&
+        p.top2==top2 && p.bottom2==bottom2 && p.left2==left2 && p.right2==right2 &&
+        p.font==font && p.table==table) {
+      document.querySelector(`.ps-preset[onclick*="${name}"]`).classList.add('active');
+    }
+  }
+}
+
+function applyAndPrint() {
+  const v = id => document.getElementById(id).value;
+  const top = v('marginTop'), bottom = v('marginBottom'), left = v('marginLeft'), right = v('marginRight');
+  const top2 = v('marginTop2'), bottom2 = v('marginBottom2'), left2 = v('marginLeft2'), right2 = v('marginRight2');
+  const font = v('fontSize'), table = v('tableFontSize');
+
+  if (printStyle) printStyle.remove();
+  printStyle = document.createElement('style');
+  printStyle.id = 'dynamicPrintStyle';
+  printStyle.textContent = `
+    @media print {
+      @page { margin: ${top2}mm ${right2}mm ${bottom2}mm ${left2}mm !important; }
+      @page :first { margin: ${top}mm ${right}mm ${bottom}mm ${left}mm !important; }
+      .doc { font-size: ${font}px !important; }
+      table.detail { font-size: ${table}px !important; }
+      table.detail thead th { font-size: ${Math.max(table - 1, 8)}px !important; }
+      table.detail tbody td input { font-size: ${table}px !important; }
+      .info-table th, .overview-table th { font-size: ${Math.max(font - 1, 9)}px !important; }
+      .info-table td input, .overview-table td input { font-size: ${font}px !important; }
+      .section-label { font-size: ${Math.max(table, 10)}px !important; }
+      .notice-item, .notice-item input { font-size: ${Math.max(table, 10)}px !important; }
+      .t-label { font-size: ${Math.max(table, 10)}px !important; }
+    }
+  `;
+  document.head.appendChild(printStyle);
+  closePrintSettings();
+  setTimeout(() => window.print(), 200);
+}
+
+// ── 데이터 가져오기 ──
+function toggleImportMenu() {
+  document.getElementById('importMenu').classList.toggle('show');
+}
+function closeImportMenu() {
+  document.getElementById('importMenu').classList.remove('show');
+}
+
+let pickerData = [];
+let pickerMode = '';
+
+function closePicker() {
+  document.getElementById('pickerOverlay').classList.remove('show');
+  pickerData = [];
+}
+
+function filterPickerList() {
+  const q = document.getElementById('pickerSearchInput').value.toLowerCase();
+  document.querySelectorAll('#pickerList .picker-item, #pickerList .picker-item-check').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ── 예약 정보 가져오기 (복수 선택) ──
+let pickerSelected = new Set();
+
+async function openBookingPicker() {
+  closeImportMenu();
+  pickerMode = 'booking';
+  pickerSelected = new Set();
+  document.getElementById('pickerTitle').textContent = '예약 정보 선택 (복수 선택 가능)';
+  document.getElementById('pickerSearchInput').value = '';
+  document.getElementById('pickerList').innerHTML = '<div class="picker-empty">불러오는 중...</div>';
+  document.getElementById('pickerFooter').style.display = 'flex';
+  updatePickerCount();
+  document.getElementById('pickerOverlay').classList.add('show');
+
+  try {
+    const res = await fetch('/api/bookings?limit=100&sort=departure_date&order=desc', { credentials: 'include' });
+    const json = await res.json();
+    const bookings = json.success ? (json.data?.bookings || json.data || []) : [];
+    if (!bookings.length) {
+      document.getElementById('pickerList').innerHTML = '<div class="picker-empty">예약 데이터가 없습니다.</div>';
+      return;
+    }
+    pickerData = bookings;
+    renderBookingList();
+  } catch (err) {
+    document.getElementById('pickerList').innerHTML = '<div class="picker-empty">서버 연결 실패</div>';
+  }
+}
+
+function renderBookingList() {
+  // group_id 우선, agency 폴백으로 그룹핑
+  const groups = {};
+  pickerData.forEach((b, i) => {
+    const key = b.group_id || ('agency:' + (b.agency || b.name_kr || '(미분류)'));
+    const label = b.agency || b.name_kr || '(미분류)';
+    if (!groups[key]) groups[key] = { label, items: [] };
+    groups[key].items.push({ ...b, _idx: i });
+  });
+
+  let html = '';
+  for (const [key, group] of Object.entries(groups)) {
+    const items = group.items;
+    const totalPax = items.reduce((s, b) => s + (b.pax_count || 1), 0);
+    const allIdx = items.map(b => b._idx);
+    const isLinked = key && !key.startsWith('agency:');
+    const linkBadge = isLinked ? '<span style="background:#1a7a4c;color:#fff;font-size:9px;padding:1px 6px;border-radius:3px;margin-left:6px;">연결됨</span>' : '';
+    html += `<div style="background:#f0f3f8;padding:8px 16px;font-size:11px;font-weight:700;color:#1a3a5c;border-bottom:1px solid #ddd;display:flex;align-items:center;justify-content:space-between;">
+      <span>${group.label} (${items.length}건, ${totalPax}명)${linkBadge}</span>
+      <button style="font-size:10px;padding:2px 8px;border:1px solid #1a3a5c;border-radius:3px;background:#fff;color:#1a3a5c;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:700;" onclick="toggleGroupSelect([${allIdx.join(',')}])">전체선택</button>
+    </div>`;
+    // 개별 항목
+    items.forEach(b => {
+      const checked = pickerSelected.has(b._idx) ? 'checked' : '';
+      html += `<div class="picker-item-check ${checked ? 'selected' : ''}" onclick="toggleBookingCheck(${b._idx}, this)">
+        <input type="checkbox" ${checked} onclick="event.stopPropagation();toggleBookingCheck(${b._idx}, this.closest('.picker-item-check'))">
+        <div class="picker-item-body">
+          <div class="picker-item-title">${b.name_kr || b.name_en || '(이름없음)'} · PNR: ${b.pnr || '-'}</div>
+          <div class="picker-item-sub">${b.airline || ''} ${b.flight_number || ''} · ${b.route_from || ''}→${b.route_to || ''} · ${b.departure_date || ''} · ${b.pax_count || 1}명${b.fare ? ' · ' + fmt(b.fare) + '원' : ''}</div>
+        </div>
+      </div>`;
+    });
+  }
+  document.getElementById('pickerList').innerHTML = html;
+}
+
+function toggleBookingCheck(idx, el) {
+  if (pickerSelected.has(idx)) {
+    pickerSelected.delete(idx);
+    el.classList.remove('selected');
+    el.querySelector('input[type=checkbox]').checked = false;
+  } else {
+    pickerSelected.add(idx);
+    el.classList.add('selected');
+    el.querySelector('input[type=checkbox]').checked = true;
+  }
+  updatePickerCount();
+}
+
+function toggleGroupSelect(idxArr) {
+  const allSelected = idxArr.every(i => pickerSelected.has(i));
+  idxArr.forEach(i => {
+    if (allSelected) pickerSelected.delete(i);
+    else pickerSelected.add(i);
+  });
+  renderBookingList();
+  updatePickerCount();
+}
+
+function updatePickerCount() {
+  document.getElementById('pickerSelectCount').textContent = pickerSelected.size;
+}
+
+function confirmPickerSelection() {
+  if (pickerMode === 'booking') {
+    mergeSelectedBookings();
+  }
+}
+
+function mergeSelectedBookings() {
+  if (pickerSelected.size === 0) { toast('선택된 예약이 없습니다.'); return; }
+
+  const selected = [...pickerSelected].map(i => pickerData[i]).filter(Boolean);
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+
+  // 공통 정보 (첫 번째 예약 기준)
+  const first = selected[0];
+  const groupName = first.agency || first.name_kr || '';
+  set('groupName', groupName);
+  set('recipient', groupName ? groupName + ' 귀중' : '');
+
+  // 총 인원 합산
+  const totalPax = selected.reduce((s, b) => s + (b.pax_count || 1), 0);
+  document.getElementById('paxSize').value = totalPax;
+
+  // 날짜: 가장 빠른 출발 ~ 가장 늦은 귀국
+  const depDates = selected.map(b => b.departure_date).filter(Boolean).sort();
+  const retDates = selected.map(b => b.return_date || b.departure_date).filter(Boolean).sort();
+  if (depDates.length) {
+    const earliest = depDates[0];
+    const latest = retDates[retDates.length - 1];
+    set('servicePeriod', earliest + (latest !== earliest ? ' ~ ' + latest : ''));
+    set('completionDate', latest);
+  }
+
+  // 노선 (고유값)
+  const routes = [...new Set(selected.map(b => (b.route_from || '') + '→' + (b.route_to || '')).filter(r => r !== '→'))];
+  if (routes.length) set('itinerary', routes.join(', '));
+
+  // PNR 목록
+  const pnrs = selected.map(b => b.pnr).filter(Boolean);
+
+  // 공항코드 한글 변환
+  const AP = {ICN:'인천',GMP:'김포',CJU:'제주',PUS:'부산',LHR:'런던',CDG:'파리',FRA:'프랑크푸르트',NRT:'나리타',KIX:'간사이',HND:'하네다',PVG:'상하이',PEK:'베이징',BKK:'방콕',SIN:'싱가포르',HKG:'홍콩',CAN:'광저우',DAD:'다낭',SGN:'호치민',HAN:'하노이',CXR:'나트랑',MNL:'마닐라',CEB:'세부',DPS:'발리',LAX:'LA',JFK:'뉴욕',SFO:'샌프란시스코',FUK:'후쿠오카',OKA:'오키나와',CTS:'삿포로',NGO:'나고야',BCN:'바르셀로나',FCO:'로마',IST:'이스탄불',SYD:'시드니',DXB:'두바이',TPE:'타이페이'};
+  const apName = (code) => AP[code] ? `${code}(${AP[code]})` : code;
+
+  // 세그먼트 추출 (첫 번째 예약 기준 — 같은 단체는 동일 스케줄)
+  const refBooking = selected[0];
+  const segs = refBooking.segments || [];
+  const isRoundTrip = segs.length >= 2;
+
+  // 용역 내역 생성
+  const tbody = document.getElementById('serviceRows');
+  tbody.innerHTML = '';
+
+  const totalFare = selected.reduce((s, b) => s + (b.fare || 0), 0);
+  const perPerson = totalPax > 0 ? Math.round(totalFare / totalPax) : 0;
+
+  if (isRoundTrip) {
+    // 왕복: 1행에 출발/귀국 2줄
+    const outSeg = segs[0];
+    const retSeg = segs[segs.length - 1];
+    const outFn = outSeg.flight_number || '';
+    const retFn = retSeg.flight_number || '';
+
+    // 귀국편 도착일 계산 (다음날 도착 등)
+    let retArrival = '';
+    if (retSeg.arrival_time && retSeg.departure_date) {
+      // 도착 시간이 출발 시간보다 작으면 +1일
+      const depH = parseInt((retSeg.departure_time || '00:00').split(':')[0]) || 0;
+      const arrH = parseInt((retSeg.arrival_time || '00:00').split(':')[0]) || 0;
+      if (arrH < depH && retSeg.departure_date) {
+        const d = new Date(retSeg.departure_date);
+        d.setDate(d.getDate() + 1);
+        retArrival = d.toISOString().slice(0,10) + ' 도착';
+      }
+    }
+
+    const scheduleLines = [
+      { date: outSeg.departure_date || '', route: `${outFn} ${apName(outSeg.route_from)} → ${apName(outSeg.route_to)}` },
+      { date: retSeg.departure_date || '', route: `${retFn} ${apName(retSeg.route_from)} → ${apName(retSeg.route_to)}`, note: retArrival },
+    ];
+    addServiceRowWithSchedule(scheduleLines, totalPax, perPerson, 'exempt');
+    // 발권수수료 행 자동 추가 (과세)
+    addServiceRowWithSchedule([{ date: '', route: '발권수수료' }], totalPax, 0, 'taxable');
+
+    // 여행지/기간 자동 입력
+    set('itinerary', apName(outSeg.route_from) + ' → ' + apName(outSeg.route_to));
+    set('servicePeriod', (outSeg.departure_date || '') + ' ~ ' + (retSeg.departure_date || ''));
+    // 완료일자 = 한국 도착일 (귀국편 도착시간이 출발시간보다 이르면 +1일)
+    let completionDay = retSeg.departure_date || '';
+    if (retArrival && retSeg.departure_date) {
+      const d = new Date(retSeg.departure_date);
+      const depH = parseInt((retSeg.departure_time || '00:00').split(':')[0]) || 0;
+      const arrH = parseInt((retSeg.arrival_time || '00:00').split(':')[0]) || 0;
+      if (arrH < depH) { d.setDate(d.getDate() + 1); }
+      completionDay = d.toISOString().slice(0,10);
+    }
+    set('completionDate', completionDay);
+  } else if (segs.length === 1) {
+    const seg = segs[0];
+    const fn = seg.flight_number || '';
+    addServiceRowWithSchedule(
+      [{ date: seg.departure_date || '', route: `${fn} ${apName(seg.route_from)} → ${apName(seg.route_to)}` }],
+      totalPax, perPerson, 'exempt'
+    );
+    addServiceRowWithSchedule([{ date: '', route: '발권수수료' }], totalPax, 0, 'taxable');
+    set('itinerary', apName(seg.route_from) + ' → ' + apName(seg.route_to));
+  } else {
+    addServiceRowWithData('항공권', totalPax, perPerson);
+  }
+
+  // PNR 목록을 비고/계약명에 참조
+  const pnrList = pnrs.join(', ');
+  const contractEl = document.getElementById('contractName');
+  if (contractEl && !contractEl.value) {
+    contractEl.value = (groupName || '') + ' 항공 용역';
+  }
+
+  closePicker();
+  recalcAll();
+  toast(`${selected.length}건의 예약 (총 ${totalPax}명)을 가져왔습니다. PNR: ${pnrList}`);
+}
+
+// ── 항공 스케줄 가져오기 ──
+async function openSchedulePicker() {
+  closeImportMenu();
+  pickerMode = 'schedule';
+  document.getElementById('pickerFooter').style.display = 'none';
+  document.getElementById('pickerTitle').textContent = '항공 스케줄 선택';
+  document.getElementById('pickerSearchInput').value = '';
+  document.getElementById('pickerList').innerHTML = '<div class="picker-empty">불러오는 중...</div>';
+  document.getElementById('pickerOverlay').classList.add('show');
+
+  try {
+    const res = await fetch('/api/flight-schedules?limit=50', { credentials: 'include' });
+    const json = await res.json();
+    const schedules = json.success ? (json.data?.schedules || json.data || []) : [];
+    if (!schedules.length) {
+      document.getElementById('pickerList').innerHTML = '<div class="picker-empty">항공 스케줄이 없습니다.</div>';
+      return;
+    }
+    pickerData = schedules;
+    document.getElementById('pickerList').innerHTML = schedules.map((s, i) => `
+      <div class="picker-item" onclick="selectSchedule(${i})">
+        <div class="picker-item-title">${s.group_name || '(단체명 없음)'} · ${s.airline || ''} ${s.flight_number || ''}</div>
+        <div class="picker-item-sub">${s.departure_airport || ''}→${s.arrival_airport || ''} · ${s.departure_date || ''} ${s.departure_time || ''} · ${s.passengers || 0}명</div>
+      </div>
+    `).join('');
+  } catch (err) {
+    document.getElementById('pickerList').innerHTML = '<div class="picker-empty">서버 연결 실패</div>';
+  }
+}
+
+function selectSchedule(idx) {
+  const s = pickerData[idx];
+  if (!s) return;
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  set('groupName', s.group_name || '');
+  if (s.passengers) document.getElementById('paxSize').value = s.passengers;
+  if (s.departure_airport && s.arrival_airport) set('itinerary', s.departure_airport + ' → ' + s.arrival_airport);
+  if (s.departure_date) set('servicePeriod', s.departure_date + (s.arrival_date && s.arrival_date !== s.departure_date ? ' ~ ' + s.arrival_date : ''));
+  if (s.arrival_date || s.departure_date) set('completionDate', s.arrival_date || s.departure_date);
+
+  // 용역 내역에 항공편 추가
+  const route = (s.departure_airport || '') + '→' + (s.arrival_airport || '');
+  const fn = (s.flight_number || '').startsWith(s.airline || '@@') ? s.flight_number : ((s.airline || '') + s.flight_number).trim();
+  const desc = `항공권 ${fn || ''} ${route} ${s.departure_date || ''}`;
+  addServiceRowWithData(desc, s.passengers || 1, 0);
+
+  closePicker();
+  recalcAll();
+  toast('항공 스케줄을 가져왔습니다.');
+}
+
+// ── 견적서 가져오기 ──
+async function openEstimatePicker() {
+  closeImportMenu();
+  pickerMode = 'estimate';
+  document.getElementById('pickerFooter').style.display = 'none';
+  document.getElementById('pickerTitle').textContent = '견적서 선택';
+  document.getElementById('pickerSearchInput').value = '';
+  document.getElementById('pickerList').innerHTML = '<div class="picker-empty">불러오는 중...</div>';
+  document.getElementById('pickerOverlay').classList.add('show');
+
+  try {
+    const res = await fetch('/api/estimates?limit=30', { credentials: 'include' });
+    const json = await res.json();
+    const estimates = json.success ? (json.data?.estimates || []) : [];
+    if (!estimates.length) {
+      document.getElementById('pickerList').innerHTML = '<div class="picker-empty">견적서가 없습니다.</div>';
+      return;
+    }
+    pickerData = estimates;
+    document.getElementById('pickerList').innerHTML = estimates.map((e, i) => {
+      const typeMap = { estimate:'세부견적', settlement:'정산서', domestic:'국내견적', domestic_settlement:'국내정산' };
+      return `
+        <div class="picker-item" onclick="selectEstimate(${i})">
+          <div class="picker-item-title">${e.group_name || e.recipient || '(제목없음)'} · ${e.doc_number || ''}</div>
+          <div class="picker-item-sub">${typeMap[e.doc_type]||e.doc_type} · ${e.travel_date || e.quote_date || ''} · ${e.pax_size || 0}명 · ${fmt(e.grand_total || 0)}원</div>
+        </div>`;
+    }).join('');
+  } catch (err) {
+    document.getElementById('pickerList').innerHTML = '<div class="picker-empty">서버 연결 실패</div>';
+  }
+}
+
+function selectEstimate(idx) {
+  const e = pickerData[idx];
+  if (!e) return;
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  set('recipient', e.recipient);
+  set('groupName', e.group_name);
+  set('itinerary', e.itinerary);
+  set('servicePeriod', e.travel_date);
+  set('contractName', (e.group_name || '') + ' ' + (e.itinerary || '') + ' 용역');
+  if (e.pax_size) document.getElementById('paxSize').value = e.pax_size;
+  set('companyName', e.company_name);
+  set('ceoName', e.ceo_name);
+  set('bizNo', e.biz_no);
+  set('phone', e.phone);
+  set('manager', e.manager);
+  set('email', e.email);
+
+  // 견적서 비용 항목을 용역 내역으로 변환
+  const sections = e.sections_json;
+  if (sections && typeof sections === 'object') {
+    const tbody = document.getElementById('serviceRows');
+    tbody.innerHTML = '';
+    let totalFromSections = 0;
+    for (const [key, rows] of Object.entries(sections)) {
+      if (key.startsWith('_') || !Array.isArray(rows)) continue;
+      const sectionName = key.replace('Rows','').replace('car','차량').replace('hotel','숙박').replace('meal','식사').replace('entry','입장/체험').replace('guide','가이드').replace('etc','기타').replace('flight','항공').replace('Kr','(국내)').replace('Fx','(외화)');
+      let sectionTotal = 0;
+      rows.forEach(row => {
+        const amt = parseInt(String(row.amount).replace(/[^0-9]/g,'')) || 0;
+        sectionTotal += amt;
+      });
+      if (sectionTotal > 0) {
+        addServiceRowWithData(sectionName + '비', 1, sectionTotal);
+        totalFromSections += sectionTotal;
+      }
+    }
+    if (e.commission) {
+      addServiceRowWithData('알선수수료 (VAT포함)', 1, e.commission);
+    }
+  }
+
+  closePicker();
+  recalcAll();
+  toast('견적서 데이터를 가져왔습니다.');
+}
+
+// 데이터 포함 행 추가 헬퍼
+/** 스케줄 행 추가 — scheduleLines: [{date, route, note}], qty, price, taxType, vatIncl */
+function addServiceRowWithSchedule(scheduleLines, qty, price, taxType, vatIncl) {
+  const tbody = document.getElementById('serviceRows');
+  const tr = document.createElement('tr');
+  const idx = tbody.querySelectorAll('tr').length + 1;
+  const tax = taxType || 'exempt';
+  const inclChecked = vatIncl ? 'checked' : '';
+  const basePrice = vatIncl ? Math.round(price / 1.1) : price;
+  const dateHtml = scheduleLines.map(l => `<div><input type="date" value="${l.date || ''}" class="sched-input"></div>`).join('');
+  const routeHtml = scheduleLines.map(l => `<div><input value="${(l.route || '').replace(/"/g,'&quot;')}" class="sched-input route-input" placeholder="항공 스케줄 입력">${l.note ? ' <span style="color:#888;font-size:10px;">' + l.note + '</span>' : ''}</div>`).join('');
+  tr.innerHTML = `
+    <td style="text-align:center;font-size:11px;color:#888;">${idx}</td>
+    <td class="sched-date">${dateHtml}</td>
+    <td class="sched-route">${routeHtml}</td>
+    <td style="text-align:center;"><select class="tax-select" onchange="onTaxChange(this);recalcAll()"><option value="exempt" ${tax==='exempt'?'selected':''}>면세</option><option value="taxable" ${tax==='taxable'?'selected':''}>과세</option></select><label class="vat-incl-wrap" style="${tax==='taxable'?'':'display:none'}"><input type="checkbox" class="vat-incl" ${inclChecked} onchange="recalcAll()"><span class="vat-incl-label">포함</span></label></td>
+    <td><input class="r" type="text" value="${fmt(qty)}" onfocus="stripFmt(this)" onblur="calcServiceRow(this,true)" oninput="calcServiceRow(this)"></td>
+    <td><input class="r" type="text" value="${fmt(price)}" onfocus="stripFmt(this)" onblur="calcServiceRow(this,true)" oninput="calcServiceRow(this)"></td>
+    <td class="c-amt">${fmt(qty * basePrice)}</td>
+    <td class="c-del"><button class="btn-del" onclick="delRow(this)">삭제</button></td>`;
+  tbody.appendChild(tr);
+}
+
+/** 단순 텍스트 행 추가 (견적서에서 가져오기 등) */
+function addServiceRowWithData(desc, qty, price) {
+  addServiceRowWithSchedule([{ date: '', route: desc }], qty, price);
+}
+
+// 외부 클릭 시 import 메뉴 닫기
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.import-dropdown')) closeImportMenu();
+});
+
+// ── 유틸 ──
+const fmt = n => Math.round(n).toLocaleString('ko-KR');
+const parseNum = v => parseFloat(String(v).replace(/,/g,'')) || 0;
+
+function fmtInput(input) {
+  const raw = String(input.value).replace(/,/g,'');
+  const num = parseFloat(raw);
+  if (!isNaN(num) && raw !== '') input.value = Math.round(num).toLocaleString('ko-KR');
+}
+
+function stripFmt(input) {
+  input.value = String(input.value).replace(/,/g,'');
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ── 숫자 → 한글 금액 ──
+function numberToKorean(n) {
+  if (!n || n === 0) return '—';
+  const units = ['', '만', '억', '조'];
+  const digits = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+  const pos = ['', '십', '백', '천'];
+
+  function convertGroup(num) {
+    if (num === 0) return '';
+    let result = '';
+    const s = String(num).padStart(4, '0');
+    for (let i = 0; i < 4; i++) {
+      const d = parseInt(s[i]);
+      if (d === 0) continue;
+      if (d === 1 && pos[3 - i] !== '') {
+        result += pos[3 - i];
+      } else {
+        result += digits[d] + pos[3 - i];
+      }
+    }
+    return result;
+  }
+
+  const num = Math.round(n);
+  if (num <= 0) return '영원정';
+
+  const groups = [];
+  let tmp = num;
+  while (tmp > 0) {
+    groups.push(tmp % 10000);
+    tmp = Math.floor(tmp / 10000);
+  }
+
+  let result = '';
+  for (let i = groups.length - 1; i >= 0; i--) {
+    if (groups[i] === 0) continue;
+    result += convertGroup(groups[i]) + units[i];
+  }
+
+  return result + '원정';
+}
+
+// ── 과세/면세 전환 시 포함 체크박스 표시 ──
+function onTaxChange(sel) {
+  const wrap = sel.parentElement.querySelector('.vat-incl-wrap');
+  if (wrap) wrap.style.display = sel.value === 'taxable' ? '' : 'none';
+  // 면세로 바꾸면 포함 체크 해제
+  if (sel.value === 'exempt') {
+    const chk = sel.parentElement.querySelector('.vat-incl');
+    if (chk) chk.checked = false;
+  }
+}
+
+// ── 행 계산 ──
+function calcServiceRow(input, doFmt) {
+  if (doFmt) fmtInput(input);
+  const tr = input.closest('tr');
+  const nums = [...tr.querySelectorAll('input.r')];
+  if (nums.length < 2) return;
+  const qty = parseNum(nums[0].value);
+  const unitPrice = parseNum(nums[1].value);
+
+  // 부가세포함 체크 시 단가에서 VAT 분리
+  const vatIncl = tr.querySelector('.vat-incl');
+  const isVatIncl = vatIncl && vatIncl.checked;
+  const basePrice = isVatIncl ? Math.round(unitPrice / 1.1) : unitPrice;
+  const amt = qty * basePrice;
+
+  tr.querySelector('td.c-amt').textContent = fmt(amt);
+  recalcAll();
+}
+
+function sumServiceRows() {
+  let exempt = 0, taxable = 0;
+  document.querySelectorAll('#serviceRows tr').forEach(tr => {
+    const amt = parseInt((tr.querySelector('td.c-amt')?.textContent || '0').replace(/[^0-9]/g,'')) || 0;
+    const taxSel = tr.querySelector('.tax-select');
+    if (taxSel && taxSel.value === 'taxable') {
+      taxable += amt;
+    } else {
+      exempt += amt;
+    }
+  });
+  return { exempt, taxable, total: exempt + taxable };
+}
+
+function recalcAll() {
+  // 각 행 재계산 (부가세포함 반영)
+  document.querySelectorAll('#serviceRows tr').forEach(tr => {
+    const nums = [...tr.querySelectorAll('input.r')];
+    if (nums.length >= 2) {
+      const qty = parseNum(nums[0].value);
+      const unitPrice = parseNum(nums[1].value);
+      const vatIncl = tr.querySelector('.vat-incl');
+      const isVatIncl = vatIncl && vatIncl.checked;
+      const basePrice = isVatIncl ? Math.round(unitPrice / 1.1) : unitPrice;
+      const amtCell = tr.querySelector('td.c-amt');
+      if (amtCell) amtCell.textContent = fmt(qty * basePrice);
+    }
+  });
+
+  const { exempt, taxable, total } = sumServiceRows();
+
+  // 수동 입력값 우선 적용
+  const finalTaxable = manualTaxableValue != null ? manualTaxableValue : taxable;
+  const finalVat = manualVatValue != null ? manualVatValue : Math.round(finalTaxable * 0.1);
+  const grand = exempt + finalTaxable + finalVat;
+
+  const pax = parseInt(document.getElementById('paxSize').value) || 1;
+  const per = Math.floor(grand / pax / 100) * 100;
+  const korean = numberToKorean(grand);
+
+  document.getElementById('exemptTotalVal').textContent = fmt(exempt);
+  // 과세 소계 input 업데이트 (수동이 아니고 포커스가 아닐 때만)
+  const tiEl = document.getElementById('taxableTotalInput');
+  const viEl = document.getElementById('vatAmountInput');
+  if (manualTaxableValue == null && _taxFocused !== 'taxable') {
+    tiEl.value = fmt(finalTaxable);
+    tiEl.classList.remove('manual');
+  }
+  if (manualVatValue == null && _taxFocused !== 'vat') {
+    viEl.value = finalTaxable > 0 ? fmt(finalVat) : '—';
+    viEl.classList.remove('manual');
+  }
+  document.getElementById('supplyAmountVal').textContent = fmt(exempt + finalTaxable);
+  document.getElementById('grandTotalVal').textContent = fmt(grand);
+  // 한글금액/1인당은 헤더에서만 표시
+
+  // 헤더 요약
+  document.getElementById('headerGrandTotal').textContent = fmt(grand);
+  document.getElementById('perPersonDisplay').textContent = fmt(per);
+  document.getElementById('headerAmountKorean').textContent = korean !== '—' ? '금 ' + korean : '한글 금액 자동 생성';
+
+  // 섹션 소계
+  const subEl = document.getElementById('sub_service');
+  if (subEl) subEl.textContent = '소계 ' + fmt(total) + ' 원';
+
+  // 행 번호 갱신
+  document.querySelectorAll('#serviceRows tr').forEach((tr, i) => {
+    const noCell = tr.querySelector('td:first-child');
+    if (noCell && !noCell.querySelector('input')) noCell.textContent = i + 1;
+  });
+}
+
+// ── 과세/부가세 수동 수정 ──
+let manualTaxableValue = null;  // null = 자동, 숫자 = 수동
+let manualVatValue = null;
+let _taxFocused = null;  // 현재 포커스된 필드
+
+function onTaxFocus(type) {
+  _taxFocused = type;
+  const input = document.getElementById(type === 'taxable' ? 'taxableTotalInput' : 'vatAmountInput');
+  // 포커스 시 콤마 제거하여 숫자만 표시
+  input.value = String(parseNum(input.value));
+}
+
+function onTaxManualInput(type) {
+  const input = document.getElementById(type === 'taxable' ? 'taxableTotalInput' : 'vatAmountInput');
+  const val = parseNum(input.value);
+  if (type === 'taxable') {
+    manualTaxableValue = val;
+  } else {
+    manualVatValue = val;
+  }
+  input.classList.add('manual');
+  recalcAll();
+}
+
+function onTaxBlur(type) {
+  _taxFocused = null;
+  const input = document.getElementById(type === 'taxable' ? 'taxableTotalInput' : 'vatAmountInput');
+  // blur 시 포맷팅
+  input.value = fmt(parseNum(input.value));
+}
+
+// ── 행 추가/삭제 ──
+function delRow(btn) {
+  btn.closest('tr, li').remove();
+  recalcAll();
+  toast('항목이 삭제되었습니다.');
+}
+
+function addServiceRow() {
+  addServiceRowWithSchedule([{ date: '', route: '' }], 1, 0);
+  toast('항목이 추가되었습니다.');
+}
+
+function addNotice() {
+  const ul = document.getElementById('noticeList');
+  const li = document.createElement('li');
+  li.className = 'notice-item';
+  li.innerHTML = `<input value="내용을 입력하세요."><button class="btn-del" onclick="delRow(this)">삭제</button>`;
+  ul.appendChild(li);
+  li.querySelector('input').focus();
+  toast('특기사항이 추가되었습니다.');
+}
+
+// ── 문서 타입 전환 ──
+function setDocType(type) {
+  currentDocType = type;
+  document.querySelectorAll('.doc-type-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.type === type);
+  });
+  const titleEl = document.getElementById('docTitle');
+  const phraseEl = document.getElementById('confirmPhrase');
+  const docEl = document.getElementById('mainDoc');
+
+  if (type === 'claim') {
+    titleEl.innerHTML = '대&nbsp;&nbsp;금&nbsp;&nbsp;청&nbsp;&nbsp;구&nbsp;&nbsp;서';
+    phraseEl.textContent = '상기 금액을 청구합니다.';
+    docEl.classList.add('show-claim');
+  } else {
+    titleEl.innerHTML = '납&nbsp;&nbsp;품&nbsp;&nbsp;확&nbsp;&nbsp;인&nbsp;&nbsp;서';
+    phraseEl.textContent = '상기와 같이 용역을 완료하였음을 확인합니다.';
+    docEl.classList.remove('show-claim');
+  }
+}
+
+// ── 새 문서 ──
+function newDoc() {
+  if (!confirm('현재 내용을 버리고 새 문서를 만드시겠습니까?')) return;
+  currentDocId = null;
+  sealDataUrl = null;
+
+  const clearIds = [
+    'recipient','contractNumber','contractDate','contractName',
+    'companyName','ceoName','bizNo','phone','manager','email',
+    'groupName','itinerary','servicePeriod','completionDate',
+    'studentCount','teacherCount','escortCount',
+    'bankName','accountNumber','accountHolder','signDate'
+  ];
+  clearIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+
+  document.getElementById('companyName').value = '(주)여행세상';
+  document.getElementById('ceoName').value = '김국진 (인)';
+  document.getElementById('signSupplier').value = '(주)여행세상 대표 김국진 (인)';
+  document.getElementById('paxSize').value = '1';
+  // vatToggle 제거됨 — 행별 과세/면세로 전환
+
+  document.getElementById('serviceRows').innerHTML = '';
+  addServiceRow();
+
+  document.getElementById('noticeList').innerHTML = '';
+
+  // 첨부서류 초기화
+  ['attachTax','attachBiz','attachBank'].forEach(id => {
+    document.getElementById(id).checked = true;
+  });
+  ['attachDelivery','attachContract'].forEach(id => {
+    document.getElementById(id).checked = false;
+  });
+
+  // 직인 초기화
+  document.getElementById('sealImage').style.display = 'none';
+  document.getElementById('sealImage').src = '';
+  document.getElementById('sealHint').style.display = '';
+
+  recalcAll();
+  toast('새 문서가 준비되었습니다.');
+}
+
+// ── 직인 업로드 ──
+function handleSealUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    sealDataUrl = e.target.result;
+    const img = document.getElementById('sealImage');
+    img.src = sealDataUrl;
+    img.style.display = 'block';
+    document.getElementById('sealHint').style.display = 'none';
+    toast('직인 이미지가 등록되었습니다.');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+// ── 데이터 수집/복원 ──
+function collectServiceRows() {
+  const rows = [];
+  document.querySelectorAll('#serviceRows tr').forEach(tr => {
+    const dates = [...tr.querySelectorAll('.sched-date input')].map(inp => inp.value);
+    const routes = [...tr.querySelectorAll('.sched-route input')].map(inp => inp.value);
+    const taxType = tr.querySelector('.tax-select')?.value || 'exempt';
+    const vatIncl = tr.querySelector('.vat-incl')?.checked || false;
+    const nums = [...tr.querySelectorAll('input.r')];
+    const qty = nums[0]?.value || '1';
+    const price = nums[1]?.value || '0';
+    const amt = tr.querySelector('td.c-amt')?.textContent || '0';
+    rows.push({ dates, routes, taxType, vatIncl, qty, price, amount: amt });
+  });
+  return rows;
+}
+
+function restoreServiceRows(rows) {
+  const tbody = document.getElementById('serviceRows');
+  tbody.innerHTML = '';
+  if (!rows || !rows.length) return;
+  rows.forEach((rowData) => {
+    const dates = rowData.dates || [''];
+    const routes = rowData.routes || [''];
+    const lines = Math.max(dates.length, routes.length);
+    const scheduleLines = [];
+    for (let i = 0; i < lines; i++) {
+      scheduleLines.push({ date: dates[i] || '', route: routes[i] || '' });
+    }
+    addServiceRowWithSchedule(scheduleLines, parseNum(rowData.qty || '1'), parseNum(rowData.price || '0'), rowData.taxType || 'exempt', rowData.vatIncl || false);
+    const lastTr = tbody.lastElementChild;
+    if (lastTr) {
+      const amtCell = lastTr.querySelector('td.c-amt');
+      if (amtCell && rowData.amount) amtCell.textContent = rowData.amount;
+    }
+  });
+}
+
+function collectNotices() {
+  const notices = [];
+  document.querySelectorAll('#noticeList .notice-item input').forEach(inp => {
+    notices.push(inp.value);
+  });
+  return notices;
+}
+
+function restoreNotices(notices) {
+  const ul = document.getElementById('noticeList');
+  ul.innerHTML = '';
+  if (!notices || !notices.length) return;
+  notices.forEach(text => {
+    const li = document.createElement('li');
+    li.className = 'notice-item';
+    li.innerHTML = `<input value="${text.replace(/"/g,'&quot;')}"><button class="btn-del" onclick="delRow(this)">삭제</button>`;
+    ul.appendChild(li);
+  });
+}
+
+function collectAttachments() {
+  return {
+    tax: document.getElementById('attachTax').checked,
+    biz: document.getElementById('attachBiz').checked,
+    bank: document.getElementById('attachBank').checked,
+    delivery: document.getElementById('attachDelivery').checked,
+    contract: document.getElementById('attachContract').checked,
+  };
+}
+
+function restoreAttachments(att) {
+  if (!att) return;
+  if (att.tax !== undefined) document.getElementById('attachTax').checked = att.tax;
+  if (att.biz !== undefined) document.getElementById('attachBiz').checked = att.biz;
+  if (att.bank !== undefined) document.getElementById('attachBank').checked = att.bank;
+  if (att.delivery !== undefined) document.getElementById('attachDelivery').checked = att.delivery;
+  if (att.contract !== undefined) document.getElementById('attachContract').checked = att.contract;
+}
+
+function collectFormData() {
+  const supplyAmount = parseNum(document.getElementById('supplyAmountVal').textContent);
+  const vatAmount = parseNum(document.getElementById('vatAmountVal').textContent);
+  const grandTotal = parseNum(document.getElementById('grandTotalVal').textContent);
+
+  return {
+    doc_type: currentDocType,
+    recipient: document.getElementById('recipient').value,
+    contract_number: document.getElementById('contractNumber').value,
+    contract_date: document.getElementById('contractDate').value,
+    contract_name: document.getElementById('contractName').value,
+    company_name: document.getElementById('companyName').value,
+    ceo_name: document.getElementById('ceoName').value,
+    biz_no: document.getElementById('bizNo').value,
+    phone: document.getElementById('phone').value,
+    manager: document.getElementById('manager').value,
+    email: document.getElementById('email').value,
+    group_name: document.getElementById('groupName').value,
+    itinerary: document.getElementById('itinerary').value,
+    service_period: document.getElementById('servicePeriod').value,
+    service_location: '',
+    completion_date: document.getElementById('completionDate').value,
+    pax_size: parseInt(document.getElementById('paxSize').value) || 1,
+    student_count: parseInt(document.getElementById('studentCount').value) || 0,
+    teacher_count: parseInt(document.getElementById('teacherCount').value) || 0,
+    escort_count: parseInt(document.getElementById('escortCount').value) || 0,
+    sections_json: collectServiceRows(),
+    vat_enabled: true, // 행별 과세/면세로 관리
+    supply_amount: supplyAmount,
+    vat_amount: vatAmount,
+    manual_taxable: manualTaxableValue,
+    manual_vat: manualVatValue,
+    grand_total: grandTotal,
+    amount_korean: document.getElementById('headerAmountKorean')?.textContent || '',
+    per_person: parseNum(document.getElementById('perPersonDisplay')?.textContent || '0'),
+    sign_date: document.getElementById('signDate').value,
+    sign_supplier: document.getElementById('signSupplier').value,
+    bank_name: document.getElementById('bankName').value,
+    account_number: document.getElementById('accountNumber').value,
+    account_holder: document.getElementById('accountHolder').value,
+    seal_image: sealDataUrl || '',
+    notices_json: collectNotices(),
+    attachments_json: collectAttachments(),
+    // quote_date는 완료일 또는 sign_date에서 파생 (API 호환용)
+    quote_date: document.getElementById('completionDate').value ||
+                document.getElementById('contractDate').value ||
+                new Date().toISOString().slice(0,10),
+  };
+}
+
+function restoreFormData(est) {
+  setDocType(est.doc_type || 'delivery');
+
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val || '';
+  };
+
+  setVal('recipient', est.recipient);
+  setVal('contractNumber', est.contract_number);
+  setVal('contractDate', est.contract_date);
+  setVal('contractName', est.contract_name);
+  setVal('companyName', est.company_name || '(주)여행세상');
+  setVal('ceoName', est.ceo_name || '김국진 (인)');
+  setVal('bizNo', est.biz_no);
+  setVal('phone', est.phone);
+  setVal('manager', est.manager);
+  setVal('email', est.email);
+  setVal('groupName', est.group_name);
+  setVal('itinerary', est.itinerary);
+  setVal('servicePeriod', est.service_period);
+  // serviceLocation 제거됨
+  setVal('completionDate', est.completion_date);
+  setVal('paxSize', est.pax_size || 1);
+  setVal('studentCount', est.student_count || 0);
+  setVal('teacherCount', est.teacher_count || 0);
+  setVal('escortCount', est.escort_count || 0);
+  setVal('signDate', est.sign_date);
+  setVal('signSupplier', est.sign_supplier || '(주)여행세상 대표 김국진 (인)');
+  setVal('bankName', est.bank_name);
+  setVal('accountNumber', est.account_number);
+  setVal('accountHolder', est.account_holder);
+
+  // 수동 과세/부가세 복원
+  manualTaxableValue = null;
+  manualVatValue = null;
+  document.getElementById('taxableTotalInput').classList.remove('manual');
+  document.getElementById('vatAmountInput').classList.remove('manual');
+
+  if (est.manual_taxable != null && est.manual_taxable !== '' && est.manual_taxable !== 0) {
+    manualTaxableValue = Number(est.manual_taxable);
+    document.getElementById('taxableTotalInput').value = fmt(manualTaxableValue);
+    document.getElementById('taxableTotalInput').classList.add('manual');
+  }
+  if (est.manual_vat != null && est.manual_vat !== '' && est.manual_vat !== 0) {
+    manualVatValue = Number(est.manual_vat);
+    document.getElementById('vatAmountInput').value = fmt(manualVatValue);
+    document.getElementById('vatAmountInput').classList.add('manual');
+  }
+
+  // 직인 복원
+  if (est.seal_image) {
+    sealDataUrl = est.seal_image;
+    const img = document.getElementById('sealImage');
+    img.src = sealDataUrl;
+    img.style.display = 'block';
+    document.getElementById('sealHint').style.display = 'none';
+  } else {
+    sealDataUrl = null;
+    document.getElementById('sealImage').style.display = 'none';
+    document.getElementById('sealHint').style.display = '';
+  }
+
+  restoreServiceRows(est.sections_json);
+  restoreNotices(est.notices_json);
+  restoreAttachments(est.attachments_json);
+  recalcAll();
+}
+
+// ── API 통신 ──
+async function saveToDb() {
+  const data = collectFormData();
+  try {
+    let res;
+    if (currentDocId) {
+      res = await fetch(`/api/estimates/${currentDocId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+    } else {
+      res = await fetch('/api/estimates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+    }
+    const json = await res.json();
+    if (json.success) {
+      currentDocId = json.data.estimate.id;
+      const typeLabel = currentDocType === 'claim' ? '대금청구서' : '납품확인서';
+      toast(`${typeLabel} 저장 완료 (${json.data.estimate.doc_number})`);
+    } else {
+      toast('저장 실패: ' + (json.error || ''));
+    }
+  } catch (err) {
+    toast('저장 실패: 서버 연결 오류');
+    console.error(err);
+  }
+}
+
+async function loadFromDb(id) {
+  try {
+    const res = await fetch(`/api/estimates/${id}`, { credentials: 'include' });
+    const json = await res.json();
+    if (json.success) {
+      currentDocId = json.data.estimate.id;
+      restoreFormData(json.data.estimate);
+      closeLoadMenu();
+      toast('문서를 불러왔습니다.');
+    } else {
+      toast('불러오기 실패: ' + (json.error || ''));
+    }
+  } catch (err) {
+    toast('불러오기 실패: 서버 연결 오류');
+  }
+}
+
+async function deleteFromDb(id, e) {
+  e.stopPropagation();
+  if (!confirm('이 문서를 삭제하시겠습니까?')) return;
+  try {
+    const res = await fetch(`/api/estimates/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    const json = await res.json();
+    if (json.success) {
+      if (currentDocId === id) currentDocId = null;
+      toast('삭제되었습니다.');
+      toggleLoadMenu();
+    }
+  } catch (err) {
+    toast('삭제 실패');
+  }
+}
+
+async function toggleLoadMenu() {
+  const menu = document.getElementById('loadMenu');
+  if (menu.classList.contains('show')) {
+    closeLoadMenu();
+    return;
+  }
+  menu.innerHTML = '<div class="load-menu-empty">불러오는 중...</div>';
+  menu.classList.add('show');
+
+  try {
+    const res = await fetch('/api/estimates?limit=30&doc_type=delivery', { credentials: 'include' });
+    const json = await res.json();
+    if (!json.success || !json.data.estimates.length) {
+      menu.innerHTML = '<div class="load-menu-empty">저장된 문서가 없습니다.</div>';
+      return;
+    }
+    menu.innerHTML = json.data.estimates.map(est => {
+      const isClaim = est.doc_type === 'claim';
+      return `<div class="load-menu-item" onclick="loadFromDb('${est.id}')">
+        <div>
+          <div class="lm-title">${est.group_name || est.recipient || '(제목 없음)'}</div>
+          <div class="lm-sub">${est.doc_number || ''} · ${est.quote_date || ''} · ${fmt(est.grand_total || 0)}원</div>
+        </div>
+        <div style="display:flex;align-items:center;">
+          <span class="lm-type ${isClaim ? 'clm' : 'del'}">${isClaim ? '청구서' : '확인서'}</span>
+          <button class="lm-del" onclick="deleteFromDb('${est.id}',event)">삭제</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch {
+    menu.innerHTML = '<div class="load-menu-empty">서버 연결 실패</div>';
+  }
+}
+
+function closeLoadMenu() {
+  document.getElementById('loadMenu').classList.remove('show');
+}
+
+// ── HTML 저장 ──
+function saveHTML() {
+  const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const g = document.getElementById('groupName').value || document.getElementById('recipient').value || '문서';
+  const d = document.getElementById('completionDate').value || new Date().toISOString().slice(0,10);
+  const typeLabel = currentDocType === 'claim' ? '대금청구서' : '납품확인서';
+  a.download = g + '_' + typeLabel + '_' + d + '.html';
+  a.click();
+  toast('HTML 파일로 저장되었습니다.');
+}
+
+// 외부 클릭 시 메뉴 닫기
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.load-dropdown')) closeLoadMenu();
+});
+
+// ── 초기화 ──
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  document.getElementById('contractDate').value = `${yyyy}-${mm}-${dd}`;
+  document.getElementById('completionDate').value = `${yyyy}-${mm}-${dd}`;
+  document.getElementById('signDate').value = `${yyyy}년 ${mm}월 ${dd}일`;
+  recalcAll();
+});
+</script>
+</body>
+</html>

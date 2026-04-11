@@ -1,0 +1,290 @@
+/* ==========================================================================
+   Document Template 1 - Print Styles
+   ========================================================================== */
+
+@media print {
+  /* ==========================================================================
+     Page Setup
+     ========================================================================== */
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  /* B5용 (필요시 주석 해제)
+  @page {
+    size: B5;
+    margin: 0;
+  }
+  */
+
+  /* ==========================================================================
+     Reset Print Styles
+     ========================================================================== */
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+
+  /* ==========================================================================
+     Page Layout
+     ========================================================================== */
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    page-break-after: always;
+  }
+
+  /* B5용 (필요시 주석 해제)
+  .page {
+    width: 176mm;
+    min-height: 250mm;
+  }
+  */
+
+  .page-border-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background-color: #f09641;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page-content {
+    padding: 40px 48px 56px;
+  }
+
+  /* ==========================================================================
+     Hide Elements in Print
+     ========================================================================== */
+
+  /* 필요시 추가 */
+
+  /* ==========================================================================
+     Typography Adjustments
+     ========================================================================== */
+
+  .document-title {
+    font-size: 36px;
+    font-weight: 900;
+    color: #1f2937;
+  }
+
+  .conditions-title {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  /* ==========================================================================
+     Color Preservation
+     ========================================================================== */
+
+  .page-border-top,
+  .title-underline {
+    background-color: #f09641 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .price-option {
+    color: #c2682c !important;
+  }
+
+  .condition-note {
+    color: #c84f3c !important;
+  }
+
+  .conditions-header {
+    background-color: #f3ebe1 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .table-header,
+  .condition-header {
+    background-color: #f7f3ee !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .price-grid {
+    grid-template-columns: 100px 1fr 80px 140px;
+    background-color: #fdfaf6 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .price-grid > div {
+    padding: 8px 10px;
+  }
+
+  .price-airline {
+    font-size: 13px;
+    justify-content: center;
+    padding: 8px 6px;
+  }
+
+  .price-schedule {
+    padding: 8px 12px;
+    line-height: 1.5;
+  }
+
+  .price-schedule p {
+    font-size: 13px;
+  }
+
+  .price-option {
+    font-size: 14px;
+    justify-content: center;
+    padding: 8px 6px;
+  }
+
+  .price-amount {
+    background-color: #ffffff !important;
+    font-size: 18px;
+    justify-content: flex-start;
+    padding-left: 12px;
+  }
+
+  /* ==========================================================================
+     Border Preservation
+     ========================================================================== */
+
+  .info-table,
+  .conditions-table,
+  .price-box {
+    border-color: #d9d3cc !important;
+  }
+
+  .info-table tr,
+  .conditions-table tr {
+    border-color: #e3ddd6 !important;
+  }
+
+  .price-grid > div {
+    border-color: #e8e2db !important;
+  }
+
+  /* ==========================================================================
+     Itinerary Section
+     ========================================================================== */
+
+  .itinerary-header {
+    background-color: #f3ebe1 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .itinerary-day {
+    page-break-inside: avoid;
+  }
+
+  .day-header {
+    background-color: #f7f3ee !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .day-number {
+    color: #f09641 !important;
+  }
+
+  .day-images {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .itinerary-image {
+    max-width: 100%;
+    height: auto;
+    page-break-inside: avoid;
+  }
+
+  /* ==========================================================================
+     Image Handling
+     ========================================================================== */
+
+  .logo-image,
+  .footer-logo-image {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* ==========================================================================
+     Page Break Rules
+     ========================================================================== */
+
+  .header,
+  .title-section,
+  .main-info-section,
+  .conditions-section {
+    page-break-inside: avoid;
+  }
+
+  .conditions-header {
+    page-break-after: avoid;
+  }
+
+  /* ==========================================================================
+     Table Print Optimization
+     ========================================================================== */
+
+  table {
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    page-break-inside: avoid;
+  }
+
+  /* ==========================================================================
+     Footer
+     ========================================================================== */
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid #e3ddd6;
+  }
+
+  /* ==========================================================================
+     Text Adjustments
+     ========================================================================== */
+
+  /* 인쇄 시 가독성을 위한 조정 */
+  body {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .contact-info {
+    font-size: 14px;
+  }
+
+  .price-note {
+    font-size: 12px;
+  }
+
+  .footer-note {
+    font-size: 12px;
+  }
+}
+

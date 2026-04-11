@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>여행세상 예약내역</title>
+    <script src="../js/tailwind.min.js?plugins=forms,typography,container-queries"></script>
+    <!-- Google Fonts 제거 (내부망 접근 불가) — 시스템 폰트 사용 -->
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1A56A6",
+                        "brand-blue": "#0B53A0",
+                        "brand-green": "#00A67E",
+                        "brand-grey": "#8E9EAD",
+                        "brand-orange": "#F39200",
+                        "blue-tag": "#EFF6FF",
+                        "blue-tag-text": "#1A56A6",
+                        "background-light": "#F8FAFC",
+                        "background-dark": "#0F172A",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica", "Arial", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+    <style type="text/tailwindcss">
+        :root {
+            --brand-blue: #0B53A0;
+            --brand-green: #00A67E;
+            --brand-grey: #8E9EAD;
+            --brand-orange: #F39200;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.01em;
+        }
+        .ios-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .brand-logo-text {
+            letter-spacing: -0.05em;
+        }
+        .icon-emoji {
+            font-style: normal;
+            font-size: 1.1em;
+            line-height: 1;
+        }
+    </style>
+    <style>
+        body {
+            min-height: 100dvh;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen pb-8">
+
+<!-- Main Content -->
+<main class="px-4 mt-6 space-y-4 max-w-md mx-auto">
+
+    <!-- 거래처 섹션 (조건부 표시) -->
+    <section id="clientSection" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-800 hidden">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="icon-emoji text-brand-blue">🏢</span>
+                <span class="text-[14px] font-semibold text-slate-900 dark:text-slate-100">거래처</span>
+            </div>
+            <span id="clientDisplay" class="text-slate-900 dark:text-white font-extrabold text-lg tracking-wider">-</span>
+        </div>
+    </section>
+
+    <!-- 예약번호 섹션 -->
+    <section class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-800">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="icon-emoji text-brand-orange">🎫</span>
+                <span class="text-[14px] font-semibold text-slate-900 dark:text-slate-100">예약번호</span>
+            </div>
+            <span id="pnrDisplay" class="text-slate-900 dark:text-white font-extrabold text-lg tracking-wider">-</span>
+        </div>
+    </section>
+
+    <!-- 비용 정보 섹션 (조건부 표시) -->
+    <section id="priceInfoSection" class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-800 hidden">
+        <div class="flex items-center space-x-2 mb-4">
+            <span class="icon-emoji text-brand-blue">💰</span>
+            <span class="text-[14px] font-bold text-slate-900 dark:text-slate-100">비용 안내</span>
+        </div>
+        <div class="space-y-3">
+            <div id="priceAdultRow" class="flex items-center justify-between hidden">
+                <span class="text-[14px] text-slate-600 dark:text-slate-300">성인 1인</span>
+                <span id="priceAdultDisplay" class="font-bold text-[15px] text-slate-900 dark:text-white">-</span>
+            </div>
+            <div id="priceChildRow" class="flex items-center justify-between hidden">
+                <span class="text-[14px] text-slate-600 dark:text-slate-300">아동 1인</span>
+                <span id="priceChildDisplay" class="font-bold text-[15px] text-slate-900 dark:text-white">-</span>
+            </div>
+            <div id="priceInfantRow" class="flex items-center justify-between hidden">
+                <span class="text-[14px] text-slate-600 dark:text-slate-300">유아 1인</span>
+                <span id="priceInfantDisplay" class="font-bold text-[15px] text-slate-900 dark:text-white">-</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 출발편 섹션 -->
+    <section class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center space-x-2">
+                <span class="icon-emoji text-brand-blue text-lg">🛫</span>
+                <span class="font-bold text-[16px]">출발편</span>
+            </div>
+            <div id="departureFlightNo" class="bg-blue-tag px-3 py-1 rounded-full text-[12px] font-bold text-blue-tag-text">
+                -
+            </div>
+        </div>
+        <div class="flex items-center justify-between">
+            <div class="flex flex-col">
+                <span id="departureTime" class="text-[32px] font-bold tracking-tight leading-none text-slate-900 dark:text-white">--:--</span>
+                <span id="departureAirport" class="text-[15px] font-bold mt-2 text-slate-800 dark:text-slate-200">-</span>
+                <span id="departureDate" class="text-[12px] text-slate-500 mt-1">-</span>
+            </div>
+            <div class="flex flex-col items-center flex-1 px-4 text-slate-300">
+                <span class="text-2xl">→</span>
+            </div>
+            <div class="flex flex-col text-right">
+                <span id="arrivalTime1" class="text-[32px] font-bold tracking-tight leading-none text-slate-900 dark:text-white">--:--</span>
+                <span id="arrivalAirport1" class="text-[15px] font-bold mt-2 text-slate-800 dark:text-slate-200">-</span>
+                <span id="arrivalDate1" class="text-[12px] text-slate-500 mt-1">-</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 도착편 섹션 -->
+    <section class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center space-x-2">
+                <span class="icon-emoji text-brand-green text-lg">🛬</span>
+                <span class="font-bold text-[16px]">도착편</span>
+            </div>
+            <div id="returnFlightNo" class="bg-blue-tag px-3 py-1 rounded-full text-[12px] font-bold text-blue-tag-text">
+                -
+            </div>
+        </div>
+        <div class="flex items-center justify-between">
+            <div class="flex flex-col">
+                <span id="departureTime2" class="text-[32px] font-bold tracking-tight leading-none text-slate-900 dark:text-white">--:--</span>
+                <span id="departureAirport2" class="text-[15px] font-bold mt-2 text-slate-800 dark:text-slate-200">-</span>
+                <span id="departureDate2" class="text-[12px] text-slate-500 mt-1">-</span>
+            </div>
+            <div class="flex flex-col items-center flex-1 px-4 text-slate-300">
+                <span class="text-2xl">→</span>
+            </div>
+            <div class="flex flex-col text-right">
+                <span id="arrivalTime2" class="text-[32px] font-bold tracking-tight leading-none text-slate-900 dark:text-white">--:--</span>
+                <span id="arrivalAirport2" class="text-[15px] font-bold mt-2 text-slate-800 dark:text-slate-200">-</span>
+                <div id="arrivalDate2Wrapper" class="flex items-center justify-end mt-1">
+                    <span id="arrivalDate2" class="text-[12px] text-slate-500">-</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 고객 정보 섹션 -->
+    <section class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+        <div class="flex items-center space-x-2 border-b border-slate-50 dark:border-slate-800 pb-4 mb-5">
+            <span class="icon-emoji text-brand-blue">👤</span>
+            <h2 class="text-base font-bold text-slate-900 dark:text-white">고객 정보</h2>
+        </div>
+        <div class="space-y-6">
+            <!-- 대표명 -->
+            <div class="flex items-center justify-between py-0.5">
+                <div class="flex items-center space-x-3">
+                    <span class="icon-emoji text-[18px]">👤</span>
+                    <span class="text-[#000000] dark:text-white font-bold text-[14px]">대표명</span>
+                </div>
+                <span id="customerName" class="font-bold text-[15px] text-slate-900 dark:text-white">-</span>
+            </div>
+            <!-- 총인원 -->
+            <div class="flex items-center justify-between py-0.5">
+                <div class="flex items-center space-x-3">
+                    <span class="icon-emoji text-[18px]">👥</span>
+                    <span class="text-[#000000] dark:text-white font-bold text-[14px]">총인원</span>
+                </div>
+                <span id="totalPeople" class="font-bold text-[15px] text-slate-900 dark:text-white">-</span>
+            </div>
+            <!-- 전화번호 -->
+            <div class="flex items-center justify-between py-0.5 border-b border-slate-50 dark:border-slate-800 pb-5">
+                <div class="flex items-center space-x-3">
+                    <span class="icon-emoji text-[18px]">📞</span>
+                    <span class="text-[#000000] dark:text-white font-bold text-[14px]">전화번호</span>
+                </div>
+                <span id="phoneNumber" class="font-bold text-[15px] text-slate-900 dark:text-white">-</span>
+            </div>
+
+            <!-- 전체 승객 명단 (조건부 표시) -->
+            <div id="passengersSection" class="pt-4 pb-4 border-b border-slate-50 dark:border-slate-800 hidden">
+                <div class="flex items-center space-x-3 mb-3">
+                    <span class="icon-emoji text-[18px]">👥</span>
+                    <span class="text-[#000000] dark:text-white font-bold text-[14px]">승객 명단</span>
+                </div>
+                <div id="passengersList" class="bg-slate-50 dark:bg-slate-800/80 p-4 rounded-xl">
+                    <div class="grid grid-cols-2 gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-300">
+                        <!-- 승객 목록이 동적으로 추가됨 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 미팅 정보 (조건부 표시) -->
+            <div id="meetingInfoSection" class="bg-blue-50/70 dark:bg-blue-900/20 border-l-4 border-brand-blue rounded-r-2xl p-4 space-y-4 shadow-sm hidden">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="icon-emoji text-brand-blue text-[18px]">🕐</span>
+                        <span class="text-brand-blue font-extrabold text-[14px] uppercase tracking-tight">미팅 시간</span>
+                    </div>
+                    <span id="meetingTime" class="font-black text-[17px] text-brand-blue">-</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="icon-emoji text-brand-blue text-[18px]">📍</span>
+                        <span class="text-brand-blue font-extrabold text-[14px] uppercase tracking-tight">미팅 장소</span>
+                    </div>
+                    <span id="meetingPlace" class="font-black text-[17px] text-brand-blue">-</span>
+                </div>
+            </div>
+
+            <!-- 식사 정보 (조건부 표시) -->
+            <div id="mealInfoSection" class="space-y-5 pt-1 hidden">
+                <div id="departureMealRow" class="flex items-center justify-between py-0.5 hidden">
+                    <div class="flex items-center space-x-3">
+                        <span class="icon-emoji text-[18px]">🍽️</span>
+                        <span class="text-[#000000] dark:text-white font-bold text-[14px]">출발편 식사</span>
+                    </div>
+                    <span id="departureMeal" class="font-extrabold text-[13px] px-2.5 py-0.5 rounded-md">-</span>
+                </div>
+                <div id="arrivalMealRow" class="flex items-center justify-between py-0.5 hidden">
+                    <div class="flex items-center space-x-3">
+                        <span class="icon-emoji text-[18px]">🍽️</span>
+                        <span class="text-[#000000] dark:text-white font-bold text-[14px]">도착편 식사</span>
+                    </div>
+                    <span id="arrivalMeal" class="font-extrabold text-[13px] px-2.5 py-0.5 rounded-md">-</span>
+                </div>
+            </div>
+
+            <!-- 비고사항 (조건부 표시) -->
+            <div id="remarksSection" class="pt-5 border-t border-slate-100 dark:border-slate-800 hidden">
+                <div class="flex items-center space-x-3 mb-3">
+                    <span class="icon-emoji text-[18px]">📝</span>
+                    <span class="text-[#000000] dark:text-white font-bold text-[14px]">비고사항</span>
+                </div>
+                <div id="remarksContent" class="bg-slate-50 dark:bg-slate-800/80 p-4 rounded-xl text-[14px] font-semibold leading-7 text-slate-800 dark:text-slate-200">
+                    -
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 회사 정보 섹션 (명함 스타일) -->
+    <section class="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-2xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-700">
+        <!-- 상단 브랜드 영역 -->
+        <div class="bg-white dark:bg-slate-800 px-6 py-4 text-center border-b border-slate-100 dark:border-slate-700">
+            <div class="flex items-center justify-center text-[26px] font-black brand-logo-text leading-tight mb-0.5">
+                <span class="text-brand-blue">여행</span><span class="text-brand-green">세상</span>
+            </div>
+            <span class="text-[9px] font-semibold text-slate-400 tracking-[0.2em] uppercase">TRAVEL WORLD</span>
+        </div>
+
+        <!-- 하단 연락처 영역 -->
+        <div class="px-6 pt-4 pb-3 flex flex-col items-center">
+            <!-- 전화 -->
+            <a href="tel:063-271-9090" class="flex items-center justify-center space-x-2 bg-slate-800 hover:bg-slate-900 text-white px-8 py-3 rounded-full transition-colors shadow-md">
+                <span class="text-[16px]" style="color: #EF4444;">📞</span>
+                <span class="text-[15px] font-bold tracking-wide">063-271-9090</span>
+            </a>
+            <!-- 주소 -->
+            <div class="flex items-center space-x-1.5 mt-2">
+                <span class="text-red-400 text-[12px]">📍</span>
+                <span class="text-[11px] text-slate-400 dark:text-slate-500">전주시 완산구 서신로 8</span>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<script>
+    // URL 파라미터에서 예약 ID 가져오기
+    function getReservationId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('id');
+    }
+
+    // 공항 코드 → 도시명 매핑 (JSON에서 로드)
+    let airportNames = {};
+
+    // JSON 파일에서 공항 데이터 로드
+    async function loadAirportData() {
+        try {
+            const response = await fetch('./world_airports_by_region.json');
+            if (!response.ok) throw new Error('공항 데이터 로드 실패');
+            const data = await response.json();
+
+            // 전체 공항 데이터를 코드 → 도시명 매핑으로 변환
+            for (const region in data) {
+                data[region].forEach(airport => {
+                    // 도시명 사용 (공항명 대신)
+                    airportNames[airport['공항코드']] = airport['도시'];
+                });
+            }
+
+        } catch (error) {
+            console.error('공항 데이터 로드 실패:', error);
+            // 로드 실패 시 기본 데이터 사용
+            airportNames = {
+                'ICN': '인천', 'GMP': '김포', 'PUS': '부산', 'CJU': '제주',
+                'BKK': '방콕', 'NRT': '도쿄', 'HND': '도쿄', 'HKG': '홍콩',
+                'SIN': '싱가포르', 'DAD': '다낭', 'CXR': '나트랑', 'SGN': '호치민'
+            };
+        }
+    }
+
+    function getAirportName(code) {
+        // 공항코드 모드이면 코드 그대로 반환
+        if (localStorage.getItem('air1_airport_code_mode') === 'true') {
+            return code;
+        }
+        return airportNames[code] || code;
+    }
+
+    // 날짜 포맷팅
+    function formatDate(dateStr) {
+        if (!dateStr) return '-';
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return dateStr;
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+        const weekday = weekdays[date.getDay()];
+        return `${year}.${month}.${day} (${weekday})`;
+    }
+
+    // 시간 포맷팅
+    function formatTime(timeStr) {
+        if (!timeStr) return '--:--';
+        return timeStr.substring(0, 5);
+    }
+
+    // 식사 정보 스타일 적용
+    function setMealStyle(element, value) {
+        if (value === '포함') {
+            element.textContent = '포함';
+            element.className = 'font-extrabold text-[13px] text-brand-green bg-green-50 dark:bg-green-900/10 px-2.5 py-0.5 rounded-md';
+        } else {
+            element.textContent = '불포함';
+            element.className = 'font-extrabold text-[13px] text-brand-orange bg-orange-50 dark:bg-orange-900/10 px-2.5 py-0.5 rounded-md';
+        }
+    }
+
+    // 예약 데이터 로드 및 표시
+    function loadReservationData() {
+        const reservationId = getReservationId();
+
+        // localStorage에서 데이터 가져오기
+        let reservationData = null;
+
+        if (reservationId) {
+            // flight_saves_v2에서 검색
+            const savedFlights = JSON.parse(localStorage.getItem('flight_saves_v2') || '[]');
+            reservationData = savedFlights.find(f => f.id === reservationId);
+        }
+
+        // 데이터가 없으면 URL 파라미터에서 직접 가져오기 시도
+        if (!reservationData) {
+            const params = new URLSearchParams(window.location.search);
+            const dataParam = params.get('data');
+            if (dataParam) {
+                try {
+                    const parsed = JSON.parse(decodeURIComponent(dataParam));
+                    // URL 파라미터 데이터 검증 (필수 필드 타입 체크)
+                    if (parsed && typeof parsed === 'object' &&
+                        (!parsed.pnr || typeof parsed.pnr === 'string') &&
+                        (!parsed.flights || Array.isArray(parsed.flights))) {
+                        reservationData = parsed;
+                    }
+                } catch (e) {
+                    console.error('데이터 파싱 실패:', e);
+                }
+            }
+        }
+
+        // 데모 데이터 (데이터가 없을 경우)
+        if (!reservationData) {
+            reservationData = {
+                pnr: 'NPIXXE',
+                name: 'CHO/DONGMAN',
+                phone: '010-0000-0000',
+                totalPeople: '4명',
+                flights: [
+                    {
+                        flightNo: 'OZ 743',
+                        departure: { airport: 'ICN', time: '07:10', date: '2026-02-05' },
+                        arrival: { airport: 'BKK', time: '11:15', date: '2026-02-05' }
+                    },
+                    {
+                        flightNo: 'OZ 742',
+                        departure: { airport: 'BKK', time: '23:55', date: '2026-02-08' },
+                        arrival: { airport: 'ICN', time: '06:55', date: '2026-02-09', nextDay: true }
+                    }
+                ],
+                meetingTime: '오전 03:00',
+                meetingPlace: '인천국제공항',
+                departureMeal: '불포함',
+                arrivalMeal: '불포함',
+                remarks: '식사비용 우리가 전달 함'
+            };
+        }
+
+        // 데이터 표시
+        displayReservation(reservationData);
+    }
+
+    // 예약 데이터 화면에 표시
+    function displayReservation(data) {
+        // 거래처
+        if (data.clientName) {
+            document.getElementById('clientSection').classList.remove('hidden');
+            document.getElementById('clientDisplay').textContent = data.clientName;
+        }
+
+        // 예약번호
+        document.getElementById('pnrDisplay').textContent = data.pnr || '-';
+
+        // 고객 정보
+        document.getElementById('customerName').textContent = data.name || '-';
+        document.getElementById('totalPeople').textContent = data.totalPeople || '-';
+        document.getElementById('phoneNumber').textContent = data.phone || '-';
+
+        // 항공편 정보
+        if (data.flights && data.flights.length > 0) {
+            // 출발편
+            const dep = data.flights[0];
+            document.getElementById('departureFlightNo').textContent = dep.flightNo || '-';
+            document.getElementById('departureTime').textContent = formatTime(dep.departure?.time);
+            document.getElementById('departureAirport').textContent = getAirportName(dep.departure?.airport);
+            document.getElementById('departureDate').textContent = formatDate(dep.departure?.date);
+            document.getElementById('arrivalTime1').textContent = formatTime(dep.arrival?.time);
+            document.getElementById('arrivalAirport1').textContent = getAirportName(dep.arrival?.airport);
+            document.getElementById('arrivalDate1').textContent = formatDate(dep.arrival?.date);
+
+            // 도착편 (있는 경우)
+            if (data.flights.length > 1) {
+                const ret = data.flights[data.flights.length - 1];
+                document.getElementById('returnFlightNo').textContent = ret.flightNo || '-';
+                document.getElementById('departureTime2').textContent = formatTime(ret.departure?.time);
+                document.getElementById('departureAirport2').textContent = getAirportName(ret.departure?.airport);
+                document.getElementById('departureDate2').textContent = formatDate(ret.departure?.date);
+                document.getElementById('arrivalTime2').textContent = formatTime(ret.arrival?.time);
+                document.getElementById('arrivalAirport2').textContent = getAirportName(ret.arrival?.airport);
+
+                // 익일 도착 표시
+                const arrivalDate2El = document.getElementById('arrivalDate2');
+                if (ret.arrival?.nextDay) {
+                    arrivalDate2El.className = 'text-[11px] font-bold text-red-500';
+                    arrivalDate2El.textContent = `${formatDate(ret.arrival?.date)} 도착`;
+                } else {
+                    arrivalDate2El.textContent = formatDate(ret.arrival?.date);
+                }
+            }
+        }
+
+        // 미팅 정보
+        if (data.meetingTime || data.meetingPlace) {
+            document.getElementById('meetingInfoSection').classList.remove('hidden');
+            document.getElementById('meetingTime').textContent = data.meetingTime || '-';
+            document.getElementById('meetingPlace').textContent = data.meetingPlace || '-';
+        }
+
+        // 식사 정보
+        if (data.departureMeal || data.arrivalMeal) {
+            document.getElementById('mealInfoSection').classList.remove('hidden');
+
+            if (data.departureMeal) {
+                document.getElementById('departureMealRow').classList.remove('hidden');
+                setMealStyle(document.getElementById('departureMeal'), data.departureMeal);
+            }
+
+            if (data.arrivalMeal) {
+                document.getElementById('arrivalMealRow').classList.remove('hidden');
+                setMealStyle(document.getElementById('arrivalMeal'), data.arrivalMeal);
+            }
+        }
+
+        // 비고사항
+        if (data.remarks) {
+            document.getElementById('remarksSection').classList.remove('hidden');
+            document.getElementById('remarksContent').textContent = data.remarks;
+        }
+
+        // 비용 정보
+        if (data.priceAdult || data.priceChild || data.priceInfant) {
+            document.getElementById('priceInfoSection').classList.remove('hidden');
+
+            if (data.priceAdult) {
+                document.getElementById('priceAdultRow').classList.remove('hidden');
+                document.getElementById('priceAdultDisplay').textContent = `₩${data.priceAdult}원`;
+            }
+
+            if (data.priceChild) {
+                document.getElementById('priceChildRow').classList.remove('hidden');
+                document.getElementById('priceChildDisplay').textContent = `₩${data.priceChild}원`;
+            }
+
+            if (data.priceInfant) {
+                document.getElementById('priceInfantRow').classList.remove('hidden');
+                document.getElementById('priceInfantDisplay').textContent = `₩${data.priceInfant}원`;
+            }
+        }
+
+        // 전체 승객 명단 표시
+        if (data.showAllPassengers && data.passengers && data.passengers.length > 0) {
+            document.getElementById('passengersSection').classList.remove('hidden');
+            const passengersList = document.getElementById('passengersList').querySelector('.grid');
+            passengersList.innerHTML = '';
+
+            // DOM API로 안전하게 승객 목록 생성
+            data.passengers.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center space-x-2';
+
+                const indexSpan = document.createElement('span');
+                indexSpan.className = 'text-slate-400 text-[11px]';
+                indexSpan.textContent = (p.index || '') + '.';
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'text-slate-800 dark:text-slate-200';
+                nameSpan.textContent = (p.name || '') + (p.title || '');
+
+                div.appendChild(indexSpan);
+                div.appendChild(nameSpan);
+
+                passengersList.appendChild(div);
+            });
+        }
+    }
+
+    // 페이지 로드 시 실행
+    // 페이지 로드 시 공항 데이터 먼저 로드 후 예약 데이터 로드
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadAirportData();  // 공항 데이터 먼저 로드
+        loadReservationData();    // 그 후 예약 데이터 로드
+    });
+</script>
+
+</body>
+</html>

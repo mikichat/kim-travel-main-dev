@@ -1,0 +1,308 @@
+/* === Layout CSS === */
+
+/* ── App Shell ── */
+.app-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--color-bg);
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: width 0.2s ease;
+  overflow: hidden;
+}
+
+.sidebar.sidebar-collapsed {
+  width: var(--sidebar-collapsed);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+  min-height: 64px;
+}
+
+.sidebar-brand {
+  font-size: var(--font-size-h3);
+  font-weight: 700;
+  color: var(--color-primary);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar-toggle {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0;
+  background: none;
+  color: var(--color-text-secondary);
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle:hover {
+  background-color: var(--color-hover);
+  color: var(--color-text);
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-sm) 0;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 0 var(--space-md);
+  height: var(--input-height);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: var(--font-size-caption);
+  font-weight: 500;
+  border-radius: 0;
+  transition: background-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  min-height: 44px;
+}
+
+.sidebar-nav-item:hover {
+  background-color: var(--color-hover);
+  color: var(--color-text);
+}
+
+.sidebar-nav-item.active {
+  background-color: rgba(37, 99, 235, 0.1);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.sidebar-nav-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+}
+
+.sidebar-nav-label {
+  overflow: hidden;
+  transition: opacity 0.15s;
+}
+
+.sidebar-collapsed .sidebar-nav-label {
+  opacity: 0;
+  width: 0;
+}
+
+.sidebar-collapsed .sidebar-brand {
+  opacity: 0;
+  width: 0;
+}
+
+/* ── Sidebar Divider & Section ── */
+.sidebar-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-sm) var(--space-md);
+}
+
+.sidebar-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px var(--space-md) 2px;
+  opacity: 0.6;
+}
+
+.sidebar-external-icon {
+  font-size: 11px;
+  opacity: 0.5;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.sidebar-collapsed .sidebar-external-icon {
+  display: none;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-lg);
+  height: 64px;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.header-title {
+  font-size: var(--font-size-h3);
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.header-user {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+}
+
+.header-logout-btn {
+  min-height: 44px;
+  padding: 0 var(--space-md);
+  background: none;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+  border-radius: var(--border-radius);
+}
+
+.header-logout-btn:hover {
+  background-color: var(--color-hover);
+  color: var(--color-text);
+}
+
+/* ── Header Left (햄버거 + 타이틀 그룹) ── */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* 햄버거 버튼: 데스크톱에서 숨김 */
+.header-hamburger {
+  display: none;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--color-text);
+  font-size: 20px;
+  border-radius: var(--border-radius);
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.header-hamburger:hover {
+  background-color: var(--color-hover);
+}
+
+/* ── Main Content ── */
+.main-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+}
+
+/* ── 모바일 백드롭 ── */
+.sidebar-backdrop {
+  display: none;
+}
+
+/* ── 반응형: 768px 이하 ── */
+@media (max-width: 768px) {
+  /* 사이드바: 기본 숨김 → 오버레이 모드 */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 200;
+    height: 100vh;
+    width: var(--sidebar-width) !important; /* collapsed 무시, 항상 전체 너비 */
+    transform: translateX(-100%);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: none;
+  }
+
+  /* 사이드바 열림 상태 */
+  .sidebar.sidebar-mobile-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
+  }
+
+  /* 모바일에서 collapsed 스타일 무효화 */
+  .sidebar.sidebar-collapsed {
+    width: var(--sidebar-width) !important;
+  }
+
+  .sidebar.sidebar-collapsed .sidebar-nav-label,
+  .sidebar.sidebar-collapsed .sidebar-brand {
+    opacity: 1;
+    width: auto;
+  }
+
+  .sidebar.sidebar-collapsed .sidebar-external-icon {
+    display: inline;
+  }
+
+  /* 백드롭 */
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 199;
+    background-color: rgba(0, 0, 0, 0.45);
+  }
+
+  /* 햄버거 버튼 표시 */
+  .header-hamburger {
+    display: flex;
+  }
+
+  /* main-content-wrapper: margin 제거 */
+  .main-content-wrapper {
+    margin-left: 0;
+  }
+
+  /* main-content: padding 축소 */
+  .main-content {
+    padding: 12px;
+  }
+}
+
+/* ── 반응형: 480px 이하 ── */
+@media (max-width: 480px) {
+  .main-content {
+    padding: 8px;
+  }
+
+  .header {
+    padding: 0 var(--space-sm);
+  }
+}

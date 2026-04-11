@@ -1,0 +1,81 @@
+version: "2.0"
+
+screen:
+  name: 달력
+  route: /calendar
+  layout: dashboard
+  auth: true
+
+data_requirements:
+  - resource: bookings
+    needs: [id, pnr, name_kr, airline, nmtl_date, tl_date, departure_date, status]
+    filters: { month: "?month", year: "?year" }
+
+  - resource: bsp_dates
+    needs: [id, payment_date, description]
+    filters: { month: "?month", year: "?year" }
+
+components:
+  - id: monthly_calendar
+    type: grid
+    position: main
+    function: FullCalendar 기반 월간 뷰 — NMTL/TL/BSP/출발일 색상 구분 마커
+    data_source:
+      resource: bookings
+    events:
+      - on: click:date
+        do: 선택 날짜의 이벤트 목록 표시
+      - on: click:prev_month
+        do: 이전 월 로드
+      - on: click:next_month
+        do: 다음 월 로드
+
+  - id: event_list
+    type: list
+    position: main
+    function: 선택 날짜의 이벤트 목록 (예약/마감/BSP)
+    data_source:
+      resource: bookings
+    events:
+      - on: click:event
+        do: /bookings로 이동, 해당 예약 확장
+
+  - id: calendar_filter
+    type: navigation
+    position: main
+    function: NMTL/TL/BSP/출발일 유형별 필터
+    events:
+      - on: click:filter
+        do: 선택한 유형만 달력에 표시
+
+connections:
+  navigations:
+    - from: event_list
+      to: /bookings
+
+  shared_components:
+    - sidebar
+    - header
+
+tests:
+  - name: 초기 로드
+    when: 달력 페이지 접속
+    then:
+      - 현재 월 달력 표시
+      - NMTL(빨강)/TL(노랑)/BSP(파랑)/출발일(초록) 마커 표시
+
+  - name: 날짜 클릭
+    when: 이벤트가 있는 날짜 클릭
+    then:
+      - 해당 날짜 이벤트 목록 표시
+
+  - name: 이벤트 클릭 → 예약장부 이동
+    when: 이벤트 목록에서 예약 클릭
+    then:
+      - /bookings로 이동
+      - 해당 예약 확장
+
+  - name: 필터링
+    when: NMTL 필터만 선택
+    then:
+      - NMTL 마커만 달력에 표시

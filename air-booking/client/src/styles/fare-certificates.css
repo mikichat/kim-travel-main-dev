@@ -1,0 +1,693 @@
+/* 항공운임증명서 페이지 */
+.fc-page {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* 섹션 공통 */
+.fc-section-card {
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  padding: 1.25rem;
+  background: var(--color-surface, #fff);
+}
+
+.fc-source-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+.fc-source-tab {
+  padding: 8px 20px;
+  border: none;
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+}
+.fc-source-tab:hover { color: #334155; }
+.fc-source-tab.active {
+  color: #1e40af;
+  border-bottom-color: #1e40af;
+}
+
+.fc-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text, #1e293b);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border-color, #e5e7eb);
+}
+
+/* 검색 영역 */
+.fc-search-section {}
+
+.fc-search-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.fc-search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.fc-search-field label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.fc-search-field input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  min-width: 160px;
+}
+
+.fc-search-field input:focus {
+  outline: none;
+  border-color: var(--color-primary, #2563eb);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+.fc-search-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding-bottom: 1px;
+}
+
+.fc-btn-search {
+  padding: 0.5rem 1rem;
+  background: var(--color-primary, #2563eb);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.fc-btn-search:hover {
+  background: var(--color-primary-dark, #1d4ed8);
+}
+
+.fc-btn-reset {
+  padding: 0.5rem 0.875rem;
+  background: transparent;
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: var(--color-text-secondary, #6b7280);
+  white-space: nowrap;
+}
+
+.fc-btn-reset:hover {
+  background: var(--hover-bg, #f9fafb);
+}
+
+/* 검색 결과 테이블 */
+.fc-results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.fc-results-table th {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 2px solid var(--border-color, #e5e7eb);
+  font-weight: 600;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.fc-results-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--border-color, #f3f4f6);
+  vertical-align: middle;
+}
+
+.fc-results-table tbody tr {
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.fc-results-table tbody tr:hover {
+  background: var(--hover-bg, #f9fafb);
+}
+
+.fc-results-table tbody tr.selected {
+  background: #f0ebf8;
+}
+
+.fc-results-table tbody tr.selected td {
+  color: #6d28d9;
+}
+
+.fc-pnr-cell {
+  font-family: monospace;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-primary, #2563eb);
+}
+
+.fc-amount-cell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.fc-empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted, #9ca3af);
+  font-size: 0.9rem;
+}
+
+/* 페이지네이션 */
+.fc-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0 0;
+}
+
+.fc-pagination button {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.fc-pagination button:hover:not(:disabled) {
+  background: var(--hover-bg, #f9fafb);
+}
+
+.fc-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.fc-pagination .fc-page-info {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #6b7280);
+  padding: 0 0.25rem;
+}
+
+/* 폼 영역 */
+.fc-form-section {}
+
+.fc-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.fc-form-row-1 {
+  grid-template-columns: 1fr;
+}
+
+.fc-form-row-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.fc-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.fc-form-field label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.fc-form-field input,
+.fc-form-field textarea {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #1e293b);
+}
+
+.fc-form-field input:focus,
+.fc-form-field textarea:focus {
+  outline: none;
+  border-color: var(--color-primary, #2563eb);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+.fc-form-field input[readonly] {
+  background: var(--color-bg, #f8fafc);
+  color: var(--color-text-secondary, #6b7280);
+  cursor: default;
+}
+
+/* 수신처 강조 */
+.fc-form-field.fc-recipient-field input {
+  border-color: #3b82f6;
+  border-width: 2px;
+}
+
+.fc-form-field.fc-recipient-field input:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* 여정/편별 표시 */
+.fc-segment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-bg, #f8fafc);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  min-height: 2.25rem;
+  font-size: 0.875rem;
+  color: var(--color-text, #1e293b);
+}
+
+.fc-segment-item {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.fc-segment-empty {
+  color: var(--text-muted, #9ca3af);
+  font-size: 0.85rem;
+}
+
+/* 운임 테이블 */
+.fc-fare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.fc-fare-table th {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 2px solid var(--border-color, #e5e7eb);
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #6b7280);
+  white-space: nowrap;
+}
+
+.fc-fare-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border-color, #f3f4f6);
+  vertical-align: middle;
+}
+
+.fc-fare-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.fc-fare-table input.fare-input {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  width: 120px;
+  text-align: right;
+}
+
+.fc-fare-table input.fare-input:focus {
+  outline: none;
+  border-color: var(--color-primary, #2563eb);
+}
+
+.fc-fare-total-row td {
+  font-weight: 700;
+  border-top: 2px solid var(--border-color, #e5e7eb);
+  border-bottom: none;
+  font-size: 0.95rem;
+  color: var(--color-primary, #2563eb);
+}
+
+/* 액션 버튼 */
+.fc-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.fc-btn-save {
+  padding: 0.5rem 1.2rem;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.fc-btn-save:hover { background: #1d4ed8; }
+.fc-btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.fc-btn-preview {
+  padding: 0.5rem 1rem;
+  background: #f3f4f6;
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: var(--color-text, #374151);
+  font-weight: 500;
+}
+
+.fc-btn-preview:hover {
+  background: #e5e7eb;
+}
+
+.fc-btn-pdf {
+  padding: 0.5rem 1rem;
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.fc-btn-pdf:hover {
+  background: #15803d;
+}
+
+.fc-btn-pdf:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fc-btn-print {
+  padding: 0.5rem 1rem;
+  background: #0ea5e9;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.fc-btn-print:hover {
+  background: #0284c7;
+}
+
+.fc-btn-print:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 이력 영역 */
+.fc-history-section {}
+
+.fc-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.fc-history-table th {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 2px solid var(--border-color, #e5e7eb);
+  font-weight: 600;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.fc-history-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--border-color, #f3f4f6);
+  vertical-align: middle;
+}
+
+.fc-cert-number {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-primary, #2563eb);
+  font-family: monospace;
+}
+
+/* 상태 뱃지 */
+.fc-status-badge {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.fc-status-badge.issued {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.fc-status-badge.reissued {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.fc-status-badge.cancelled {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* 동작 버튼 그룹 */
+.fc-actions {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+}
+
+.fc-actions button {
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.fc-actions .btn-reissue {
+  border-color: #6366f1;
+  color: #6366f1;
+  background: transparent;
+}
+
+.fc-actions .btn-reissue:hover {
+  background: #eef2ff;
+}
+
+.fc-actions .btn-pdf-dl {
+  border-color: #16a34a;
+  color: #16a34a;
+  background: transparent;
+}
+
+.fc-actions .btn-pdf-dl:hover {
+  background: #f0fdf4;
+}
+
+.fc-actions .btn-print {
+  border-color: #0ea5e9;
+  color: #0ea5e9;
+  background: transparent;
+}
+
+.fc-actions .btn-print:hover {
+  background: #f0f9ff;
+}
+
+.fc-actions .btn-delete {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: transparent;
+}
+
+.fc-actions .btn-delete:hover {
+  background: #fef2f2;
+}
+
+/* 확인 모달 */
+.fc-confirm-body {
+  padding: 0.5rem 0 1rem;
+  font-size: 0.95rem;
+  color: var(--color-text, #1e293b);
+  line-height: 1.6;
+}
+
+.fc-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.fc-confirm-actions .btn-cancel {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.fc-confirm-actions .btn-confirm {
+  padding: 0.5rem 1.25rem;
+  background: var(--color-primary, #2563eb);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.fc-confirm-actions .btn-confirm:hover {
+  background: var(--color-primary-dark, #1d4ed8);
+}
+
+.fc-confirm-actions .btn-confirm.danger {
+  background: #ef4444;
+}
+
+.fc-confirm-actions .btn-confirm.danger:hover {
+  background: #dc2626;
+}
+
+/* 선택된 예약 안내 */
+.fc-selected-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #f0ebf8;
+  border: 1px solid #c4b5fd;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #6d28d9;
+  margin-bottom: 0.75rem;
+}
+
+.fc-selected-notice .fc-clear-btn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #9333ea;
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+}
+
+.fc-selected-notice .fc-clear-btn:hover {
+  background: #ede9fe;
+}
+
+/* Dark mode */
+[data-theme='dark'] .fc-section-card {
+  background: var(--color-surface, #1e1e2e);
+}
+
+[data-theme='dark'] .fc-results-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme='dark'] .fc-results-table tbody tr.selected {
+  background: rgba(167, 139, 250, 0.12);
+}
+
+[data-theme='dark'] .fc-results-table tbody tr.selected td {
+  color: #c4b5fd;
+}
+
+[data-theme='dark'] .fc-form-field input,
+[data-theme='dark'] .fc-form-field textarea {
+  background: var(--color-bg, #1e1e2e);
+  color: var(--color-text, #e2e8f0);
+  border-color: var(--border-color, #374151);
+}
+
+[data-theme='dark'] .fc-form-field input[readonly] {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme='dark'] .fc-segment-list {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme='dark'] .fc-status-badge.issued {
+  background: rgba(37, 99, 235, 0.15);
+}
+
+[data-theme='dark'] .fc-status-badge.reissued {
+  background: rgba(22, 163, 74, 0.15);
+}
+
+[data-theme='dark'] .fc-status-badge.cancelled {
+  background: rgba(107, 114, 128, 0.15);
+}
+
+[data-theme='dark'] .fc-selected-notice {
+  background: rgba(167, 139, 250, 0.1);
+  border-color: rgba(167, 139, 250, 0.3);
+  color: #c4b5fd;
+}
+
+[data-theme='dark'] .fc-btn-reset:hover,
+[data-theme='dark'] .fc-btn-preview:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme='dark'] .fc-actions .btn-reissue:hover {
+  background: rgba(99, 102, 241, 0.12);
+}
+
+[data-theme='dark'] .fc-actions .btn-pdf-dl:hover {
+  background: rgba(22, 163, 74, 0.12);
+}
+
+[data-theme='dark'] .fc-actions .btn-delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+[data-theme='dark'] .fc-fare-table input.fare-input {
+  background: var(--color-bg, #1e1e2e);
+  color: var(--color-text, #e2e8f0);
+  border-color: var(--border-color, #374151);
+}

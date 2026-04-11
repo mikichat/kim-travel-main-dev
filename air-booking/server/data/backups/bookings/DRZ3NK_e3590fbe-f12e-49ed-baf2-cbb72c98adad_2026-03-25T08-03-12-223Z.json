@@ -1,0 +1,64 @@
+{
+  "id": "e3590fbe-f12e-49ed-baf2-cbb72c98adad",
+  "user_id": 55,
+  "customer_id": null,
+  "pnr": "DRZ3NK",
+  "airline": "KE",
+  "flight_number": "KE115 / KE116",
+  "route_from": "ICN",
+  "route_to": "ICN",
+  "name_kr": null,
+  "name_en": "LEE/YONGJUN",
+  "passport_number": null,
+  "seat_number": null,
+  "fare": null,
+  "nmtl_date": null,
+  "tl_date": null,
+  "departure_date": "2026-07-30",
+  "return_date": "2026-08-02",
+  "status": "confirmed",
+  "remarks": null,
+  "pax_count": 1,
+  "agency": "오영선-백두산",
+  "created_at": "2026-03-25 17:03:12",
+  "updated_at": "2026-03-25 17:03:12",
+  "passengers": [
+    {
+      "id": "4e340824-9abd-4cb1-bd3b-389e31bea4d0",
+      "booking_id": "e3590fbe-f12e-49ed-baf2-cbb72c98adad",
+      "name_en": "LEE/YONGJUN",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-25 17:03:12"
+    }
+  ],
+  "segments": [
+    {
+      "id": "41aa5751-3c18-4478-b48d-94a8e6587d5f",
+      "booking_id": "e3590fbe-f12e-49ed-baf2-cbb72c98adad",
+      "seg_index": 0,
+      "airline": "KE",
+      "flight_number": "KE115",
+      "route_from": "ICN",
+      "route_to": "YNJ",
+      "departure_date": "2026-07-30",
+      "departure_time": null,
+      "arrival_time": null
+    },
+    {
+      "id": "5cae3568-bdeb-426b-9e3b-659206620d59",
+      "booking_id": "e3590fbe-f12e-49ed-baf2-cbb72c98adad",
+      "seg_index": 1,
+      "airline": "KE",
+      "flight_number": "KE116",
+      "route_from": "YNJ",
+      "route_to": "ICN",
+      "departure_date": "2026-08-02",
+      "departure_time": null,
+      "arrival_time": null
+    }
+  ]
+}

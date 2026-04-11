@@ -1,0 +1,365 @@
+/**
+ * Wizard UI Components for Middle-aged Users
+ * Version: 1.0
+ * Created: 2025-12-29
+ * Purpose: 3-step wizard for product management modal
+ */
+
+:root {
+    /* Brand Colors */
+    --brand-orange: #FF6B35;
+    --brand-orange-dark: #D35400;
+    --brand-orange-light: #FFB399;
+    --brand-beige: #F5F5F0;
+
+    /* Typography for Middle-aged Users */
+    --text-size-base: 16px;
+    --text-size-large: 18px;
+    --text-size-small: 14px;
+
+    /* Interactive Elements */
+    --button-height: 48px;
+    --input-height: 48px;
+    --step-indicator-size: 56px;
+
+    /* Spacing */
+    --wizard-gap: 12px;
+    --section-gap: 40px;
+}
+
+/* Wizard Container */
+.wizard-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--section-gap);
+}
+
+/* Step Indicator - Progress Bar */
+.wizard-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 24px 20px;
+    background: linear-gradient(135deg, #FFF5F1 0%, #FFE8DC 100%);
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.wizard-step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    max-width: 160px;
+}
+
+.wizard-step-circle {
+    width: var(--step-indicator-size);
+    height: var(--step-indicator-size);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    border: 3px solid #E5E7EB;
+    background-color: #F9FAFB;
+    color: #9CA3AF;
+    transition: all 0.3s ease;
+}
+
+.wizard-step-circle.active {
+    background: linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-orange-dark) 100%);
+    border-color: var(--brand-orange);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    transform: scale(1.05);
+}
+
+.wizard-step-circle.completed {
+    background-color: #10B981;
+    border-color: #10B981;
+    color: white;
+}
+
+.wizard-step-label {
+    font-size: var(--text-size-base);
+    font-weight: 500;
+    color: #6B7280;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.wizard-step-item.active .wizard-step-label {
+    color: var(--brand-orange);
+    font-weight: 700;
+}
+
+.wizard-step-item.completed .wizard-step-label {
+    color: #10B981;
+    font-weight: 600;
+}
+
+/* Step Connector Line */
+.wizard-step-connector {
+    width: 100%;
+    height: 4px;
+    background-color: #E5E7EB;
+    margin-top: calc(var(--step-indicator-size) / 2 - 2px);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.wizard-step-connector.active {
+    background-color: var(--brand-orange);
+}
+
+.wizard-step-connector.completed {
+    background-color: #10B981;
+}
+
+/* Individual Step Content */
+.wizard-step {
+    display: none;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.wizard-step.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Step Header */
+.wizard-step-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 3px solid var(--brand-orange);
+}
+
+.wizard-step-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--brand-orange);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.wizard-step-description {
+    font-size: var(--text-size-base);
+    color: #6B7280;
+    margin: 8px 0 0 0;
+    line-height: 1.6;
+}
+
+/* Wizard Navigation Buttons */
+.wizard-navigation {
+    display: flex;
+    gap: var(--wizard-gap);
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid #E5E7EB;
+}
+
+.wizard-button {
+    flex: 1;
+    height: var(--button-height);
+    font-size: var(--text-size-base);
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 140px;
+}
+
+.wizard-button:active {
+    transform: translateY(1px);
+}
+
+.wizard-button-prev {
+    background-color: #F3F4F6;
+    color: #374151;
+    border: 2px solid #D1D5DB;
+}
+
+.wizard-button-prev:hover {
+    background-color: #E5E7EB;
+    border-color: #9CA3AF;
+}
+
+.wizard-button-next {
+    background: linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-orange-dark) 100%);
+    color: white;
+    box-shadow: 0 4px 8px rgba(255, 107, 53, 0.2);
+}
+
+.wizard-button-next:hover {
+    box-shadow: 0 6px 12px rgba(255, 107, 53, 0.3);
+    transform: translateY(-1px);
+}
+
+.wizard-button-submit {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.2);
+}
+
+.wizard-button-submit:hover {
+    box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
+    transform: translateY(-1px);
+}
+
+.wizard-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Required Field Indicator for Middle-aged Users */
+.wizard-required-indicator {
+    color: #F85149;
+    font-size: 18px;
+    font-weight: 700;
+    margin-left: 4px;
+}
+
+.wizard-required-text {
+    font-size: var(--text-size-small);
+    color: #F85149;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+/* Section Dividers within Steps */
+.wizard-section {
+    margin-bottom: 28px;
+    padding: 20px;
+    background-color: #F9FAFB;
+    border-radius: 8px;
+    border-left: 4px solid var(--brand-orange);
+}
+
+.wizard-section-title {
+    font-size: var(--text-size-large);
+    font-weight: 700;
+    color: #374151;
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Enhanced Form Controls for Elderly Users */
+.wizard-step input[type="text"],
+.wizard-step input[type="number"],
+.wizard-step input[type="date"],
+.wizard-step input[type="tel"],
+.wizard-step select,
+.wizard-step textarea {
+    min-height: var(--input-height);
+    font-size: var(--text-size-base);
+    padding: 12px 16px;
+}
+
+.wizard-step label {
+    font-size: var(--text-size-base);
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Checkbox Enhancement for Elderly Users */
+.wizard-step input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+}
+
+/* Helper Text */
+.wizard-helper-text {
+    font-size: var(--text-size-small);
+    color: #6B7280;
+    margin-top: 6px;
+    line-height: 1.5;
+}
+
+/* Validation Messages */
+.wizard-error {
+    color: #F85149;
+    font-size: var(--text-size-base);
+    font-weight: 600;
+    margin-top: 8px;
+    padding: 12px;
+    background-color: #FEF2F2;
+    border-left: 4px solid #F85149;
+    border-radius: 4px;
+    display: none;
+}
+
+.wizard-error.show {
+    display: block;
+}
+
+/* Success Message */
+.wizard-success {
+    color: #10B981;
+    font-size: var(--text-size-base);
+    font-weight: 600;
+    margin-top: 8px;
+    padding: 12px;
+    background-color: #F0FDF4;
+    border-left: 4px solid #10B981;
+    border-radius: 4px;
+}
+
+/* Responsive Design for Tablet/Mobile */
+@media (max-width: 768px) {
+    .wizard-progress {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .wizard-step-connector {
+        display: none;
+    }
+
+    .wizard-navigation {
+        flex-direction: column;
+    }
+
+    .wizard-button {
+        width: 100%;
+    }
+
+    .wizard-step-item {
+        max-width: 100%;
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .wizard-step-circle {
+        border-width: 4px;
+    }
+
+    .wizard-button {
+        border-width: 3px;
+    }
+}

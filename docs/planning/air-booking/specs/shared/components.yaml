@@ -1,0 +1,88 @@
+# 공통 컴포넌트 정의
+version: "2.0"
+
+components:
+  sidebar:
+    type: navigation
+    position: sidebar
+    function: 메인 네비게이션 (모든 화면 접근)
+    props:
+      width: 240px
+      collapsed_width: 64px
+    menu_items:
+      - label: 대시보드
+        icon: dashboard
+        route: /dashboard
+      - label: 예약장부
+        icon: book
+        route: /bookings
+      - label: 달력
+        icon: calendar
+        route: /calendar
+      - label: 정산 관리
+        icon: wallet
+        route: /settlements
+      - label: 고객 관리
+        icon: people
+        route: /customers
+      - label: 거래처 관리
+        icon: business
+        route: /vendors
+      - label: 설정
+        icon: settings
+        route: /settings
+    events:
+      - on: click:menu_item
+        do: 해당 화면으로 이동, 활성 항목 하이라이트
+
+  header:
+    type: container
+    position: header
+    function: 페이지 타이틀 + 사용자 정보 + 로그아웃
+    props:
+      show_page_title: true
+      show_user_info: true
+    events:
+      - on: click:logout
+        do: 세션 종료, /login으로 이동
+
+  toast:
+    type: toast
+    position: overlay
+    function: 성공/에러/경고 알림 메시지
+    props:
+      position: top-right
+      duration: 3000
+      variants: [success, error, warning, info]
+
+  modal:
+    type: modal
+    position: overlay
+    function: 확인/삭제 다이얼로그
+    props:
+      sizes: [sm, md, lg]
+      closable: true
+      backdrop: true
+    events:
+      - on: click:confirm
+        do: 확인 액션 실행
+      - on: click:cancel
+        do: 모달 닫기
+
+  status_badge:
+    type: card
+    position: main
+    function: 상태 표시 뱃지 (색상 + 텍스트)
+    variants:
+      urgent: { color: "#DC2626", label: "긴급" }
+      imminent: { color: "#F59E0B", label: "임박" }
+      completed: { color: "#16A34A", label: "완료" }
+      default: { color: "#64748B", label: "대기" }
+
+  loading_spinner:
+    type: container
+    position: main
+    function: 로딩 표시
+    props:
+      size: sm | md | lg
+      overlay: boolean

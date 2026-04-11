@@ -1,0 +1,45 @@
+{
+  "id": "b6a0f002-c5af-48d1-a898-41abec135bc5",
+  "user_id": 55,
+  "customer_id": null,
+  "pnr": "IQZXPL",
+  "airline": "OZ",
+  "flight_number": "OZ369",
+  "route_from": "ICN",
+  "route_to": "CAN",
+  "name_kr": null,
+  "name_en": null,
+  "passport_number": null,
+  "seat_number": null,
+  "fare": null,
+  "nmtl_date": "2026-03-12",
+  "tl_date": null,
+  "departure_date": "2026-03-26",
+  "status": "pending",
+  "remarks": "연락처: 063-271-9090 (CTW GJ/KIM) / 010-3680-2242",
+  "pax_count": 2,
+  "created_at": "2026-03-10 19:18:17",
+  "updated_at": "2026-03-10 19:18:17",
+  "passengers": [
+    {
+      "id": "98daf4b0-05b9-494d-890b-f53000189646",
+      "booking_id": "b6a0f002-c5af-48d1-a898-41abec135bc5",
+      "name_en": "SO/DAEKUEN",
+      "name_kr": null,
+      "title": "MR",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-10 19:18:17"
+    },
+    {
+      "id": "cc8abe62-893f-47db-bdbd-7b7be02a03a6",
+      "booking_id": "b6a0f002-c5af-48d1-a898-41abec135bc5",
+      "name_en": "SHIN/JEOMSUK",
+      "name_kr": null,
+      "title": "MS",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-10 19:18:17"
+    }
+  ]
+}

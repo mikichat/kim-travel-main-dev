@@ -1,0 +1,683 @@
+{
+  "info": {
+    "name": "여행사 관리 시스템 API",
+    "description": "여행사 관리 시스템 Backend API Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.5.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Generic CRUD",
+      "item": [
+        {
+          "name": "Get All Items",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tables/customers?limit=20&sort=created_at&order=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "customers"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "sort",
+                  "value": "created_at"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Item by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tables/customers/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "customers", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name_kor\": \"홍길동\",\n  \"name_eng\": \"HONG GILDONG\",\n  \"passport_number\": \"M12345678\",\n  \"birth_date\": \"1990-01-01\",\n  \"passport_expiry\": \"2030-01-01\",\n  \"phone\": \"010-1234-5678\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tables/customers",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "customers"]
+            }
+          }
+        },
+        {
+          "name": "Update Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"010-9999-8888\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tables/customers/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "customers", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Item",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tables/customers/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["tables", "customers", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "uuid-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoices",
+      "item": [
+        {
+          "name": "Get Invoices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/invoices?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "invoices"],
+              "query": [
+                {
+                  "key": "invoice_date_from",
+                  "value": "2026-01-01",
+                  "disabled": true
+                },
+                {
+                  "key": "invoice_date_to",
+                  "value": "2026-01-31",
+                  "disabled": true
+                },
+                {
+                  "key": "recipient",
+                  "value": "ABC",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Invoice by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/invoices/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "invoices", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "invoice-uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient\": \"ABC 여행사\",\n  \"invoice_date\": \"2026-01-02\",\n  \"description\": \"방콕 3박 4일 항공료\",\n  \"flight_schedule_id\": \"flight-uuid-1\",\n  \"airfare_unit_price\": 500000,\n  \"airfare_quantity\": 2,\n  \"seat_preference_unit_price\": 50000,\n  \"seat_preference_quantity\": 2,\n  \"bank_account_id\": \"bank-uuid-1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/invoices",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "invoices"]
+            }
+          }
+        },
+        {
+          "name": "Update Invoice",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient\": \"XYZ 여행사\",\n  \"airfare_unit_price\": 550000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/invoices/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "invoices", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "invoice-uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Invoice",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/invoices/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "invoices", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "invoice-uuid"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Flight Schedules",
+      "item": [
+        {
+          "name": "Get Flight Schedules",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/flight-schedules?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "flight-schedules"],
+              "query": [
+                {
+                  "key": "group_id",
+                  "value": "group-123",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Flight Schedule",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"group_id\": \"group-123\",\n  \"group_name\": \"서울교회 방콕 단체\",\n  \"airline\": \"대한항공\",\n  \"flight_number\": \"KE123\",\n  \"departure_date\": \"2026-03-15\",\n  \"departure_airport\": \"ICN\",\n  \"departure_time\": \"09:00\",\n  \"arrival_date\": \"2026-03-15\",\n  \"arrival_airport\": \"BKK\",\n  \"arrival_time\": \"13:00\",\n  \"passengers\": 25\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/flight-schedules",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "flight-schedules"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bank Accounts",
+      "item": [
+        {
+          "name": "Get Bank Accounts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bank-accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bank-accounts"]
+            }
+          }
+        },
+        {
+          "name": "Get Default Account",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bank-accounts/default",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bank-accounts", "default"]
+            }
+          }
+        },
+        {
+          "name": "Create Bank Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bank_name\": \"국민은행\",\n  \"account_number\": \"123-456-789012\",\n  \"account_holder\": \"여행세상\",\n  \"is_default\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bank-accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bank-accounts"]
+            }
+          }
+        },
+        {
+          "name": "Set Default Account",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bank-accounts/:id/set-default",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bank-accounts", ":id", "set-default"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "bank-uuid"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Schedules",
+      "item": [
+        {
+          "name": "Get Schedules",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/schedules",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "schedules"],
+              "query": [
+                {
+                  "key": "group",
+                  "value": "서울교회",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Schedules by Date",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/schedules/date/:date",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "schedules", "date", ":date"],
+              "variable": [
+                {
+                  "key": "date",
+                  "value": "2026-03-15"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Export Schedules to Excel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/schedules/export",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "schedules", "export"],
+              "query": [
+                {
+                  "key": "group_name",
+                  "value": "서울교회 방콕 단체",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Schedule",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"group_name\": \"서울교회 방콕 단체\",\n  \"event_date\": \"2026-03-15\",\n  \"location\": \"방콕\",\n  \"transport\": \"전용차량\",\n  \"time\": \"09:00\",\n  \"schedule\": \"호텔 체크인\",\n  \"meals\": \"조:기내식, 중:현지식, 석:한식\",\n  \"color\": \"#7B61FF\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/schedules",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "schedules"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "File Upload",
+      "item": [
+        {
+          "name": "Upload Schedule File (AI Parse)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "schedule_file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "group_name",
+                  "value": "서울교회 방콕 단체",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "upload"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sync",
+      "item": [
+        {
+          "name": "Batch Customer Sync",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"group_id\": \"group-123\",\n  \"group_name\": \"서울교회 방콕 단체\",\n  \"departure_date\": \"2026-03-15\",\n  \"return_date\": \"2026-03-18\",\n  \"destination\": \"방콕\",\n  \"members\": [\n    {\n      \"nameKor\": \"홍길동\",\n      \"nameEn\": \"HONG GILDONG\",\n      \"passportNo\": \"M12345678\",\n      \"birthDate\": \"1990-01-01\",\n      \"passportExpire\": \"2030-01-01\",\n      \"phone\": \"010-1234-5678\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sync/customers/batch",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sync", "customers", "batch"]
+            }
+          }
+        },
+        {
+          "name": "Validate Sync Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"members\": [\n    {\n      \"nameKor\": \"홍길동\",\n      \"nameEn\": \"HONG GILDONG\",\n      \"passportNo\": \"M12345678\",\n      \"birthDate\": \"1990-01-01\",\n      \"passportExpire\": \"2030-01-01\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sync/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sync", "validate"]
+            }
+          }
+        },
+        {
+          "name": "Match Product by Destination",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products/match?destination=방콕",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", "match"],
+              "query": [
+                {
+                  "key": "destination",
+                  "value": "방콕"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Sync History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sync/history?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sync", "history"],
+              "query": [
+                {
+                  "key": "group_id",
+                  "value": "group-123",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cost Calculations",
+      "item": [
+        {
+          "name": "Get Cost Calculations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cost-calculations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cost-calculations"]
+            }
+          }
+        },
+        {
+          "name": "Get Cost Calculation by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cost-calculations/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cost-calculations", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create/Update Cost Calculation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"방콕 3박 4일 원가\",\n  \"destination\": \"방콕\",\n  \"departure_date\": \"2026-03-15\",\n  \"arrival_date\": \"2026-03-18\",\n  \"nights\": 3,\n  \"days\": 4,\n  \"adults\": 25,\n  \"flight_data\": [\n    {\n      \"airline\": \"대한항공\",\n      \"route\": \"ICN-BKK\",\n      \"price\": 500000,\n      \"quantity\": 25\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cost-calculations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cost-calculations"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Backup",
+      "item": [
+        {
+          "name": "Get Database Backup (JSON)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/backup/database",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "backup", "database"]
+            }
+          }
+        },
+        {
+          "name": "Download Database Backup",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/backup/download",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "backup", "download"]
+            }
+          }
+        },
+        {
+          "name": "Backup Database File",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/backup/file",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "backup", "file"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

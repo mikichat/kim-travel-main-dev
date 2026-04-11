@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>하나투어 - 일본 오사카 교토 3박4일</title>
+</head>
+<body>
+    <div class="container">
+        <h1>일본 오사카 교토 3박4일</h1>
+
+        <!-- 일정 테이블 -->
+        <div class="schedule-container">
+            <h2>여행 일정</h2>
+
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>일차</th>
+                        <th>지역</th>
+                        <th>교통편</th>
+                        <th>시간</th>
+                        <th>일정</th>
+                        <th>식사</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="schedule-day">
+                        <td class="day-number">1일차</td>
+                        <td class="region">인천 → 오사카</td>
+                        <td class="transport">항공</td>
+                        <td class="time">09:00</td>
+                        <td class="schedule-detail">
+                            인천국제공항 출발 → 간사이공항 도착 → 전용버스로 호텔 이동 → 호텔 체크인
+                        </td>
+                        <td class="meals">조식: 기내식, 중식: 기내식, 석식: 호텔식</td>
+                    </tr>
+                    <tr class="schedule-day">
+                        <td class="day-number">2일차</td>
+                        <td class="region">오사카 → 교토</td>
+                        <td class="transport">전용버스</td>
+                        <td class="time">08:00</td>
+                        <td class="schedule-detail">
+                            호텔 조식 → 오사카성 관광 → 도톤보리 자유시간 → 교토 이동 → 금각사 관광 → 호텔 체크인
+                        </td>
+                        <td class="meals">조식: 호텔식, 중식: 현지식, 석식: 현지식</td>
+                    </tr>
+                    <tr class="schedule-day">
+                        <td class="day-number">3일차</td>
+                        <td class="region">교토</td>
+                        <td class="transport">전용버스</td>
+                        <td class="time">08:30</td>
+                        <td class="schedule-detail">
+                            호텔 조식 → 청수사 관광 → 기온 거리 산책 → 후시미이나리 신사 → 나라 공원 (사슴 체험)
+                        </td>
+                        <td class="meals">조식: 호텔식, 중식: 현지식, 석식: 자유식</td>
+                    </tr>
+                    <tr class="schedule-day">
+                        <td class="day-number">4일차</td>
+                        <td class="region">오사카 → 인천</td>
+                        <td class="transport">항공</td>
+                        <td class="time">10:00</td>
+                        <td class="schedule-detail">
+                            호텔 조식 → 호텔 체크아웃 → 간사이공항 이동 → 인천국제공항 도착
+                        </td>
+                        <td class="meals">조식: 호텔식, 중식: 기내식</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 대체 구조: div 기반 일정 (SPA 스타일) -->
+        <div class="itinerary-list">
+            <div class="itinerary-item" data-day="1">
+                <div class="itinerary-day">1일차</div>
+                <div class="itinerary-region">인천 → 오사카</div>
+                <div class="itinerary-transport">항공</div>
+                <div class="itinerary-time">09:00</div>
+                <div class="itinerary-description">
+                    인천국제공항 출발 → 간사이공항 도착 → 전용버스로 호텔 이동 → 호텔 체크인
+                </div>
+                <div class="itinerary-meals">조식: 기내식, 중식: 기내식, 석식: 호텔식</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

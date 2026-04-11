@@ -1,0 +1,91 @@
+{
+  "name": "tourworld-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "npm run dev --workspace=client",
+    "dev:server": "npm run dev --workspace=server",
+    "build": "npm run build --workspaces",
+    "build:client": "npm run build --workspace=client",
+    "build:server": "npm run build --workspace=server",
+    "test": "npm run test --workspaces --if-present",
+    "test:client": "npm run test --workspace=client",
+    "test:server": "npm run test --workspace=server",
+    "test:coverage": "npm run test:coverage --workspaces --if-present",
+    "test:watch": "npm run test -- --watch",
+    "lint": "eslint client server shared --ext .ts,.tsx",
+    "lint:fix": "eslint client server shared --ext .ts,.tsx --fix",
+    "format": "prettier --write \"client/**/*.{ts,tsx,json}\" \"server/**/*.{ts,json}\" \"shared/**/*.{ts,json}\"",
+    "format:check": "prettier --check \"client/**/*.{ts,tsx,json}\" \"server/**/*.{ts,json}\" \"shared/**/*.{ts,json}\"",
+    "db:generate": "npm run db:generate --workspace=server",
+    "db:push": "npm run db:push --workspace=server",
+    "db:migrate": "npm run db:migrate --workspace=server",
+    "db:seed": "npm run db:seed --workspace=server",
+    "db:studio": "npm run db:studio --workspace=server",
+    "db:reset": "npm run db:reset --workspace=server",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:logs:db": "docker compose logs -f db",
+    "docker:restart": "docker compose restart",
+    "docker:rebuild": "docker compose up -d --build",
+    "docker:dev": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d",
+    "docker:dev:tools": "docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile tools up -d",
+    "docker:clean": "docker compose down -v --remove-orphans",
+    "clean": "rimraf node_modules client/node_modules server/node_modules shared/node_modules",
+    "prepare": "husky",
+    "test:frontend": "jest --config jest.config.cjs",
+    "test:frontend:coverage": "jest --config jest.config.cjs --coverage",
+    "test:e2e": "playwright test --config playwright.config.cjs",
+    "docker:build:backend": "docker build -t travel-backend ./backend"
+  },
+  "lint-staged": {
+    "client/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "server/**/*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "shared/**/*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "**/*.json": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@typescript-eslint/eslint-plugin": "^8.53.1",
+    "@typescript-eslint/parser": "^8.53.1",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "husky": "^9.1.7",
+    "jest": "^30.2.0",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.7.3",
+    "xlsx": "^0.18.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "npm@10.0.0",
+  "dependencies": {
+    "winston": "^3.19.0"
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "id": "2bf7cbbe-cf99-43f8-956f-150d2b8c9f3c",
+  "user_id": 55,
+  "customer_id": null,
+  "pnr": "LHNBZS",
+  "airline": "TW",
+  "flight_number": "TW405 / TW406",
+  "route_from": "ICN",
+  "route_to": "ICN",
+  "name_kr": null,
+  "name_en": "HUR/KWANGYEUL",
+  "passport_number": null,
+  "seat_number": null,
+  "fare": null,
+  "nmtl_date": null,
+  "tl_date": null,
+  "departure_date": "2026-05-25",
+  "return_date": "2026-06-04",
+  "status": "ticketed",
+  "remarks": null,
+  "pax_count": 4,
+  "agency": "여행세상 ",
+  "created_at": "2026-03-12 17:56:19",
+  "updated_at": "2026-03-25 07:59:01",
+  "passengers": [
+    {
+      "id": "89ef109c-6577-40f8-932e-2cf4fe208240",
+      "booking_id": "2bf7cbbe-cf99-43f8-956f-150d2b8c9f3c",
+      "name_en": "HUR/KWANGYEUL",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-12 17:56:19"
+    },
+    {
+      "id": "bb0c2516-d257-438d-a3eb-313236e9ed49",
+      "booking_id": "2bf7cbbe-cf99-43f8-956f-150d2b8c9f3c",
+      "name_en": "SUNG/MIYOUNG",
+      "name_kr": null,
+      "title": "MS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-12 17:56:19"
+    },
+    {
+      "id": "a67a467b-b195-4027-88cf-b322b620b299",
+      "booking_id": "2bf7cbbe-cf99-43f8-956f-150d2b8c9f3c",
+      "name_en": "SUNG/MIJUNG",
+      "name_kr": null,
+      "title": "MS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-12 17:56:19"
+    },
+    {
+      "id": "8e9f719d-78b3-465a-9e04-2c9758ea293c",
+      "booking_id": "2bf7cbbe-cf99-43f8-956f-150d2b8c9f3c",
+      "name_en": "LIM/HEMOON",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-12 17:56:19"
+    }
+  ],
+  "segments": [
+    {
+      "id": "e284eece-09f5-4f30-9e92-8c49b80ed518",
+      "booking_id": "2bf7cbbe-cf99-43f8-956f-150d2b8c9f3c",
+      "seg_index": 0,
+      "airline": "TW",
+      "flight_number": "TW405",
+      "route_from": "ICN",
+      "route_to": "FCO",
+      "departure_date": "2026-05-25",
+      "departure_time": null,
+      "arrival_time": null
+    },
+    {
+      "id": "14e9fcba-5e23-4e8c-910f-bba127748a13",
+      "booking_id": "2bf7cbbe-cf99-43f8-956f-150d2b8c9f3c",
+      "seg_index": 1,
+      "airline": "TW",
+      "flight_number": "TW406",
+      "route_from": "FCO",
+      "route_to": "ICN",
+      "departure_date": "2026-06-04",
+      "departure_time": null,
+      "arrival_time": null
+    }
+  ]
+}

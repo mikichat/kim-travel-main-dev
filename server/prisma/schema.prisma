@@ -1,0 +1,174 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// User & Authentication (FEAT-0)
+// ==========================================
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  itineraries     Itinerary[]
+  hotels          Hotel[]
+  images          Image[]
+  imageCategories ImageCategory[]
+
+  @@map("users")
+}
+
+// ==========================================
+// Itinerary (FEAT-2: 일정표 편집기 - 핵심 테이블)
+// ==========================================
+model Itinerary {
+  id          String          @id @default(uuid())
+  userId      String          @map("user_id")
+  title       String
+  description String?
+  startDate   DateTime?       @map("start_date") @db.Date
+  endDate     DateTime?       @map("end_date") @db.Date
+  status      ItineraryStatus @default(DRAFT)
+  metadata    Json?           // 템플릿 정보, 브랜딩 설정 등
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items ItineraryItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("itineraries")
+}
+
+enum ItineraryStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// ==========================================
+// ItineraryItem (FEAT-2: 개별 일정 항목)
+// ==========================================
+model ItineraryItem {
+  id          String    @id @default(uuid())
+  itineraryId String    @map("itinerary_id")
+  hotelId     String?   @map("hotel_id")
+  dayNumber   Int       @map("day_number") // 1일차, 2일차...
+  startTime   DateTime? @map("start_time") @db.Time
+  endTime     DateTime? @map("end_time") @db.Time
+  title       String
+  description String?
+  location    String?
+  coordinates Json?     // {"lat": 51.5074, "lng": -0.1278}
+  sortOrder   Int       @default(0) @map("sort_order") // 드래그앤드롭 순서
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  itinerary Itinerary              @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  hotel     Hotel?                 @relation(fields: [hotelId], references: [id], onDelete: SetNull)
+  images    ItineraryItemImage[]
+
+  @@index([itineraryId])
+  @@index([itineraryId, dayNumber])
+  @@map("itinerary_items")
+}
+
+// ==========================================
+// Hotel (FEAT-1: 호텔 정보 관리)
+// ==========================================
+model Hotel {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  name            String
+  address         String?
+  country         String?
+  city            String?
+  starRating      Int?     @map("star_rating") @db.SmallInt
+  phone           String?
+  url             String?
+  locationRemarks String?  @map("location_remarks") // 위치 설명 (도보거리 등)
+  coordinates     Json?    // {"lat": 51.5074, "lng": -0.1278}
+  amenities       Json?    // ["wifi", "parking", "breakfast"]
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itineraryItems ItineraryItem[]
+  images         Image[]
+
+  @@index([userId])
+  @@index([name])
+  @@map("hotels")
+}
+
+// ==========================================
+// Image (FEAT-3: 이미지 갤러리)
+// ==========================================
+model Image {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  categoryId  String?  @map("category_id")
+  hotelId     String?  @map("hotel_id")
+  filename    String
+  storagePath String?  @map("storage_path") // 로컬 저장 경로
+  cloudUrl    String?  @map("cloud_url") // 클라우드 URL
+  fileSize    Int?     @map("file_size")
+  mimeType    String?  @map("mime_type")
+  metadata    Json?    // 이미지 메타데이터
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category       ImageCategory?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  hotel          Hotel?                 @relation(fields: [hotelId], references: [id], onDelete: SetNull)
+  itineraryItems ItineraryItemImage[]
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([hotelId])
+  @@map("images")
+}
+
+// ==========================================
+// ImageCategory (FEAT-3: 이미지 카테고리)
+// ==========================================
+model ImageCategory {
+  id          String   @id @default(uuid())
+  userId      String?  @map("user_id") // null이면 시스템 기본 카테고리
+  name        String
+  description String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  images Image[]
+
+  @@index([userId])
+  @@map("image_categories")
+}
+
+// ==========================================
+// ItineraryItemImage (일정-이미지 연결 - FEAT-2 + FEAT-3)
+// ==========================================
+model ItineraryItemImage {
+  itineraryItemId String @map("itinerary_item_id")
+  imageId         String @map("image_id")
+  sortOrder       Int    @default(0) @map("sort_order")
+
+  itineraryItem ItineraryItem @relation(fields: [itineraryItemId], references: [id], onDelete: Cascade)
+  image         Image         @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  @@id([itineraryItemId, imageId])
+  @@map("itinerary_item_images")
+}

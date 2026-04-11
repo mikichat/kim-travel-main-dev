@@ -1,0 +1,106 @@
+version: "2.0"
+
+screen:
+  name: 정산 관리
+  route: /settlements
+  layout: sidebar-main
+  auth: true
+
+data_requirements:
+  - resource: settlements
+    needs: [id, booking_id, vendor_id, payment_type, amount, status, payment_date, remarks]
+    filters:
+      status: "?status"
+      search: "?q"
+
+  - resource: bookings
+    needs: [id, pnr, name_kr, fare, status]
+
+  - resource: vendors
+    needs: [id, name, type]
+
+  - resource: invoices
+    needs: [id, settlement_id, invoice_number, issue_date, total_amount]
+
+components:
+  - id: settlement_summary
+    type: stat-card
+    position: main
+    function: 요약 카드 (총 미수금액, 입금 완료, 카드 결제)
+    data_source:
+      resource: settlements
+
+  - id: settlement_filter
+    type: filter-form
+    position: main
+    function: 정산 상태 필터 (미수/입금완료/카드/전체)
+    events:
+      - on: click:filter
+        do: 선택 상태로 테이블 필터링
+
+  - id: settlement_table
+    type: table
+    position: main
+    function: 정산 목록 테이블
+    data_source:
+      resource: settlements
+    events:
+      - on: click:row
+        do: 정산 상세 확장
+      - on: click:status_change
+        do: 정산 상태 변경 (unpaid → paid)
+
+  - id: payment_form
+    type: form
+    position: overlay
+    function: 결제 정보 입력 모달 (결제유형/금액/날짜)
+    data_source:
+      resource: settlements
+    events:
+      - on: submit
+        do: 결제 정보 저장, 정산 상태 업데이트
+
+  - id: invoice_generator
+    type: form
+    position: overlay
+    function: 인보이스 생성 모달
+    data_source:
+      resource: invoices
+    events:
+      - on: submit
+        do: 인보이스 번호 자동 생성, PDF 다운로드
+
+connections:
+  navigations:
+    - from: settlement_table
+      to: /bookings
+
+  shared_components:
+    - sidebar
+    - header
+    - toast
+    - modal
+
+tests:
+  - name: 정산 현황 로드
+    when: 정산 관리 페이지 접속
+    then:
+      - 요약 카드 표시 (총 미수/입금 완료/카드)
+      - 정산 목록 테이블 표시
+
+  - name: 정산 상태 변경
+    when: 미수 항목에서 입금완료 클릭
+    then:
+      - 결제 정보 입력 모달 표시
+      - 저장 후 상태 변경 반영
+
+  - name: 인보이스 생성
+    when: 인보이스 발행 버튼 클릭
+    then:
+      - 인보이스 번호 자동 생성
+      - PDF 다운로드 제공
+
+  - name: 필터링
+    when: 미수 필터 클릭
+    then:
+      - unpaid 상태 정산만 표시

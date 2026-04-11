@@ -1,0 +1,336 @@
+/* TASK-511: 동기화 UI 스타일 */
+
+/* 동기화 확인 다이얼로그 */
+.sync-confirm-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.2s ease-in;
+}
+
+.sync-confirm-content {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    animation: slideUp 0.3s ease-out;
+}
+
+.sync-confirm-content h3 {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    color: #333;
+}
+
+.sync-preview {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.preview-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.preview-item:last-child {
+    border-bottom: none;
+}
+
+.preview-item .icon {
+    font-size: 20px;
+    margin-right: 12px;
+    width: 28px;
+    text-align: center;
+}
+
+.preview-item .label {
+    flex: 1;
+    color: #666;
+    font-size: 14px;
+}
+
+.preview-item .value {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.dialog-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.dialog-actions .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.dialog-actions .btn-primary {
+    background: #7B61FF;
+    color: white;
+}
+
+.dialog-actions .btn-primary:hover {
+    background: #6952E0;
+}
+
+.dialog-actions .btn-secondary {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.dialog-actions .btn-secondary:hover {
+    background: #dee2e6;
+}
+
+/* 동기화 진행 표시 */
+.sync-progress {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    min-width: 350px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 10001;
+    animation: fadeIn 0.2s ease-in;
+}
+
+.sync-progress h4 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    color: #333;
+    text-align: center;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7B61FF 0%, #9580FF 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -100% 0;
+    }
+    100% {
+        background-position: 100% 0;
+    }
+}
+
+.progress-text {
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+    margin: 8px 0;
+}
+
+.progress-step {
+    text-align: center;
+    font-size: 14px;
+    color: #7B61FF;
+    font-weight: 500;
+    margin: 8px 0 0 0;
+}
+
+/* 동기화 결과 다이얼로그 */
+.sync-result-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.2s ease-in;
+}
+
+.sync-result-content {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    animation: slideUp 0.3s ease-out;
+}
+
+.sync-result-content h3 {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    color: #28a745;
+}
+
+.sync-result-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+}
+
+.sync-result-content table td {
+    padding: 8px 0;
+    font-size: 14px;
+}
+
+.sync-result-content table td:first-child {
+    color: #666;
+    width: 50%;
+}
+
+.sync-result-content table td:last-child {
+    font-weight: 600;
+    color: #333;
+    text-align: right;
+}
+
+.sync-result-content details {
+    margin: 16px 0;
+    padding: 12px;
+    background: #fff3cd;
+    border-radius: 4px;
+    border: 1px solid #ffc107;
+}
+
+.sync-result-content summary {
+    cursor: pointer;
+    font-weight: 500;
+    color: #856404;
+    font-size: 14px;
+}
+
+.error-list {
+    margin: 12px 0 0 0;
+    padding-left: 20px;
+}
+
+.error-list li {
+    font-size: 13px;
+    color: #721c24;
+    margin: 4px 0;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 동기화 버튼 스타일 */
+.sync-btn {
+    background: linear-gradient(135deg, #7B61FF 0%, #9580FF 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(123, 97, 255, 0.3);
+}
+
+.sync-btn:hover {
+    background: linear-gradient(135deg, #6952E0 0%, #8470E6 100%);
+    box-shadow: 0 4px 12px rgba(123, 97, 255, 0.4);
+    transform: translateY(-1px);
+}
+
+.sync-btn:active {
+    transform: translateY(0);
+}
+
+.sync-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* 동기화 상태 배지 */
+.sync-status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.sync-status-badge.synced {
+    background: #d4edda;
+    color: #155724;
+}
+
+.sync-status-badge.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.sync-status-badge.error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .sync-confirm-content,
+    .sync-result-content {
+        width: 95%;
+        padding: 20px;
+    }
+
+    .sync-progress {
+        min-width: 300px;
+    }
+}

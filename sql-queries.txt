@@ -1,0 +1,102 @@
+# 유용한 SQL 쿼리 모음
+# 사용법: sqlite3 backend/travel_agency.db 실행 후 아래 쿼리 복사해서 붙여넣기
+
+# ========================================
+# 1. 과거 일정 조회 (최근 30일)
+# ========================================
+SELECT
+    event_date as '날짜',
+    group_name as '단체명',
+    location as '목적지',
+    schedule as '일정'
+FROM schedules
+WHERE date(event_date) < date('now')
+  AND date(event_date) >= date('now', '-30 days')
+ORDER BY event_date DESC;
+
+# ========================================
+# 2. 과거 일정 조회 (최근 90일)
+# ========================================
+SELECT
+    event_date as '날짜',
+    group_name as '단체명',
+    location as '목적지',
+    schedule as '일정',
+    transport as '교통편'
+FROM schedules
+WHERE date(event_date) < date('now')
+  AND date(event_date) >= date('now', '-90 days')
+ORDER BY event_date DESC;
+
+# ========================================
+# 3. 전체 일정 개수 확인
+# ========================================
+SELECT
+    COUNT(*) as '전체일정',
+    COUNT(CASE WHEN date(event_date) >= date('now') THEN 1 END) as '다가오는일정',
+    COUNT(CASE WHEN date(event_date) < date('now') THEN 1 END) as '과거일정'
+FROM schedules;
+
+# ========================================
+# 4. 단체별 일정 개수
+# ========================================
+SELECT
+    group_name as '단체명',
+    COUNT(*) as '일정개수',
+    MIN(event_date) as '첫일정',
+    MAX(event_date) as '마지막일정'
+FROM schedules
+GROUP BY group_name
+ORDER BY COUNT(*) DESC;
+
+# ========================================
+# 5. 과거 예약 조회 (출발일 지난 예약)
+# ========================================
+SELECT
+    id,
+    customer_name as '고객명',
+    product_name as '상품명',
+    departure_date as '출발일',
+    return_date as '귀국일',
+    status as '상태'
+FROM bookings
+WHERE date(departure_date) < date('now')
+ORDER BY departure_date DESC
+LIMIT 50;
+
+# ========================================
+# 6. 특정 날짜 범위 일정 조회
+# ========================================
+SELECT
+    event_date,
+    group_name,
+    location,
+    schedule
+FROM schedules
+WHERE date(event_date) BETWEEN '2024-01-01' AND '2024-12-31'
+ORDER BY event_date DESC;
+
+# ========================================
+# 7. 특정 단체명 검색
+# ========================================
+SELECT * FROM schedules
+WHERE group_name LIKE '%검색어%'
+ORDER BY event_date DESC;
+
+# ========================================
+# 8. 모든 테이블 목록 확인
+# ========================================
+.tables
+
+# ========================================
+# 9. 테이블 구조 확인
+# ========================================
+.schema schedules
+
+# ========================================
+# 10. CSV로 내보내기
+# ========================================
+.mode csv
+.output past_schedules.csv
+SELECT * FROM schedules WHERE date(event_date) < date('now');
+.output stdout

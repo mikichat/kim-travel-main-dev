@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>여행 문서 통합 편집기 (견적서 + 일정표)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f5f5f5;
+        }
+
+        /* ==================================================================
+           Main Layout
+           ================================================================== */
+        .editor-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Left Panel */
+        .editor-panel {
+            width: 420px;
+            background-color: #ffffff;
+            border-right: 1px solid #d9d3cc;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        /* Right Panel */
+        .preview-panel {
+            flex: 1;
+            background-color: #f5f5f5;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ==================================================================
+           Editor Header
+           ================================================================== */
+        .editor-header {
+            padding: 20px 24px;
+            background-color: #fdfaf6;
+            border-bottom: 2px solid #f09641;
+        }
+
+        .editor-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .editor-subtitle {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        /* ==================================================================
+           Tab Navigation
+           ================================================================== */
+        .tab-navigation {
+            display: flex;
+            background-color: #f7f3ee;
+            border-bottom: 1px solid #e3ddd6;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+            background-color: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-button:hover {
+            background-color: #fdfaf6;
+            color: #4b5563;
+        }
+
+        .tab-button.active {
+            color: #f09641;
+            background-color: #ffffff;
+            border-bottom-color: #f09641;
+        }
+
+        /* ==================================================================
+           Tab Content
+           ================================================================== */
+        .tab-content-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Form Sections */
+        .form-section {
+            padding: 24px;
+            border-bottom: 1px solid #e3ddd6;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #4b5563;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f09641;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 6px;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            font-family: 'Pretendard', sans-serif;
+            color: #1f2937;
+            background-color: #ffffff;
+            border: 1px solid #d9d3cc;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #f09641;
+            box-shadow: 0 0 0 3px rgba(240, 150, 65, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-help {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        /* Itinerary Day Selector */
+        .day-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .day-button {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            background-color: #f7f3ee;
+            border: 1px solid #d9d3cc;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .day-button:hover {
+            background-color: #fdfaf6;
+            border-color: #f09641;
+        }
+
+        .day-button.active {
+            background-color: #f09641;
+            color: white;
+            border-color: #f09641;
+        }
+
+        /* ==================================================================
+           Action Buttons
+           ================================================================== */
+        .action-buttons {
+            padding: 20px 24px;
+            background-color: #fdfaf6;
+            border-top: 1px solid #d9d3cc;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 20px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #f09641;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #d87f2f;
+        }
+
+        .btn-secondary {
+            background-color: #e3ddd6;
+            color: #4b5563;
+        }
+
+        .btn-secondary:hover {
+            background-color: #d9d3cc;
+        }
+
+        /* ==================================================================
+           Preview Panel
+           ================================================================== */
+        .preview-header {
+            padding: 16px 24px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #d9d3cc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #4b5563;
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-print {
+            background-color: #f09641;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background-color: #d87f2f;
+        }
+
+        .preview-iframe-container {
+            flex: 1;
+            padding: 24px;
+            overflow: auto;
+            background-color: #e5e7eb;
+        }
+
+        .preview-iframe {
+            width: 100%;
+            min-height: 297mm;
+            border: none;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+
+        /* Validation Messages */
+        .validation-message {
+            padding: 12px;
+            margin: 16px 24px;
+            border-radius: 4px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .validation-message.show {
+            display: block;
+        }
+
+        .validation-success {
+            background-color: #efe;
+            color: #28a745;
+            border: 1px solid #28a745;
+        }
+
+        .validation-error {
+            background-color: #fee;
+            color: #c84f3c;
+            border: 1px solid #c84f3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <!-- Left Panel: Editor -->
+        <div class="editor-panel">
+            <!-- Header -->
+            <div class="editor-header">
+                <h1 class="editor-title">여행 문서 통합 편집기</h1>
+                <p class="editor-subtitle">Phase 2: 견적서 + 일정표</p>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button type="button" class="tab-button active" onclick="switchTab('quote')">견적서</button>
+                <button type="button" class="tab-button" onclick="switchTab('itinerary')">일정표</button>
+            </div>
+
+            <!-- Validation Message -->
+            <div id="validation-message" class="validation-message"></div>
+
+            <!-- Tab Content Container -->
+            <div class="tab-content-container">
+                <!-- Tab 1: Quote Editor (Phase 1과 동일) -->
+                <div id="tab-quote" class="tab-content active">
+                    <form id="quote-form">
+                        <!-- 단체 정보 -->
+                        <div class="form-section">
+                            <h2 class="section-title">단체 정보</h2>
+                            <div class="form-group">
+                                <label class="form-label" for="group_name">단체명</label>
+                                <input type="text" id="group_name" class="form-input" value="중국 – 광저우 천저우 고의령 망산 PTY" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="travel_dates">여행 일자</label>
+                                <input type="text" id="travel_dates" class="form-input" value="2025년 11월 14일 ~ 11월 18일" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="destination">여행지</label>
+                                <input type="text" id="destination" class="form-input" value="중국 – 광저우 천저우 고의령 망산" required />
+                            </div>
+                        </div>
+
+                        <!-- 요금 정보 -->
+                        <div class="form-section">
+                            <h2 class="section-title">1인 여행요금</h2>
+                            <div class="form-group">
+                                <label class="form-label" for="airline_name">항공사명</label>
+                                <input type="text" id="airline_name" class="form-input" value="아시아나 항공" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="departure_flight">출발편</label>
+                                <input type="text" id="departure_flight" class="form-input" value="인천 (08:40) - 광저우 (11:15)" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="return_flight">귀국편</label>
+                                <input type="text" id="return_flight" class="form-input" value="광저우 (12:20) - 인천 (17:00)" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="option_type">옵션 타입</label>
+                                <select id="option_type" class="form-select" required>
+                                    <option value="노옵션">노옵션</option>
+                                    <option value="반일옵션">반일옵션</option>
+                                    <option value="전일옵션">전일옵션</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="price_amount">1인 요금</label>
+                                <input type="text" id="price_amount" class="form-input" value="1,540,000원" required />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tab 2: Itinerary Editor -->
+                <div id="tab-itinerary" class="tab-content">
+                    <!-- Day Selector -->
+                    <div class="form-section">
+                        <h2 class="section-title">편집할 일차 선택</h2>
+                        <div class="day-selector">
+                            <button type="button" class="day-button active" onclick="selectDay(1)">1일차</button>
+                            <button type="button" class="day-button" onclick="selectDay(2)">2일차</button>
+                            <button type="button" class="day-button" onclick="selectDay(3)">3일차</button>
+                            <button type="button" class="day-button" onclick="selectDay(4)">+ 추가</button>
+                        </div>
+                    </div>
+
+                    <!-- Day Editor Form -->
+                    <form id="itinerary-form">
+                        <div class="form-section">
+                            <h2 class="section-title">일차 정보</h2>
+                            <div class="form-group">
+                                <label class="form-label" for="day_number">일차</label>
+                                <input type="number" id="day_number" class="form-input" value="1" min="1" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="day_date">날짜</label>
+                                <input type="text" id="day_date" class="form-input" value="11/14" required />
+                                <p class="form-help">예: 11/14</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="day_of_week">요일</label>
+                                <select id="day_of_week" class="form-select" required>
+                                    <option value="월">월</option>
+                                    <option value="화">화</option>
+                                    <option value="수">수</option>
+                                    <option value="목" selected>목</option>
+                                    <option value="금">금</option>
+                                    <option value="토">토</option>
+                                    <option value="일">일</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="day_title">일정 제목</label>
+                                <input type="text" id="day_title" class="form-input" value="인천 → 광저우" required />
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h2 class="section-title">일정 내용</h2>
+                            <div class="form-group">
+                                <label class="form-label" for="main_schedule">주요 일정</label>
+                                <textarea id="main_schedule" class="form-textarea" required>08:40 인천국제공항 출발
+11:15 광저우 도착
+오후 호텔 체크인
+저녁 환영 만찬</textarea>
+                                <p class="form-help">한 줄에 하나씩 입력하세요</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="meals">식사</label>
+                                <input type="text" id="meals" class="form-input" value="조: 기내식 / 중: 현지식 / 석: 한식" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="hotel">숙박</label>
+                                <input type="text" id="hotel" class="form-input" value="광저우 ****호텔" required />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button type="button" class="btn btn-primary" onclick="updatePreview()">미리보기 업데이트</button>
+                <button type="button" class="btn btn-secondary" onclick="saveDocument()">전체 저장</button>
+                <button type="button" class="btn btn-secondary" onclick="loadDocument()">불러오기</button>
+            </div>
+        </div>
+
+        <!-- Right Panel: Preview -->
+        <div class="preview-panel">
+            <div class="preview-header">
+                <h2 class="preview-title">통합 미리보기</h2>
+                <div class="preview-actions">
+                    <button type="button" class="btn-small btn-print" onclick="printAll()">전체 인쇄/PDF</button>
+                </div>
+            </div>
+            <div class="preview-iframe-container">
+                <iframe id="preview-iframe" class="preview-iframe" src="preview-all.html"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/data-binding.js"></script>
+    <script type="module" src="js/itinerary-data.js"></script>
+    <script type="module">
+        // ==================================================================
+        // Global State
+        // ==================================================================
+        let currentTab = 'quote';
+        let currentDay = 1;
+        let documentData = {
+            quote: null,
+            itinerary: null
+        };
+
+        // ==================================================================
+        // Tab Switching
+        // ==================================================================
+        function switchTab(tabName) {
+            currentTab = tabName;
+
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        // ==================================================================
+        // Day Selection
+        // ==================================================================
+        function selectDay(dayNumber) {
+            currentDay = dayNumber;
+
+            // Update day buttons
+            document.querySelectorAll('.day-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Load day data into form
+            loadDayData(dayNumber);
+        }
+
+        function loadDayData(dayNumber) {
+            // TODO: Load from stored data
+        }
+
+        // ==================================================================
+        // Data Collection
+        // ==================================================================
+        function collectQuoteData() {
+            return {
+                quote_id: 'Q-' + Date.now(),
+                group_info: {
+                    group_name: document.getElementById('group_name').value,
+                    travel_dates: document.getElementById('travel_dates').value,
+                    destination: document.getElementById('destination').value
+                },
+                pricing: {
+                    airline_name: document.getElementById('airline_name').value.replace(/\s+/, '<br />'),
+                    departure_flight: document.getElementById('departure_flight').value,
+                    return_flight: document.getElementById('return_flight').value,
+                    option_type: document.getElementById('option_type').value,
+                    price_amount: document.getElementById('price_amount').value,
+                    price_note: '※ 상기 요금은 1인 기준이며 항공 및 세금 변동 시 재확인 필요'
+                },
+                contact_info: '담당자: 김국진 010-2662-9009'
+            };
+        }
+
+        function collectItineraryData() {
+            // Collect current day data
+            const dayData = {
+                page_number: currentDay + 1,
+                page_type: 'itinerary_day',
+                background_image: '',
+                day_info: {
+                    day_number: parseInt(document.getElementById('day_number').value),
+                    date: document.getElementById('day_date').value,
+                    day_of_week: document.getElementById('day_of_week').value,
+                    title: document.getElementById('day_title').value
+                },
+                editable_text: {
+                    main_schedule: document.getElementById('main_schedule').value,
+                    meals: document.getElementById('meals').value,
+                    hotel: document.getElementById('hotel').value
+                }
+            };
+
+            // TODO: Merge with existing pages data
+            return {
+                itinerary_id: 'I-' + Date.now(),
+                pages: [dayData]
+            };
+        }
+
+        // ==================================================================
+        // Preview Update
+        // ==================================================================
+        function updatePreview() {
+            const quoteData = collectQuoteData();
+            const itineraryData = collectItineraryData();
+
+            documentData.quote = quoteData;
+            documentData.itinerary = itineraryData;
+
+            // Send to preview iframe
+            const iframe = document.getElementById('preview-iframe');
+            iframe.contentWindow.postMessage({
+                type: 'LOAD_COMPLETE_DOCUMENT',
+                quote: quoteData,
+                itinerary: itineraryData
+            }, '*');
+
+            showMessage('미리보기가 업데이트되었습니다.', 'success');
+        }
+
+        // ==================================================================
+        // Save/Load
+        // ==================================================================
+        function saveDocument() {
+            const completeData = {
+                document_id: 'DOC-' + Date.now(),
+                created_at: new Date().toISOString(),
+                quote: collectQuoteData(),
+                itinerary: collectItineraryData()
+            };
+
+            localStorage.setItem('complete_document', JSON.stringify(completeData));
+            showMessage('전체 문서가 저장되었습니다.', 'success');
+        }
+
+        function loadDocument() {
+            const saved = localStorage.getItem('complete_document');
+            if (!saved) {
+                showMessage('저장된 문서가 없습니다.', 'error');
+                return;
+            }
+
+            const data = JSON.parse(saved);
+            documentData = data;
+
+            // Load quote data
+            if (data.quote) {
+                document.getElementById('group_name').value = data.quote.group_info.group_name;
+                document.getElementById('travel_dates').value = data.quote.group_info.travel_dates;
+                document.getElementById('destination').value = data.quote.group_info.destination;
+                // ... load other fields
+            }
+
+            updatePreview();
+            showMessage('문서를 불러왔습니다.', 'success');
+        }
+
+        // ==================================================================
+        // Print
+        // ==================================================================
+        function printAll() {
+            document.getElementById('preview-iframe').contentWindow.print();
+        }
+
+        // ==================================================================
+        // Messages
+        // ==================================================================
+        function showMessage(message, type) {
+            const msgDiv = document.getElementById('validation-message');
+            msgDiv.textContent = message;
+            msgDiv.className = `validation-message show validation-${type}`;
+
+            setTimeout(() => {
+                msgDiv.classList.remove('show');
+            }, 3000);
+        }
+
+        // ==================================================================
+        // Initialize
+        // ==================================================================
+        window.addEventListener('load', () => {
+            updatePreview();
+        });
+
+        // ==================================================================
+        // Window Exposure (onclick handlers in HTML)
+        // ==================================================================
+        window.switchTab = switchTab;
+        window.selectDay = selectDay;
+        window.updatePreview = updatePreview;
+        window.saveDocument = saveDocument;
+        window.loadDocument = loadDocument;
+        window.printAll = printAll;
+    </script>
+</body>
+</html>

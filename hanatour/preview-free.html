@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예약 내역 미리보기</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+    <!-- html2canvas: 지연 로드 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Black+Han+Sans&family=Do+Hyeon&family=Jua&family=Gamja+Flower&family=Sunflower:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#2563eb",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0f172a",
+                    },
+                    fontFamily: {
+                        sans: ["Noto Sans KR", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Material Symbols 렌더링 */
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+            vertical-align: middle;
+        }
+
+        /* 스크롤바 */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+        /* 이미지 저장 드롭다운 */
+        #saveDropdown {
+            display: none;
+        }
+        #saveDropdown.open {
+            display: block;
+        }
+
+        /* 인쇄 */
+        @media print {
+            #topBar, #bottomBar, #saveDropdown { display: none !important; }
+            #captureArea { padding: 0 !important; }
+            body { background: white !important; }
+        }
+
+        /* 탑승객 아바타 색상 */
+        .avatar-0  { background: #dbeafe; color: #1d4ed8; }
+        .avatar-1  { background: #e0e7ff; color: #4338ca; }
+        .avatar-2  { background: #d1fae5; color: #065f46; }
+        .avatar-3  { background: #fef3c7; color: #92400e; }
+        .avatar-4  { background: #fce7f3; color: #9d174d; }
+        .avatar-5  { background: #ecfdf5; color: #047857; }
+        .avatar-6  { background: #fff7ed; color: #c2410c; }
+        .avatar-7  { background: #f5f3ff; color: #5b21b6; }
+
+        /* 비행기 라인 */
+        .flight-line {
+            position: relative;
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+            padding: 0 12px;
+        }
+        .flight-line::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            top: 50%;
+            height: 1px;
+            background: #e2e8f0;
+        }
+        .dark .flight-line::before {
+            background: #334155;
+        }
+        .flight-line .icon {
+            position: relative;
+            z-index: 1;
+            margin: 0 auto;
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        /* 토스트 알림 */
+        #toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15,23,42,0.92);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 24px;
+            font-size: 13px;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        #toast.show { opacity: 1; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 pt-14 pb-20">
+
+    <!-- 토스트 -->
+    <div id="toast"></div>
+
+    <!-- 상단 고정 바 -->
+    <div id="topBar" class="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 px-4 py-2.5 flex items-center justify-between">
+        <button type="button" onclick="goBack()" class="flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            돌아가기
+        </button>
+        <div class="flex items-center gap-2">
+            <!-- 링크 복사 -->
+            <button type="button" onclick="copyLink()" class="flex items-center gap-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                <span class="material-symbols-outlined text-[15px]">link</span>
+                링크 복사
+            </button>
+            <!-- 이미지 저장 드롭다운 래퍼 -->
+            <div class="relative">
+                <button type="button" onclick="toggleSaveDropdown()" class="flex items-center gap-1.5 text-xs font-semibold bg-primary text-white px-3 py-1.5 rounded-full hover:bg-primary/90 transition-colors">
+                    <span class="material-symbols-outlined text-[15px]">image</span>
+                    이미지 저장
+                </button>
+                <div id="saveDropdown" class="absolute right-0 top-full mt-1.5 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden min-w-[148px] z-50">
+                    <button type="button" onclick="saveAsImage('full'); closeSaveDropdown();" class="w-full text-left text-sm px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[15px] text-slate-400">article</span> 전체 페이지
+                    </button>
+                    <div id="dropdownFlights" class="hidden">
+                        <button type="button" onclick="saveAsImage('flights'); closeSaveDropdown();" class="w-full text-left text-sm px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[15px] text-slate-400">flight</span> 항공편만
+                        </button>
+                    </div>
+                    <div id="dropdownHotels" class="hidden">
+                        <button type="button" onclick="saveAsImage('hotels'); closeSaveDropdown();" class="w-full text-left text-sm px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[15px] text-slate-400">hotel</span> 숙박만
+                        </button>
+                    </div>
+                    <div id="dropdownRentcar" class="hidden">
+                        <button type="button" onclick="saveAsImage('rentcar'); closeSaveDropdown();" class="w-full text-left text-sm px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[15px] text-slate-400">directions_car</span> 렌터카만
+                        </button>
+                    </div>
+                    <div id="dropdownGolf" class="hidden">
+                        <button type="button" onclick="saveAsImage('golf'); closeSaveDropdown();" class="w-full text-left text-sm px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[15px] text-slate-400">golf_course</span> 골프만
+                        </button>
+                    </div>
+                    <div id="dropdownPayment" class="hidden">
+                        <button type="button" onclick="saveAsImage('payment'); closeSaveDropdown();" class="w-full text-left text-sm px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[15px] text-slate-400">payments</span> 결제만
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <button type="button" onclick="toggleDarkMode()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-yellow-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                <span class="material-symbols-outlined text-[18px]" id="darkIcon">dark_mode</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 메인 캡처 영역 -->
+    <div id="captureArea" class="max-w-md mx-auto pt-4 pb-6 px-4 space-y-4">
+
+        <!-- 헤더 카드 -->
+        <header id="sectionHeader" class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div id="titleBanner" class="relative flex items-center justify-center min-h-[120px] bg-gradient-to-br from-blue-600 to-indigo-700">
+                <div id="titleBannerBg" class="absolute inset-0 bg-center bg-cover" style="display:none;"></div>
+                <div class="relative z-10 text-center px-6 py-8">
+                    <h1 id="titleText" class="text-2xl font-bold text-white drop-shadow-md">예약 내역</h1>
+                    <p id="titleSubtext" class="text-sm text-white/80 mt-1 hidden"></p>
+                </div>
+            </div>
+            <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-white text-[18px]">flight_takeoff</span>
+                    </div>
+                    <span id="headerBrand" class="font-bold text-lg tracking-tight">여행세상</span>
+                </div>
+            </div>
+            <div class="space-y-2.5 text-sm border-t border-slate-100 dark:border-slate-800 pt-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400 font-medium">수신인</span>
+                    <span id="headerRecipient" class="font-semibold">-</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400 font-medium">발신인</span>
+                    <span id="headerSender" class="font-semibold">-</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400 font-medium">작성일</span>
+                    <span id="headerDate" class="font-semibold">-</span>
+                </div>
+            </div>
+            </div><!-- /p-6 -->
+        </header>
+
+        <!-- 항공편 카드 -->
+        <section id="sectionFlights" class="hidden bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800" data-section="flights">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined text-primary text-[18px]">flight</span>
+                <h2 class="text-sm font-bold tracking-wider">항공편 여행 일정</h2>
+            </div>
+            <div id="flightsContent" class="space-y-6"></div>
+        </section>
+
+        <!-- 숙박 카드 -->
+        <section id="sectionHotels" class="hidden bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800" data-section="hotels">
+            <div class="flex items-center gap-2 mb-3 text-slate-500 dark:text-slate-400">
+                <span class="material-symbols-outlined text-[18px]">hotel</span>
+                <h2 class="text-xs font-bold tracking-wider">숙박</h2>
+            </div>
+            <div id="hotelsContent" class="space-y-3"></div>
+        </section>
+
+        <!-- 렌터카 카드 -->
+        <section id="sectionRentcar" class="hidden bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800" data-section="rentcar">
+            <div class="flex items-center gap-2 mb-3 text-slate-500 dark:text-slate-400">
+                <span class="material-symbols-outlined text-[18px]">directions_car</span>
+                <h2 class="text-xs font-bold tracking-wider">렌터카</h2>
+            </div>
+            <div id="rentcarContent" class="space-y-3"></div>
+        </section>
+
+        <!-- 골프 카드 -->
+        <section id="sectionGolf" class="hidden bg-green-50 dark:bg-green-900/10 rounded-2xl p-4 border border-green-100 dark:border-green-900/30" data-section="golf">
+            <div class="flex items-center gap-2 mb-3 text-green-700 dark:text-green-400">
+                <span class="material-symbols-outlined text-[18px]">golf_course</span>
+                <h2 class="text-xs font-bold tracking-wider">골프</h2>
+            </div>
+            <div id="golfContent" class="space-y-3"></div>
+        </section>
+
+        <!-- 커스텀 섹션들 -->
+        <div id="customSectionsContainer" class="space-y-4"></div>
+
+        <!-- 결제 카드 -->
+        <section id="sectionPayment" class="hidden" data-section="payment">
+            <div class="bg-gradient-to-br from-blue-600 to-blue-700 p-6 rounded-2xl shadow-lg text-white">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs font-medium opacity-80 tracking-widest">총 결제 금액</span>
+                    <span class="material-symbols-outlined opacity-60 text-[20px]">payments</span>
+                </div>
+                <div id="paymentTotal" class="text-3xl font-black">₩0</div>
+                <div id="paymentStatusBadge" class="hidden mt-2">
+                    <span id="paymentStatusText" class="text-xs font-bold px-2 py-0.5 rounded-full bg-white/20"></span>
+                </div>
+                <div id="paymentBankBlock" class="hidden mt-4 pt-4 border-t border-white/20">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="material-symbols-outlined text-[16px]">account_balance</span>
+                        <p class="text-xs font-bold">결제 정보</p>
+                    </div>
+                    <p id="paymentBankAccount" class="text-sm font-medium ml-6">-</p>
+                    <p id="paymentHolder" class="text-xs opacity-70 ml-6">예금주: -</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 푸터 (회사 정보) -->
+        <footer id="sectionCompany" class="hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6" data-section="company">
+            <div class="flex flex-col items-center mb-4">
+                <div class="text-slate-800 dark:text-slate-100 text-center flex items-center justify-center gap-2">
+                    <p id="companyFullName" class="font-bold tracking-[0.15em] text-base"></p>
+                    <p id="companyRepresentative" class="text-sm font-medium text-slate-500"></p>
+                </div>
+                <!-- 도장 이미지 -->
+                <div id="stampContainer" class="hidden mt-2">
+                    <img id="stampImage" alt="도장" class="w-20 h-20 object-contain opacity-90">
+                </div>
+            </div>
+            <div class="w-full h-px bg-slate-100 dark:bg-slate-800 my-4"></div>
+            <div class="flex flex-col items-center text-[11px] text-slate-400 space-y-1 text-center">
+                <p class="font-semibold text-slate-500 mb-1 uppercase tracking-tight">문의처</p>
+                <p id="companyAddress" class="hidden"></p>
+                <p id="companyPhoneFax" class="hidden"></p>
+            </div>
+        </footer>
+
+    </div><!-- /captureArea -->
+
+    <!-- 하단 고정 바 -->
+    <div id="bottomBar" class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 p-3">
+        <div class="max-w-md mx-auto flex justify-around items-center">
+            <button type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="flex flex-col items-center gap-1 text-primary">
+                <span class="material-symbols-outlined text-[22px]">description</span>
+                <span class="text-[10px] font-bold">상세내역</span>
+            </button>
+            <button type="button" onclick="saveAsImage('full')" class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500">
+                <span class="material-symbols-outlined text-[22px]">download</span>
+                <span class="text-[10px] font-bold">저장</span>
+            </button>
+            <button type="button" onclick="window.print()" class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500">
+                <span class="material-symbols-outlined text-[22px]">print</span>
+                <span class="text-[10px] font-bold">인쇄</span>
+            </button>
+            <button type="button" onclick="contactManager()" class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500">
+                <span class="material-symbols-outlined text-[22px]">help_outline</span>
+                <span class="text-[10px] font-bold">문의하기</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ===== 유틸리티 =====
+        const $ = (sel, root = document) => root.querySelector(sel);
+        const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+        const esc = (s = '') => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+        function getParam(key) {
+            return new URLSearchParams(window.location.search).get(key);
+        }
+
+        function decodeData(param) {
+            try {
+                // URLSearchParams.get()이 이미 1회 decodeURIComponent 수행
+                // LZString.compressToEncodedURIComponent 결과는 URI-safe 문자만 사용
+                // 따라서 추가 decodeURIComponent 불필요 (+ 문자 깨짐 방지)
+                var decoded = param || '';
+                var decompressed = LZString.decompressFromEncodedURIComponent(decoded);
+                if (!decompressed) {
+                    // fallback: 혹시 이중 인코딩된 경우
+                    decompressed = LZString.decompressFromEncodedURIComponent(decodeURIComponent(decoded));
+                }
+                return JSON.parse(decompressed || '{}');
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function fmtMoney(amount) {
+            const n = Number(String(amount || '0').replace(/[^\d]/g, ''));
+            return isNaN(n) ? '0' : n.toLocaleString('ko-KR');
+        }
+
+        function showToast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2000);
+        }
+
+        // ===== 아바타 색상 =====
+        const AVATAR_COLORS = [
+            { bg: '#dbeafe', color: '#1d4ed8' },
+            { bg: '#e0e7ff', color: '#4338ca' },
+            { bg: '#d1fae5', color: '#065f46' },
+            { bg: '#fef3c7', color: '#92400e' },
+            { bg: '#fce7f3', color: '#9d174d' },
+            { bg: '#ecfdf5', color: '#047857' },
+            { bg: '#fff7ed', color: '#c2410c' },
+            { bg: '#f5f3ff', color: '#5b21b6' },
+        ];
+
+        function avatarHtml(name, idx) {
+            const c = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+            const str = (typeof name === 'object' && name !== null) ? (name.name || '?') : (name || '?');
+            const char = String(str).charAt(0);
+            return `<div class="w-8 h-8 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center text-xs font-bold flex-shrink-0" style="background:${c.bg};color:${c.color};">${esc(char)}</div>`;
+        }
+
+        // ===== 커스텀 섹션 아이콘 =====
+        const CUSTOM_ICONS = {
+            tour: 'tour',
+            meal: 'restaurant',
+            ticket: 'confirmation_number',
+            activity: 'kayaking',
+            transport: 'directions_bus',
+            etc: 'more_horiz',
+        };
+
+        // ===== 전역 데이터 =====
+        let _data = {};
+        let _images = {};
+        let _recipientName = '';
+
+        // ===== 헤더 렌더링 =====
+        function renderHeader(data, images) {
+            const basic = data.basic || {};
+            const company = data.company || {};
+            const recipient = basic.recipient || data.recipient || data.header?.recipient || '';
+            const sender = basic.sender || data.sender || company.name || data.header?.sender || '';
+            const createdDate = basic.createdDate || data.createdDate || data.header?.date || formatToday();
+
+            _recipientName = recipient;
+
+            // 타이틀
+            const titleEl = $('#titleText');
+            const title = basic.title || '';
+            if (title) {
+                titleEl.textContent = title;
+            }
+
+            // 타이틀 스타일 적용
+            const ts = basic.titleStyle || {};
+            if (ts.font) titleEl.style.fontFamily = ts.font;
+            if (ts.size) titleEl.style.fontSize = ts.size + 'px';
+            if (ts.color) {
+                titleEl.style.color = ts.color;
+                const sub = $('#titleSubtext');
+                if (sub) sub.style.color = ts.color;
+                // 밝은 색이면 그림자 조정
+                titleEl.style.textShadow = '0 2px 8px rgba(0,0,0,0.3)';
+            }
+            if (ts.align) {
+                titleEl.style.textAlign = ts.align;
+                titleEl.parentElement.style.textAlign = ts.align;
+            }
+
+            // 여행지 + 기간 부제
+            const dest = basic.destination || '';
+            const start = basic.travelStart || '';
+            const end = basic.travelEnd || '';
+            if (dest || start) {
+                const parts = [];
+                if (dest) parts.push(dest);
+                if (start && end) parts.push(start + ' ~ ' + end);
+                else if (start) parts.push(start);
+                const sub = $('#titleSubtext');
+                sub.textContent = parts.join(' | ');
+                sub.classList.remove('hidden');
+            }
+
+            // 타이틀 배경 이미지
+            const titleImage = (images && images.titleImage) || basic.titleImage || '';
+            if (titleImage) {
+                const bgEl = $('#titleBannerBg');
+                const size = basic.titleImageSize || '100';
+                const opacity = basic.titleImageOpacity || '35';
+                bgEl.style.backgroundImage = 'url(' + titleImage + ')';
+                bgEl.style.backgroundSize = size + '%';
+                bgEl.style.opacity = (parseInt(opacity) / 100).toString();
+                bgEl.style.display = 'block';
+            }
+
+            // 브랜드
+            if (company.name) {
+                $('#headerBrand').textContent = company.name;
+            }
+            $('#headerRecipient').textContent = recipient || '-';
+            $('#headerSender').textContent = sender || '-';
+            $('#headerDate').textContent = createdDate || '-';
+        }
+
+        function formatToday() {
+            const d = new Date();
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}. ${m}. ${day}`;
+        }
+
+        // ===== 항공편 렌더링 =====
+        function renderFlights(flights) {
+            if (!flights || flights.length === 0) return;
+
+            const section = $('#sectionFlights');
+            section.classList.remove('hidden');
+            $('#dropdownFlights').classList.remove('hidden');
+
+            // 탑승객 그룹으로 묶기
+            // flights 배열 구조: 각 항목이 탑승객 그룹 또는 단일 항공편일 수 있음
+            const container = $('#flightsContent');
+
+            // 탑승객 그룹 방식: flights[].passengers + flights[].itinerary
+            // 단순 배열 방식: flights[] = { paxLabel, paxNames, legs: [...] }
+            // 두 방식 모두 지원
+            const groups = normalizeFlightGroups(flights);
+
+            container.innerHTML = groups.map((group, gi) => {
+                const paxNames = group.paxNames || [];
+                const paxLabel = group.paxLabel || paxNames.join(' & ');
+                const legs = group.legs || [];
+
+                const avatarsHtml = paxNames.map((n, i) => avatarHtml(n, gi * 8 + i)).join('');
+
+                const legsHtml = legs.map(leg => renderFlightLeg(leg)).join('');
+
+                return `
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex -space-x-2">
+                            ${avatarsHtml}
+                        </div>
+                        <span class="text-xs font-medium text-slate-400">${esc(paxLabel)}</span>
+                    </div>
+                    ${legsHtml}
+                </div>`;
+            }).join('');
+        }
+
+        function normalizeFlightGroups(flights) {
+            if (!Array.isArray(flights)) return [];
+
+            // 이미 그룹 형식인지 확인 (legs 속성 있으면 그룹)
+            if (flights[0] && flights[0].legs) return flights;
+
+            // 탑승객 없이 단일 항공편 배열이면 하나의 그룹으로
+            if (flights[0] && (flights[0].flightNo || flights[0].dep)) {
+                return [{
+                    paxNames: [],
+                    paxLabel: '',
+                    legs: flights,
+                }];
+            }
+
+            // 탑승객별 그룹 구조 (passengers 배열)
+            return flights.map(f => ({
+                paxNames: f.passengers || f.paxNames || [],
+                paxLabel: f.paxLabel || (f.passengers || []).join(' & '),
+                legs: f.legs || f.itinerary || [],
+            }));
+        }
+
+        function renderFlightLeg(leg) {
+            const flightNo = leg.flightNo || leg.no || '';
+            const date = leg.date || '';
+            const depAirport = leg.depAirport || leg.dep || '';
+            const depCode = leg.depCode || '';
+            const depTime = leg.depTime || leg.depT || '';
+            const arrAirport = leg.arrAirport || leg.arr || '';
+            const arrCode = leg.arrCode || '';
+            const arrTime = leg.arrTime || leg.arrT || '';
+            const isReturn = leg.isReturn || leg.return || false;
+
+            const iconClass = isReturn ? 'rotate-180' : '';
+            const depLabel = depCode ? `${esc(depAirport)} (${esc(depCode)})` : esc(depAirport);
+            const arrLabel = arrCode ? `${esc(arrAirport)} (${esc(arrCode)})` : esc(arrAirport);
+
+            return `
+            <div class="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <div class="flex justify-between items-center mb-2.5">
+                    <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded-full">${esc(flightNo)}</span>
+                    <span class="text-[10px] font-medium text-slate-400">${esc(date)}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="text-center min-w-0">
+                        <p class="text-xs text-slate-400 truncate">${depLabel}</p>
+                        <p class="text-lg font-bold">${esc(depTime)}</p>
+                    </div>
+                    <div class="flight-line">
+                        <span class="material-symbols-outlined icon ${iconClass}">flight</span>
+                    </div>
+                    <div class="text-center min-w-0">
+                        <p class="text-xs text-slate-400 truncate">${arrLabel}</p>
+                        <p class="text-lg font-bold">${esc(arrTime)}</p>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        // ===== 숙박 렌더링 =====
+        function renderHotels(hotels) {
+            if (!hotels || hotels.length === 0) return;
+
+            const section = $('#sectionHotels');
+            section.classList.remove('hidden');
+            $('#dropdownHotels').classList.remove('hidden');
+
+            $('#hotelsContent').innerHTML = hotels.map(h => {
+                const name = h.name || h.hotel || '';
+                const date = h.date || h.checkIn || '';
+                const nights = h.nights || h.night || '';
+                const bookedBy = h.booker || h.bookedBy || h.reservedBy || '';
+                const nightLabel = nights ? `${date} (${nights}박)` : date;
+
+                return `
+                <div class="flex justify-between items-center text-sm">
+                    <div class="flex flex-col gap-0.5">
+                        <span class="font-bold">${esc(name)}</span>
+                        <span class="text-[11px] text-slate-400">${esc(nightLabel)}</span>
+                    </div>
+                    ${bookedBy ? `<span class="text-xs text-slate-500 flex-shrink-0 ml-2">예약자: ${esc(bookedBy)}</span>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        // ===== 렌터카 렌더링 =====
+        function renderRentcars(rentcars) {
+            if (!rentcars || rentcars.length === 0) return;
+
+            const section = $('#sectionRentcar');
+            section.classList.remove('hidden');
+            $('#dropdownRentcar').classList.remove('hidden');
+
+            $('#rentcarContent').innerHTML = rentcars.map(r => {
+                const company = r.company || '';
+                const model = r.vehicle || r.model || r.car || '';
+                const insurance = r.insurance || '';
+                const bookedBy = r.booker || r.bookedBy || r.reservedBy || '';
+
+                return `
+                <div class="flex justify-between items-start">
+                    <div class="space-y-1.5">
+                        ${company ? `<p class="text-xs text-slate-500 font-semibold">${esc(company)}</p>` : ''}
+                        <p class="text-sm font-bold">${esc(model)}</p>
+                        ${insurance ? `<p class="text-[11px] text-primary bg-primary/10 px-2 py-0.5 rounded-full inline-block">${esc(insurance)}</p>` : ''}
+                    </div>
+                    ${bookedBy ? `<span class="text-xs text-slate-500 flex-shrink-0 ml-2">예약자: ${esc(bookedBy)}</span>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        // ===== 골프 렌더링 =====
+        function renderGolf(golf) {
+            if (!golf || golf.length === 0) return;
+
+            const section = $('#sectionGolf');
+            section.classList.remove('hidden');
+            $('#dropdownGolf').classList.remove('hidden');
+
+            $('#golfContent').innerHTML = golf.map(g => {
+                const course = g.course || g.name || '';
+                const date = g.date || '';
+                const teeOff = g.teeTime || g.teeOff || g.time || '';
+                const bookedBy = g.booker || g.bookedBy || g.reservedBy || '';
+
+                return `
+                <div class="flex justify-between items-start text-sm">
+                    <div class="space-y-1">
+                        <p class="font-bold text-green-800 dark:text-green-300">${esc(course)}</p>
+                        <div class="flex items-center gap-2 text-[11px] text-slate-500">
+                            ${date ? `<span>${esc(date)}</span>` : ''}
+                            ${teeOff ? `<span class="text-green-600 dark:text-green-400 font-medium">티오프 ${esc(teeOff)}</span>` : ''}
+                        </div>
+                    </div>
+                    ${bookedBy ? `<span class="text-xs text-slate-500 flex-shrink-0 ml-2">예약자: ${esc(bookedBy)}</span>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        // ===== 커스텀 섹션 렌더링 =====
+        function renderCustomSection(cs, enabledIds) {
+            if (!cs || (enabledIds && !enabledIds.includes(cs.id))) return;
+
+            const iconName = CUSTOM_ICONS[cs.type] || CUSTOM_ICONS.etc;
+            const items = cs.items || [];
+            if (items.length === 0) return;
+
+            const sectionEl = document.createElement('section');
+            sectionEl.className = 'bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800';
+            sectionEl.setAttribute('data-section', `custom-${cs.id}`);
+
+            sectionEl.innerHTML = `
+                <div class="flex items-center gap-2 mb-3 text-slate-500 dark:text-slate-400">
+                    <span class="material-symbols-outlined text-[18px]">${iconName}</span>
+                    <h2 class="text-xs font-bold tracking-wider">${esc(cs.title || cs.type)}</h2>
+                </div>
+                <div class="space-y-3">
+                    ${items.map(item => `
+                        <div class="text-sm space-y-0.5">
+                            <div class="flex justify-between items-start">
+                                <span class="font-bold">${esc(item.name || item.title || '')}</span>
+                                ${(item.booker || item.bookedBy) ? `<span class="text-xs text-slate-500 flex-shrink-0 ml-2">예약자: ${esc(item.booker || item.bookedBy)}</span>` : ''}
+                            </div>
+                            ${item.date ? `<p class="text-[11px] text-slate-400">${esc(item.date)}</p>` : ''}
+                            ${item.memo ? `<p class="text-[11px] text-slate-500">${esc(item.memo)}</p>` : ''}
+                        </div>
+                    `).join('')}
+                </div>`;
+
+            $('#customSectionsContainer').appendChild(sectionEl);
+        }
+
+        // ===== 결제 렌더링 =====
+        function renderPayment(payment) {
+            if (!payment) return;
+
+            const section = $('#sectionPayment');
+            section.classList.remove('hidden');
+            $('#dropdownPayment').classList.remove('hidden');
+
+            const total = payment.totalAmount || payment.total || payment.amount || 0;
+            $('#paymentTotal').textContent = '₩' + fmtMoney(total);
+
+            // 결제 상태 배지
+            const statusMap = { unpaid: '미결제', partial: '부분결제', paid: '결제완료' };
+            const status = statusMap[payment.status] || payment.status || '';
+            if (status) {
+                const badgeEl = $('#paymentStatusBadge');
+                const textEl = $('#paymentStatusText');
+                badgeEl.classList.remove('hidden');
+                textEl.textContent = status;
+                // 상태별 색상
+                if (status.includes('완료') || status.includes('입금')) {
+                    textEl.className = 'text-xs font-bold px-2 py-0.5 rounded-full bg-green-500/30 text-green-100';
+                } else if (status.includes('대기') || status.includes('미입금') || status.includes('미결제') || status.includes('부분')) {
+                    textEl.className = 'text-xs font-bold px-2 py-0.5 rounded-full bg-yellow-400/30 text-yellow-100';
+                } else {
+                    textEl.className = 'text-xs font-bold px-2 py-0.5 rounded-full bg-white/20';
+                }
+            }
+
+            // 은행 계좌
+            const bank = payment.bank || '';
+            const account = payment.account || '';
+            const holder = payment.holder || '';
+
+            if (bank || account) {
+                $('#paymentBankBlock').classList.remove('hidden');
+                $('#paymentBankAccount').textContent = `${bank} ${account}`.trim();
+                if (holder) $('#paymentHolder').textContent = `예금주: ${holder}`;
+            }
+        }
+
+        // ===== 푸터 (회사) 렌더링 =====
+        function renderCompany(company, images) {
+            if (!company) return;
+
+            const section = $('#sectionCompany');
+            section.classList.remove('hidden');
+
+            const name = company.name || '';
+            const representative = company.representative || company.ceo || '';
+            $('#companyFullName').textContent = name;
+            if (representative) {
+                $('#companyRepresentative').textContent = `대표이사 ${representative}`;
+            }
+
+            // 도장 이미지
+            if (images && images.stamp) {
+                $('#stampContainer').classList.remove('hidden');
+                $('#stampImage').src = images.stamp;
+            }
+
+            // 주소
+            const address = company.address || '';
+            if (address) {
+                const addrEl = $('#companyAddress');
+                addrEl.classList.remove('hidden');
+                addrEl.textContent = address;
+            }
+
+            // 전화/팩스
+            const phone = company.phone || company.manager?.phone || '';
+            const fax = company.fax || '';
+            if (phone || fax) {
+                const pfEl = $('#companyPhoneFax');
+                pfEl.classList.remove('hidden');
+                const parts = [];
+                if (phone) parts.push(`전화: ${phone}`);
+                if (fax) parts.push(`팩스: ${fax}`);
+                pfEl.textContent = parts.join(' | ');
+            }
+        }
+
+        // ===== 에디터 형식 → 미리보기 형식 정규화 =====
+        function normalizeEditorData(data) {
+            // 이미 미리보기 형식이면 (sections 존재) 그대로 반환
+            if (data.sections) return data;
+
+            // 에디터의 include 체크박스 → sections 플래그
+            data.sections = {
+                flights: data.flightsInclude !== false,
+                hotels: data.hotelsInclude !== false,
+                rentcar: data.rentcarInclude !== false,
+                golf: data.golfInclude !== false,
+                payment: data.paymentInclude !== false,
+                company: data.companyInclude !== false,
+            };
+
+            // passengerGroups → flights (미리보기가 기대하는 형식)
+            if (data.passengerGroups && !data.flights) {
+                data.flights = data.passengerGroups.map(function (pg) {
+                    // passengers가 객체 배열일 수 있음 ({name, color}) → 문자열 배열로 변환
+                    var rawPax = pg.passengers || [];
+                    var names = rawPax.map(function (p) {
+                        return (typeof p === 'object' && p !== null) ? (p.name || '') : String(p || '');
+                    }).filter(Boolean);
+                    return {
+                        paxNames: names,
+                        paxLabel: pg.label || names.join(' & '),
+                        legs: pg.legs || [],
+                    };
+                });
+            }
+
+            // 커스텀 섹션 include 필터
+            if (Array.isArray(data.customSections)) {
+                data.customSections = data.customSections.filter(function (cs) {
+                    return cs.include !== false;
+                });
+            }
+
+            return data;
+        }
+
+        // ===== 전체 페이지 렌더링 =====
+        function renderPage(data, images) {
+            // 에디터 형식 데이터 정규화
+            data = normalizeEditorData(data);
+
+            // 헤더
+            renderHeader(data, images);
+
+            // 섹션 플래그
+            const sections = data.sections || {};
+
+            // 항공편
+            if (sections.flights && data.flights) {
+                renderFlights(data.flights);
+            }
+
+            // 숙박
+            if (sections.hotels && data.hotels) {
+                renderHotels(data.hotels);
+            }
+
+            // 렌터카
+            if (sections.rentcar && data.rentcars) {
+                renderRentcars(data.rentcars);
+            }
+
+            // 골프
+            if (sections.golf && data.golf) {
+                renderGolf(data.golf);
+            }
+
+            // 커스텀 섹션
+            const customIds = Array.isArray(sections.custom) ? sections.custom : [];
+            (data.customSections || []).forEach(cs => {
+                renderCustomSection(cs, customIds.length > 0 ? customIds : null);
+            });
+
+            // 결제
+            if (sections.payment && data.payment) {
+                renderPayment(data.payment);
+            }
+
+            // 회사
+            if (sections.company !== false && data.company) {
+                renderCompany(data.company, images);
+            }
+        }
+
+        // ===== 이미지 저장 (html2canvas) =====
+        let html2canvasLoaded = false;
+
+        function loadHtml2Canvas() {
+            return new Promise((resolve, reject) => {
+                if (html2canvasLoaded || typeof html2canvas !== 'undefined') {
+                    html2canvasLoaded = true;
+                    resolve();
+                    return;
+                }
+                const s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+                s.onload = () => { html2canvasLoaded = true; resolve(); };
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+        }
+
+        async function saveAsImage(mode) {
+            showToast('이미지를 준비하는 중...');
+            try {
+                await loadHtml2Canvas();
+
+                let target;
+                if (mode === 'full') {
+                    target = document.getElementById('captureArea');
+                } else {
+                    target = document.querySelector(`[data-section="${mode}"]`);
+                }
+
+                if (!target) {
+                    showToast('저장할 섹션을 찾을 수 없습니다.');
+                    return;
+                }
+
+                const isDark = document.documentElement.classList.contains('dark');
+                const canvas = await html2canvas(target, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: isDark ? '#0f172a' : '#f8fafc',
+                    logging: false,
+                });
+
+                const filename = `예약내역_${_recipientName || '고객'}_${mode}.png`;
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showToast('이미지가 저장되었습니다.');
+            } catch (e) {
+                showToast('이미지 저장 중 오류가 발생했습니다.');
+            }
+        }
+
+        // ===== 드롭다운 =====
+        function toggleSaveDropdown() {
+            const dd = document.getElementById('saveDropdown');
+            dd.classList.toggle('open');
+        }
+
+        function closeSaveDropdown() {
+            document.getElementById('saveDropdown').classList.remove('open');
+        }
+
+        // 드롭다운 외부 클릭 닫기
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#saveDropdown') && !e.target.closest('button[onclick*="toggleSaveDropdown"]')) {
+                closeSaveDropdown();
+            }
+        });
+
+        // ===== 다크모드 =====
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            html.classList.toggle('light');
+            localStorage.setItem('__preview_free_dark__', html.classList.contains('dark'));
+            updateDarkIcon();
+        }
+
+        function updateDarkIcon() {
+            const icon = document.getElementById('darkIcon');
+            if (!icon) return;
+            icon.textContent = document.documentElement.classList.contains('dark') ? 'light_mode' : 'dark_mode';
+        }
+
+        // ===== 네비게이션 =====
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(function() {
+                var btn = document.querySelector('[onclick="copyLink()"]');
+                var orig = btn.innerHTML;
+                btn.innerHTML = '<span class="material-symbols-outlined text-[15px]">check</span> 복사됨!';
+                setTimeout(function() { btn.innerHTML = orig; }, 2000);
+            }).catch(function() {
+                // fallback
+                var ta = document.createElement('textarea');
+                ta.value = window.location.href;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            });
+        }
+
+        function goBack() {
+            if (window.opener) {
+                window.close();
+            } else if (history.length > 1) {
+                history.back();
+            } else {
+                window.close();
+            }
+        }
+
+        function contactManager() {
+            const company = _data.company || {};
+            const phone = company.phone || company.manager?.phone || '';
+            if (phone) {
+                window.location.href = 'tel:' + phone.replace(/[^\d\-+]/g, '');
+            } else {
+                showToast('담당자 연락처 정보가 없습니다.');
+            }
+        }
+
+        // ===== 초기화 =====
+        document.addEventListener('DOMContentLoaded', function () {
+            // 다크모드 복원
+            const savedDark = localStorage.getItem('__preview_free_dark__');
+            if (savedDark === 'true') {
+                document.documentElement.classList.add('dark');
+                document.documentElement.classList.remove('light');
+            }
+            updateDarkIcon();
+
+            // 데이터 디코딩
+            const param = getParam('d');
+            _data = param ? decodeData(param) : getSampleData();
+            _images = {};
+            try {
+                _images = JSON.parse(localStorage.getItem('__preview_images_free__') || '{}');
+            } catch (e) {
+                // 이미지 데이터 로드 실패 시 빈 객체 유지
+            }
+
+            renderPage(_data, _images);
+        });
+
+        // ===== 샘플 데이터 (URL 파라미터 없을 때) =====
+        function getSampleData() {
+            return {
+                recipient: '이귀운 권사님',
+                sender: '여행세상',
+                createdDate: '2025. 01. 06',
+                sections: {
+                    flights: true,
+                    hotels: true,
+                    rentcar: true,
+                    golf: false,
+                    payment: true,
+                    company: true,
+                },
+                company: {
+                    name: '(유) 여행세상',
+                    representative: '김국진',
+                    address: '(560-170) 전주시 완산구 서신동 856-1번지',
+                    phone: '063-271-9090',
+                    fax: '063-271-9030',
+                },
+                flights: [
+                    {
+                        paxNames: ['노기섭', '이귀운'],
+                        paxLabel: '탑승객 01 & 03',
+                        legs: [
+                            {
+                                flightNo: 'OZ8143',
+                                date: '01. 28 (화)',
+                                depAirport: '광주', depCode: 'KWJ', depTime: '12:25',
+                                arrAirport: '제주', arrCode: 'CJU', arrTime: '13:20',
+                            },
+                            {
+                                flightNo: 'KE1622',
+                                date: '02. 01 (토)',
+                                depAirport: '제주', depCode: 'CJU', depTime: '15:15',
+                                arrAirport: '광주', arrCode: 'KWJ', arrTime: '16:10',
+                                isReturn: true,
+                            },
+                        ],
+                    },
+                ],
+                hotels: [
+                    { name: '제주시리우스', date: '01. 28', nights: 2, bookedBy: '노기섭' },
+                    { name: '제주디아일랜드블루', date: '01. 30', nights: 2, bookedBy: '노기섭' },
+                ],
+                rentcars: [
+                    { model: '더올뉴그랜져 (휘)', insurance: '완전자차보험 가입', bookedBy: '이귀운' },
+                ],
+                payment: {
+                    total: 2542600,
+                    bank: '하나은행',
+                    account: '611-016420-721',
+                    holder: '(유) 여행세상',
+                },
+            };
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✈️ 항공편 자동 변환기</title>
+    <link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/tailwind.min.js"></script>
+    <script src="js/vendor/jspdf.umd.min.js"></script>
+    <script src="js/vendor/html2canvas.min.js"></script>
+    <script src="js/vendor/xlsx.full.min.js"></script>
+    <style>
+        /* Google Fonts 제거 (내부망) — 시스템 폰트 사용 */
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* air1 페이지 전용 스타일 */
+        .air1-content {
+            background: linear-gradient(to bottom, #eff6ff, #ffffff);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .air1-container {
+            max-width: 56rem; /* 2xl */
+            margin: 0 auto;
+        }
+
+        /* 탭 스타일 */
+        .tab-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #6b7280;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+
+        .tab-button:hover {
+            color: #2563eb;
+        }
+
+        .tab-button.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* 토글 스위치 */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 22px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: 0.3s;
+            border-radius: 22px;
+        }
+        .toggle-slider:before {
+            content: "";
+            position: absolute;
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #2563eb;
+        }
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(18px);
+        }
+
+        /* 설정 바 */
+        .settings-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 8px 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            font-size: 13px;
+        }
+        .settings-bar .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #475569;
+        }
+
+        /* 단체/개인 배지 */
+        .booking-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+        .badge-group {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border: 1px solid #93c5fd;
+        }
+        .badge-individual {
+            background: #dcfce7;
+            color: #16a34a;
+            border: 1px solid #86efac;
+        }
+    </style>
+</head>
+<body>
+    <!-- 사이드바 -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-plane-departure"></i>
+            <h1>여행세상</h1>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="../index.html" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>홈</span>
+            </a>
+            <a href="../index.html?page=group-roster" class="nav-item">
+                <i class="fas fa-clipboard-list"></i>
+                <span>단체명단</span>
+            </a>
+            <a href="../index.html?page=customers" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>고객 관리</span>
+            </a>
+            <a href="../index.html?page=products" class="nav-item">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>단체 상품</span>
+            </a>
+            <div class="nav-item-parent" onclick="toggleSubmenu(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" role="button" tabindex="0" aria-expanded="false">
+                <div class="nav-item-content">
+                    <i class="fas fa-plane"></i>
+                    <span>항공 스케줄</span>
+                </div>
+                <i class="fas fa-chevron-down nav-dropdown-arrow"></i>
+            </div>
+            <div class="nav-submenu">
+                <a href="../flight-schedule.html" class="nav-subitem">
+                    <i class="fas fa-list"></i>
+                    <span>항공편 관리</span>
+                </a>
+                <a href="../air1/index.html" class="nav-subitem active">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>항공편 변환기</span>
+                </a>
+            </div>
+            <div class="nav-item-parent" onclick="toggleSubmenu(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" role="button" tabindex="0" aria-expanded="false">
+                <div class="nav-item-content">
+                    <i class="fas fa-file-alt"></i>
+                    <span>일정표</span>
+                </div>
+                <i class="fas fa-chevron-down nav-dropdown-arrow"></i>
+            </div>
+            <div class="nav-submenu">
+                <a href="../hanatour/travel-advanced.html" class="nav-subitem">
+                    <i class="fas fa-list-alt"></i>
+                    <span>상세일정</span>
+                </a>
+                <a href="../hanatour/travel-simple.html" class="nav-subitem">
+                    <i class="fas fa-list"></i>
+                    <span>간략일정</span>
+                </a>
+                <a href="../hanatour/travel-simple-copy.html" class="nav-subitem">
+                    <i class="fas fa-golf-ball"></i>
+                    <span>골프일정</span>
+                </a>
+                <a href="../hanatour/travel-free.html" class="nav-subitem">
+                    <i class="fas fa-suitcase"></i>
+                    <span>자유여행 예약</span>
+                </a>
+            </div>
+            <a href="../cost-calculator.html" class="nav-item">
+                <i class="fas fa-calculator"></i>
+                <span>원가 계산서</span>
+            </a>
+            <div class="nav-item-parent" onclick="toggleSubmenu(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" role="button" tabindex="0" aria-expanded="false">
+                <div class="nav-item-content">
+                    <i class="fas fa-file-invoice"></i>
+                    <span>인보이스</span>
+                </div>
+                <i class="fas fa-chevron-down nav-dropdown-arrow"></i>
+            </div>
+            <div class="nav-submenu">
+                <a href="../in/invoice-list.html" class="nav-subitem">
+                    <i class="fas fa-list"></i>
+                    <span>인보이스 목록</span>
+                </a>
+                <a href="../in/invoice-editor.html" class="nav-subitem">
+                    <i class="fas fa-plus"></i>
+                    <span>새 인보이스</span>
+                </a>
+            </div>
+            <a href="../index.html?page=bookings" class="nav-item">
+                <i class="fas fa-calendar-check"></i>
+                <span>예약 관리</span>
+            </a>
+            <a href="../index.html?page=notifications" class="nav-item">
+                <i class="fas fa-bell"></i>
+                <span>알림 관리</span>
+            </a>
+            <a href="../backup-manager.html" class="nav-item">
+                <i class="fas fa-shield-alt"></i>
+                <span>백업 관리</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="main-content">
+        <!-- 헤더 -->
+        <header class="header">
+            <div class="header-left">
+                <button type="button" class="btn-menu" id="btnToggleSidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2 id="pageTitle">항공편 변환기</h2>
+            </div>
+            <div class="header-right">
+                <span class="date-display" id="currentDate"></span>
+            </div>
+        </header>
+
+        <!-- 페이지 컨텐츠 영역 -->
+        <div class="content-wrapper">
+            <div class="air1-content">
+                <div class="air1-container">
+                    <!-- Header -->
+                    <header class="text-center mb-8 mt-4">
+                        <h1 class="text-3xl md:text-4xl font-bold text-blue-900 mb-2">✈️ 항공편 자동 변환기</h1>
+                        <p class="text-gray-600 text-sm md:text-base">여행사 직원용 항공 일정 변환 및 고객정보 출력 도구</p>
+                    </header>
+
+                    <!-- 설정 바 -->
+                    <div class="settings-bar">
+                        <div class="setting-item">
+                            <span>도시명</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="airportCodeToggle" />
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>공항코드</span>
+                        </div>
+                        <div class="setting-item" style="border-left: 1px solid #e2e8f0; padding-left: 16px;">
+                            <span>예약 유형:</span>
+                            <span id="bookingTypeBadge" class="booking-type-badge badge-individual">자동감지</span>
+                        </div>
+                    </div>
+
+                    <!-- Tab Navigation -->
+                    <div class="w-full">
+                        <div class="tab-container">
+                            <button type="button" class="tab-button active" data-tab="converter">
+                                🔄 항공편 변환기
+                            </button>
+                            <button type="button" class="tab-button" data-tab="saved">
+                                💾 저장된 항공편
+                            </button>
+                            <button type="button" class="tab-button" data-tab="bus">
+                                🚌 버스 예약
+                            </button>
+                            <button type="button" class="tab-button" data-tab="notice">
+                                📄 안내문 작성
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tab: 항공편 변환기 -->
+                    <div id="tab-converter" class="tab-content active w-full space-y-4">
+            <!-- Input Section -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">항공편 정보 입력</label>
+                <textarea
+                    id="inputText"
+                    aria-label="항공편 정보 텍스트 입력"
+                    placeholder="예시 (PNR 포함 3구간):&#10;DPYALF&#10;3  KE 411 J 27APR 1 ICNAKL HK2  1800 0835  28APR&#10;4  NZ 613 S 30APR 4 AKLZQN HK2  0755 0950  30APR&#10;5  KE 402 K 06MAY 3 SYDICN HK2  0755 1735  06MAY&#10;&#10;첫 줄에 6자리 예약번호를 입력하면 자동으로 인식됩니다"
+                    class="w-full p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    rows="6"
+                ></textarea>
+                <div class="flex gap-2 mt-4">
+                    <button type="button"
+                        id="convertBtn"
+                        class="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-colors duration-200"
+                    >
+                        🔄 자동 변환하기
+                    </button>
+                    <button type="button"
+                        id="excelImportBtn"
+                        class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 whitespace-nowrap"
+                    >
+                        📁 엑셀 불러오기
+                    </button>
+                </div>
+                <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display: none;">
+            </div>
+
+            <!-- Output Section -->
+            <div id="outputSection" class="hidden fade-in">
+                <div id="captureArea" class="bg-white rounded-2xl shadow-lg p-6">
+                    <!-- Converted Result -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">변환 결과</h3>
+                        <div id="outputText" class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <pre class="whitespace-pre-wrap text-gray-800 text-sm font-mono"></pre>
+                        </div>
+                    </div>
+
+                    <!-- Customer Info Form -->
+                    <div class="border-t pt-6 space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">고객 정보</h3>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <input type="checkbox" id="showClient" class="mr-2 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded" />
+                                거래처 표시
+                            </label>
+                            <div id="clientInputWrapper" class="mt-2 ml-6 hidden">
+                                <input
+                                    type="text"
+                                    id="clientInput"
+                                    placeholder="거래처명 (예: 평화관광)"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <input type="checkbox" id="showPnr" class="mr-2 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded" />
+                                항공사 예약번호 표시
+                            </label>
+                            <div id="pnrInputWrapper" class="mt-2 ml-6 hidden">
+                                <input
+                                    type="text"
+                                    id="pnrInput"
+                                    placeholder="예약번호를 입력하세요 (예: ABC123XYZ)"
+                                    maxlength="10"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-lg font-semibold"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">금액 표시</label>
+                            <div class="ml-6 space-y-3">
+                                <!-- 성인 요금 -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        <input type="checkbox" id="showPriceAdult" class="mr-2 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded" />
+                                        성인 1인
+                                    </label>
+                                    <div id="priceAdultWrapper" class="mt-2 ml-6 hidden">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 font-semibold">₩</span>
+                                            <input
+                                                type="text"
+                                                id="priceAdultInput"
+                                                placeholder="성인 요금을 입력하세요"
+                                                class="w-full pl-8 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+                                            />
+                                            <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600">원</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 아동 요금 -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        <input type="checkbox" id="showPriceChild" class="mr-2 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded" />
+                                        아동 1인
+                                    </label>
+                                    <div id="priceChildWrapper" class="mt-2 ml-6 hidden">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 font-semibold">₩</span>
+                                            <input
+                                                type="text"
+                                                id="priceChildInput"
+                                                placeholder="아동 요금을 입력하세요"
+                                                class="w-full pl-8 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+                                            />
+                                            <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600">원</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 유아 요금 -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        <input type="checkbox" id="showPriceInfant" class="mr-2 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded" />
+                                        유아 1인
+                                    </label>
+                                    <div id="priceInfantWrapper" class="mt-2 ml-6 hidden">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 font-semibold">₩</span>
+                                            <input
+                                                type="text"
+                                                id="priceInfantInput"
+                                                placeholder="유아 요금을 입력하세요"
+                                                class="w-full pl-8 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+                                            />
+                                            <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600">원</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 추가 인원 컨테이너 -->
+                                <div id="additionalPricesContainer"></div>
+                                <!-- 인원 추가 버튼 -->
+                                <button
+                                    type="button"
+                                    id="addPriceBtn"
+                                    class="w-full py-2 px-4 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:bg-blue-50 hover:border-blue-400 transition-colors duration-200 flex items-center justify-center gap-2"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                    </svg>
+                                    <span>인원 추가</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">이름 표시</label>
+                            <div class="flex gap-4 mb-2">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="nameLabel" value="대표명" class="w-4 h-4 text-blue-600 focus:ring-blue-500" checked />
+                                    <span class="text-gray-700">대표명</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="nameLabel" value="고객명" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
+                                    <span class="text-gray-700">고객명</span>
+                                </label>
+                            </div>
+                            <input
+                                type="text"
+                                id="nameInput"
+                                placeholder="이름을 입력하세요"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <input type="checkbox" id="showAllPassengers" class="mr-2 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded" />
+                                전체 승객 명단 표시 (이미지/모바일)
+                            </label>
+                            <p class="text-xs text-gray-500 ml-6">체크 시 대표자 외 전체 승객 명단이 이미지에 포함됩니다</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">전화번호</label>
+                            <input
+                                type="tel"
+                                id="phoneInput"
+                                placeholder="010-1234-5678"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">총 인원</label>
+                            <input
+                                type="text"
+                                id="totalPeopleInput"
+                                placeholder="예: 2명"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <input type="checkbox" id="showMeetingPlace" class="mr-2 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded" />
+                                미팅 장소 표시
+                            </label>
+                            <div id="meetingPlaceWrapper" class="mt-2 ml-6 hidden">
+                                <div class="mb-2">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">미팅 시간</label>
+                                    <input
+                                        type="text"
+                                        id="meetingTimeInput"
+                                        placeholder="예: 오전 10:00"
+                                        class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">미팅 장소</label>
+                                    <input
+                                        type="text"
+                                        id="meetingPlaceInput"
+                                        placeholder="예: 인천공항 제1터미널 3층 J카운터 앞"
+                                        class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <input type="checkbox" id="showRemarks" class="mr-2 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded" />
+                                비고사항 표시
+                            </label>
+                            <div id="remarksWrapper" class="mt-2 ml-6 hidden">
+                                <textarea
+                                    id="remarksInput"
+                                    aria-label="비고사항 입력"
+                                    placeholder="비고사항을 입력하세요"
+                                    rows="2"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                ></textarea>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- 출발편 식사 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <input type="checkbox" id="showMealDeparture" class="mr-2 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded" />
+                                    출발편 식사 표시
+                                </label>
+                                <div id="mealDepartureOptions" class="flex gap-4 mt-2 ml-6 hidden">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="mealDeparture" value="포함" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
+                                        <span class="text-gray-700">포함</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="mealDeparture" value="불포함" class="w-4 h-4 text-blue-600 focus:ring-blue-500" checked />
+                                        <span class="text-gray-700">불포함</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- 도착편 식사 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <input type="checkbox" id="showMealArrival" class="mr-2 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded" />
+                                    도착편 식사 표시
+                                </label>
+                                <div id="mealArrivalOptions" class="flex gap-4 mt-2 ml-6 hidden">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="mealArrival" value="포함" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
+                                        <span class="text-gray-700">포함</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="mealArrival" value="불포함" class="w-4 h-4 text-blue-600 focus:ring-blue-500" checked />
+                                        <span class="text-gray-700">불포함</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="space-y-3 mt-6">
+                            <!-- 저장 버튼 -->
+                            <button type="button"
+                                id="saveFlightBtn"
+                                class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 font-semibold text-base shadow-md"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                                </svg>
+                                💾 항공편 저장하기
+                            </button>
+
+                            <!-- 기타 버튼들 -->
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                <button type="button"
+                                    id="copyBtn"
+                                    class="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium text-gray-700"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span class="hidden sm:inline">복사</span>
+                                </button>
+                                <button type="button"
+                                    id="imageBtn"
+                                    class="flex items-center justify-center gap-2 px-4 py-2.5 border border-purple-300 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors duration-200 font-medium text-purple-700"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span class="hidden sm:inline">이미지 복사</span>
+                                </button>
+                                <button type="button"
+                                    id="mobileImageBtn"
+                                    class="flex items-center justify-center gap-2 px-4 py-2.5 border border-teal-300 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors duration-200 font-medium text-teal-700"
+                                    title="모바일 예약내역 이미지 저장"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span class="hidden sm:inline">모바일 복사</span>
+                                </button>
+                                <button type="button"
+                                    id="pdfBtn"
+                                    class="flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-700 hover:bg-gray-800 text-white rounded-lg transition-colors duration-200 font-medium"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    <span class="hidden sm:inline">PDF</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                    </div>
+                    <!-- End of Tab: 항공편 변환기 -->
+
+                    <!-- Tab: 저장된 항공편 -->
+                    <div id="tab-saved" class="tab-content w-full space-y-4">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">💾 저장된 항공편 목록</h2>
+                    <button type="button"
+                        onclick="loadSavedFlights()"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 text-sm font-medium flex items-center gap-2"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        새로고침
+                    </button>
+                </div>
+
+                <!-- 저장된 항공편이 없을 때 표시 -->
+                <div id="noSavedFlights" class="text-center py-12 hidden">
+                    <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <p class="text-gray-500 text-lg">저장된 항공편이 없습니다</p>
+                    <p class="text-gray-400 text-sm mt-2">항공편 변환기에서 항공편을 저장하면 여기에 표시됩니다</p>
+                </div>
+
+                <!-- 저장된 항공편 리스트 -->
+                <div id="savedFlightsList" class="space-y-4">
+                    <!-- 항공편 카드들이 여기에 동적으로 추가됩니다 -->
+                </div>
+            </div>
+                    </div>
+                    <!-- End of Tab: 저장된 항공편 -->
+
+                    <!-- Tab: 버스 예약 -->
+                    <div id="tab-bus" class="tab-content w-full space-y-4">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">🚌 버스 예약 안내문 작성</h2>
+
+                <div class="space-y-4">
+                    <!-- 출발지 정보 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">출발지</label>
+                            <input
+                                type="text"
+                                id="busFromLocation"
+                                placeholder="예: 인천국제공항"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">출발 일시</label>
+                            <input
+                                type="text"
+                                id="busFromDateTime"
+                                placeholder="예: 2025.01.15(수) 14:00"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- 도착지 정보 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">도착지</label>
+                            <input
+                                type="text"
+                                id="busToLocation"
+                                placeholder="예: 부산 해운대"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">도착 일시</label>
+                            <input
+                                type="text"
+                                id="busToDateTime"
+                                placeholder="예: 2025.01.15(수) 18:00"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- 버스 정보 -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">버스 종류</label>
+                            <select
+                                id="busType"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="대형버스 45인승">대형버스 45인승</option>
+                                <option value="중형버스 28인승">중형버스 28인승</option>
+                                <option value="소형버스 15인승">소형버스 15인승</option>
+                                <option value="리무진">리무진</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">차량 대수</label>
+                            <input
+                                type="number"
+                                id="busCount"
+                                value="1"
+                                min="1"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">총 인원</label>
+                            <input
+                                type="number"
+                                id="busPassengers"
+                                placeholder="40"
+                                min="1"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- 기사님 연락처 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <input type="checkbox" id="showBusDriverContact" class="mr-2 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded" />
+                            기사님 연락처 표시
+                        </label>
+                        <div id="busDriverContactWrapper" class="mt-2 ml-6 hidden">
+                            <input
+                                type="tel"
+                                id="busDriverContact"
+                                placeholder="010-1234-5678"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- 대표고객 정보 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <input type="checkbox" id="showBusCustomerInfo" class="mr-2 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded" />
+                            대표고객 정보 표시
+                        </label>
+                        <div id="busCustomerInfoWrapper" class="mt-2 ml-6 hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input
+                                    type="text"
+                                    id="busCustomerName"
+                                    placeholder="대표자명"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                                <input
+                                    type="tel"
+                                    id="busCustomerPhone"
+                                    placeholder="010-1234-5678"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 비고사항 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">비고사항</label>
+                        <textarea
+                            id="busRemarks"
+                            placeholder="기타 안내사항을 입력하세요"
+                            rows="3"
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                        ></textarea>
+                    </div>
+
+                    <!-- 버튼 -->
+                    <div class="flex gap-3">
+                        <button type="button"
+                            id="busPreviewBtn"
+                            class="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-semibold"
+                        >
+                            미리보기
+                        </button>
+                        <button type="button"
+                            id="busCopyBtn"
+                            class="px-4 py-3 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors duration-200 font-semibold"
+                        >
+                            복사
+                        </button>
+                    </div>
+
+                    <!-- 미리보기 영역 -->
+                    <div id="busPreviewSection" class="hidden mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">미리보기</h3>
+                        <pre id="busPreviewContent" class="whitespace-pre-wrap text-gray-800 text-sm font-mono"></pre>
+                    </div>
+                </div>
+            </div>
+                    </div>
+                    <!-- End of Tab: 버스 예약 -->
+
+                    <!-- Tab: 안내문 작성 -->
+                    <div id="tab-notice" class="tab-content w-full space-y-4">
+                        <div class="bg-white rounded-xl shadow-md p-6">
+                            <h2 class="text-xl font-bold text-gray-800 mb-6">📄 안내문 작성</h2>
+                            <p class="text-gray-600 mb-4">준비 중입니다...</p>
+                        </div>
+                    </div>
+                    <!-- End of Tab: 안내문 작성 -->
+
+                    </div> <!-- air1-container -->
+                </div> <!-- air1-content -->
+            </div> <!-- content-wrapper -->
+        </main>
+
+    <script src="../js/toast.js"></script>
+    <script src="../js/airline-codes.js"></script>
+    <script type="module" src="js/storage-manager.js"></script>
+    <script type="module" src="js/saved-flights.js"></script>
+    <script type="module" src="js/bus-reservation.js"></script>
+    <script type="module" src="js/notice-writer.js"></script>
+    <script type="module" src="js/main.js"></script>
+    <script>
+        // 사이드바 토글 기능
+        function toggleSubmenu(element) {
+            const arrow = element.querySelector('.nav-dropdown-arrow');
+            const submenu = element.nextElementSibling;
+
+            // 토글
+            if (arrow) {
+                arrow.classList.toggle('open');
+            }
+            if (submenu && submenu.classList.contains('nav-submenu')) {
+                submenu.classList.toggle('open');
+            }
+            element.classList.toggle('active');
+            element.setAttribute('aria-expanded', submenu && submenu.classList.contains('open'));
+        }
+
+        // DOMContentLoaded 이벤트
+        document.addEventListener('DOMContentLoaded', () => {
+            // 날짜 표시
+            const dateDisplay = document.getElementById('currentDate');
+            if (dateDisplay) {
+                const today = new Date();
+                const dateStr = today.toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'short'
+                });
+                dateDisplay.textContent = dateStr;
+            }
+
+            // 사이드바 토글 버튼
+            const btnToggleSidebar = document.getElementById('btnToggleSidebar');
+            const sidebar = document.querySelector('.sidebar');
+            if (btnToggleSidebar && sidebar) {
+                btnToggleSidebar.addEventListener('click', () => {
+                    sidebar.classList.toggle('collapsed');
+                });
+            }
+
+            // 버스 예약 관리자 초기화
+            let busReservationManager;
+            const busTab = document.querySelector('[data-tab="bus"]');
+            if (busTab) {
+                busTab.addEventListener('click', () => {
+                    if (!busReservationManager) {
+                        busReservationManager = new BusReservationManager();
+                    }
+                });
+            }
+        });
+    </script>
+    <script>
+        // 탭 전환 기능
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.getAttribute('data-tab');
+
+                    // 모든 탭 버튼과 콘텐츠에서 active 클래스 제거
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // 선택된 탭 버튼과 콘텐츠에 active 클래스 추가
+                    button.classList.add('active');
+                    document.getElementById(`tab-${targetTab}`).classList.add('active');
+
+                    // 저장된 항공편 탭으로 전환 시 자동 로드
+                    if (targetTab === 'saved') {
+                        loadSavedFlights();
+                    }
+                });
+            });
+
+            // URL 해시 처리 (다른 페이지에서 특정 탭으로 이동)
+            function activateTabFromHash() {
+                const hash = window.location.hash.slice(1); // # 제거
+                if (hash) {
+                    const targetButton = document.querySelector(`[data-tab="${hash}"]`);
+                    if (targetButton) {
+                        targetButton.click();
+                    }
+                }
+            }
+
+            // 페이지 로드 시 해시 확인
+            activateTabFromHash();
+
+            // 해시 변경 시 탭 전환
+            window.addEventListener('hashchange', activateTabFromHash);
+        });
+    </script>
+</body>
+</html>

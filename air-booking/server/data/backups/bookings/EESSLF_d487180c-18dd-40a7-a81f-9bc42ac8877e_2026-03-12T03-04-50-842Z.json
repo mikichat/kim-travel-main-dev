@@ -1,0 +1,60 @@
+{
+  "id": "d487180c-18dd-40a7-a81f-9bc42ac8877e",
+  "user_id": 55,
+  "customer_id": null,
+  "pnr": "EESSLF",
+  "airline": "KE",
+  "flight_number": "KE1611 / KE1614",
+  "route_from": "KWJ",
+  "route_to": "KWJ",
+  "name_kr": null,
+  "name_en": "한/명희",
+  "passport_number": null,
+  "seat_number": null,
+  "fare": null,
+  "nmtl_date": null,
+  "tl_date": null,
+  "departure_date": "2026-04-02",
+  "return_date": "2026-04-04",
+  "status": "confirmed",
+  "remarks": null,
+  "pax_count": 1,
+  "agency": null,
+  "created_at": "2026-03-12 12:04:50",
+  "updated_at": "2026-03-12 12:04:50",
+  "passengers": [
+    {
+      "id": "bb45041e-526e-4317-8fe3-bdb97c6ee77f",
+      "booking_id": "d487180c-18dd-40a7-a81f-9bc42ac8877e",
+      "name_en": "한/명희",
+      "name_kr": null,
+      "title": "MS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-12 12:04:50"
+    }
+  ],
+  "segments": [
+    {
+      "id": "082630e0-8749-4dd8-966d-a8348395a724",
+      "booking_id": "d487180c-18dd-40a7-a81f-9bc42ac8877e",
+      "seg_index": 0,
+      "airline": "KE",
+      "flight_number": "KE1611",
+      "route_from": "KWJ",
+      "route_to": "CJU",
+      "departure_date": "2026-04-02"
+    },
+    {
+      "id": "28d0c395-61af-4f30-b708-57bd5db2873c",
+      "booking_id": "d487180c-18dd-40a7-a81f-9bc42ac8877e",
+      "seg_index": 1,
+      "airline": "KE",
+      "flight_number": "KE1614",
+      "route_from": "CJU",
+      "route_to": "KWJ",
+      "departure_date": "2026-04-04"
+    }
+  ]
+}

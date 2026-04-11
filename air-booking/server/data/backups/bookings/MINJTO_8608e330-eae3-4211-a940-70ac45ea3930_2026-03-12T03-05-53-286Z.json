@@ -1,0 +1,48 @@
+{
+  "id": "8608e330-eae3-4211-a940-70ac45ea3930",
+  "user_id": 55,
+  "customer_id": null,
+  "pnr": "MINJTO",
+  "airline": "OZ",
+  "flight_number": "OZ751 / OZ752",
+  "route_from": "ICN",
+  "route_to": "ICN",
+  "name_kr": null,
+  "name_en": null,
+  "passport_number": null,
+  "seat_number": null,
+  "fare": null,
+  "nmtl_date": null,
+  "tl_date": null,
+  "departure_date": "2026-05-10",
+  "return_date": "2026-05-14",
+  "status": "pending",
+  "remarks": null,
+  "pax_count": 1,
+  "agency": null,
+  "created_at": "2026-03-12 12:05:53",
+  "updated_at": "2026-03-12 12:05:53",
+  "passengers": [],
+  "segments": [
+    {
+      "id": "bfb06001-f4a5-4a0d-8172-cbbd4bcc49df",
+      "booking_id": "8608e330-eae3-4211-a940-70ac45ea3930",
+      "seg_index": 0,
+      "airline": "OZ",
+      "flight_number": "OZ751",
+      "route_from": "ICN",
+      "route_to": "SIN",
+      "departure_date": "2026-05-10"
+    },
+    {
+      "id": "5b412299-e0e0-44d8-8131-70f47741a28c",
+      "booking_id": "8608e330-eae3-4211-a940-70ac45ea3930",
+      "seg_index": 1,
+      "airline": "OZ",
+      "flight_number": "OZ752",
+      "route_from": "SIN",
+      "route_to": "ICN",
+      "departure_date": "2026-05-14"
+    }
+  ]
+}

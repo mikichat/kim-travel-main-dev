@@ -1,0 +1,115 @@
+version: "2.0"
+
+screen:
+  name: 예약장부
+  route: /bookings
+  layout: sidebar-main
+  auth: true
+
+data_requirements:
+  - resource: bookings
+    needs: [id, user_id, customer_id, pnr, airline, flight_number, route_from, route_to, name_kr, name_en, passport_number, seat_number, fare, nmtl_date, tl_date, departure_date, status, remarks, created_at, updated_at]
+    filters:
+      status: "?status"
+      search: "?q"
+      sort: "?sort"
+
+  - resource: customers
+    needs: [id, name_kr, name_en, phone, email]
+
+components:
+  - id: pnr_input
+    type: form
+    position: main
+    function: PNR 텍스트 붙여넣기 → 자동 파싱 → 예약 등록
+    data_source:
+      resource: bookings
+    events:
+      - on: paste
+        do: PNR 텍스트 자동 파싱 (항공사, 편명, 구간, 날짜, 승객 추출)
+      - on: submit
+        do: 파싱된 정보로 예약 생성, 테이블에 추가
+
+  - id: search_bar
+    type: search-form
+    position: main
+    function: 고객명/PNR 번호 검색
+    events:
+      - on: input
+        do: 실시간 검색 필터링 (debounce 300ms)
+
+  - id: status_filter
+    type: filter-form
+    position: main
+    function: 상태별 필터 (전체/대기/확정/발권/취소)
+    events:
+      - on: click:filter
+        do: 선택 상태로 테이블 필터링
+
+  - id: booking_table
+    type: table
+    position: main
+    function: 예약 목록 테이블 (정렬/필터/검색)
+    data_source:
+      resource: bookings
+    events:
+      - on: click:row
+        do: 해당 행 확장 (상세 정보 + 액션 버튼 표시)
+      - on: click:header
+        do: 컬럼별 정렬 (오름차순/내림차순)
+
+  - id: booking_detail
+    type: detail
+    position: main
+    function: 확장 패널 - 전체 예약 상세 + 액션 버튼
+    data_source:
+      resource: bookings
+    events:
+      - on: click:send_notice
+        do: 고객 안내문 발송 (이메일)
+      - on: click:ticketing
+        do: 발권 처리 (상태 → ticketed)
+      - on: click:settlement
+        do: /settlements로 이동 (해당 예약 연결)
+      - on: click:invoice
+        do: 인보이스 생성 다이얼로그 표시
+      - on: click:customer_name
+        do: /customers로 이동 (해당 고객 상세)
+
+connections:
+  navigations:
+    - from: booking_detail
+      to: /settlements
+    - from: booking_detail
+      to: /customers
+
+  shared_components:
+    - sidebar
+    - header
+    - toast
+    - modal
+
+tests:
+  - name: PNR 파싱 등록
+    when: PNR 텍스트 붙여넣기 후 저장
+    then:
+      - 항공사/편명/구간/날짜/승객 자동 파싱
+      - 테이블에 새 예약 추가
+      - NMTL/TL 날짜 달력에 반영
+
+  - name: 행 확장 상세
+    when: 테이블 행 클릭
+    then:
+      - 확장 패널 표시 (전체 예약 정보)
+      - 액션 버튼 4개 표시 (안내문/발권/정산/인보이스)
+
+  - name: 검색 필터링
+    when: 검색창에 고객명 입력
+    then:
+      - 해당 고객 예약만 테이블에 표시
+
+  - name: PNR 파싱 실패
+    when: 형식이 올바르지 않은 텍스트 붙여넣기
+    then:
+      - 수동 입력 폼 제공
+      - 에러 메시지 표시

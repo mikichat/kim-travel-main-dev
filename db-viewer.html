@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>데이터베이스 뷰어</title>
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f7fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 1rem 2rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4a5568;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .tab:hover {
+            background: rgba(66, 153, 225, 0.1);
+            color: #2c5282;
+        }
+
+        .tab.active {
+            color: #2c5282;
+            background: white;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #2c5282;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #2c5282;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e3a5f;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f7fafc;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #2d3748;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:hover {
+            background: #f7fafc;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 3rem;
+            color: #a0aec0;
+            font-size: 1.1rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-upcoming {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+        }
+
+        .past-schedule {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-database"></i> 데이터베이스 뷰어</h1>
+            <p>여행사 관리 시스템 데이터 조회</p>
+        </div>
+
+        <div class="tabs">
+            <button type="button" class="tab active" onclick="switchTab('schedules')">
+                <i class="fas fa-calendar"></i> 일정 (Schedules)
+            </button>
+            <button type="button" class="tab" onclick="switchTab('bookings')">
+                <i class="fas fa-plane"></i> 예약 (Bookings)
+            </button>
+            <button type="button" class="tab" onclick="switchTab('customers')">
+                <i class="fas fa-users"></i> 고객 (Customers)
+            </button>
+            <button type="button" class="tab" onclick="switchTab('groups')">
+                <i class="fas fa-users-cog"></i> 단체명단 (LocalStorage)
+            </button>
+        </div>
+
+        <div class="content">
+            <!-- 일정 탭 -->
+            <div id="tab-schedules" class="tab-content active">
+                <h2 style="margin-bottom: 1rem;">일정 조회</h2>
+
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3 id="stat-total-schedules">0</h3>
+                        <p>전체 일정</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="stat-upcoming-schedules">0</h3>
+                        <p>다가오는 일정</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="stat-past-schedules">0</h3>
+                        <p>과거 일정</p>
+                    </div>
+                </div>
+
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="schedule-filter">날짜 범위</label>
+                        <select id="schedule-filter" onchange="loadSchedules()">
+                            <option value="all">전체</option>
+                            <option value="upcoming">다가오는 일정</option>
+                            <option value="past30" selected>과거 30일</option>
+                            <option value="past90">과거 90일</option>
+                            <option value="past365">과거 1년</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="group-search">단체명 검색</label>
+                        <input type="text" id="group-search" placeholder="단체명 입력..." onkeyup="filterSchedules()">
+                    </div>
+                    <div class="filter-group" style="display: flex; align-items: flex-end;">
+                        <button type="button" class="btn btn-success" onclick="loadSchedules()">
+                            <i class="fas fa-sync"></i> 새로고침
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table id="schedules-table">
+                        <thead>
+                            <tr>
+                                <th>날짜</th>
+                                <th>단체명</th>
+                                <th>목적지</th>
+                                <th>일정</th>
+                                <th>교통편</th>
+                                <th>식사</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedules-tbody">
+                            <tr><td colspan="7" class="empty-message">로딩 중...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 예약 탭 -->
+            <div id="tab-bookings" class="tab-content">
+                <h2 style="margin-bottom: 1rem;">예약 조회</h2>
+
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="booking-filter">출발일 기준</label>
+                        <select id="booking-filter" onchange="loadBookings()">
+                            <option value="all">전체</option>
+                            <option value="upcoming">미래 출발</option>
+                            <option value="past">과거 출발</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" style="display: flex; align-items: flex-end;">
+                        <button type="button" class="btn btn-success" onclick="loadBookings()">
+                            <i class="fas fa-sync"></i> 새로고침
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table id="bookings-table">
+                        <thead>
+                            <tr>
+                                <th>예약번호</th>
+                                <th>고객명</th>
+                                <th>상품명</th>
+                                <th>출발일</th>
+                                <th>귀국일</th>
+                                <th>인원</th>
+                                <th>단체명</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookings-tbody">
+                            <tr><td colspan="8" class="empty-message">데이터를 불러오려면 새로고침 버튼을 클릭하세요.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 고객 탭 -->
+            <div id="tab-customers" class="tab-content">
+                <h2 style="margin-bottom: 1rem;">고객 조회</h2>
+
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="customer-search">검색</label>
+                        <input type="text" id="customer-search" placeholder="이름, 여권번호 검색..." onkeyup="filterCustomers()">
+                    </div>
+                    <div class="filter-group" style="display: flex; align-items: flex-end;">
+                        <button type="button" class="btn btn-success" onclick="loadCustomers()">
+                            <i class="fas fa-sync"></i> 새로고침
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table id="customers-table">
+                        <thead>
+                            <tr>
+                                <th>한글명</th>
+                                <th>영문명</th>
+                                <th>여권번호</th>
+                                <th>생년월일</th>
+                                <th>전화번호</th>
+                                <th>단체명</th>
+                                <th>여행지역</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customers-tbody">
+                            <tr><td colspan="7" class="empty-message">데이터를 불러오려면 새로고침 버튼을 클릭하세요.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 단체명단 탭 -->
+            <div id="tab-groups" class="tab-content">
+                <h2 style="margin-bottom: 1rem;">단체명단 조회 (LocalStorage)</h2>
+
+                <div class="filters">
+                    <div class="filter-group" style="display: flex; align-items: flex-end;">
+                        <button type="button" class="btn btn-success" onclick="loadGroups()">
+                            <i class="fas fa-sync"></i> 새로고침
+                        </button>
+                    </div>
+                </div>
+
+                <div id="groups-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allSchedules = [];
+        let allBookings = [];
+        let allCustomers = [];
+
+        // 탭 전환
+        function switchTab(tabName) {
+            // 모든 탭 비활성화
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // 선택된 탭 활성화
+            event.target.closest('.tab').classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+        }
+
+        // 일정 로드
+        async function loadSchedules() {
+            try {
+                const response = await fetch('/api/schedules');
+                allSchedules = await response.json();
+
+                updateScheduleStats();
+                filterSchedules();
+            } catch (error) {
+                console.error('일정 로드 실패:', error);
+                document.getElementById('schedules-tbody').innerHTML =
+                    '<tr><td colspan="7" class="empty-message">데이터를 불러올 수 없습니다.</td></tr>';
+            }
+        }
+
+        function updateScheduleStats() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const upcoming = allSchedules.filter(s => new Date(s.event_date) >= today).length;
+            const past = allSchedules.filter(s => new Date(s.event_date) < today).length;
+
+            document.getElementById('stat-total-schedules').textContent = allSchedules.length;
+            document.getElementById('stat-upcoming-schedules').textContent = upcoming;
+            document.getElementById('stat-past-schedules').textContent = past;
+        }
+
+        function filterSchedules() {
+            const filter = document.getElementById('schedule-filter').value;
+            const search = document.getElementById('group-search').value.toLowerCase();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let filtered = allSchedules;
+
+            // 날짜 필터
+            if (filter === 'upcoming') {
+                filtered = filtered.filter(s => new Date(s.event_date) >= today);
+            } else if (filter === 'past30') {
+                const thirtyDaysAgo = new Date(today);
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                filtered = filtered.filter(s => {
+                    const date = new Date(s.event_date);
+                    return date < today && date >= thirtyDaysAgo;
+                });
+            } else if (filter === 'past90') {
+                const ninetyDaysAgo = new Date(today);
+                ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+                filtered = filtered.filter(s => {
+                    const date = new Date(s.event_date);
+                    return date < today && date >= ninetyDaysAgo;
+                });
+            } else if (filter === 'past365') {
+                const oneYearAgo = new Date(today);
+                oneYearAgo.setDate(oneYearAgo.getDate() - 365);
+                filtered = filtered.filter(s => {
+                    const date = new Date(s.event_date);
+                    return date < today && date >= oneYearAgo;
+                });
+            }
+
+            // 검색 필터
+            if (search) {
+                filtered = filtered.filter(s =>
+                    (s.group_name || '').toLowerCase().includes(search)
+                );
+            }
+
+            renderSchedules(filtered);
+        }
+
+        function renderSchedules(schedules) {
+            const tbody = document.getElementById('schedules-tbody');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (schedules.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-message">일정이 없습니다.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = schedules
+                .sort((a, b) => new Date(b.event_date) - new Date(a.event_date))
+                .map(s => {
+                    const date = new Date(s.event_date);
+                    const isPast = date < today;
+                    const status = isPast ?
+                        '<span class="status-badge status-completed">완료</span>' :
+                        '<span class="status-badge status-upcoming">예정</span>';
+                    const rowClass = isPast ? 'class="past-schedule"' : '';
+
+                    return `
+                        <tr ${rowClass}>
+                            <td>${escapeHtml(s.event_date)}</td>
+                            <td>${escapeHtml(s.group_name || '-')}</td>
+                            <td>${escapeHtml(s.location || '-')}</td>
+                            <td>${escapeHtml(s.schedule || '-')}</td>
+                            <td>${escapeHtml(s.transport || '-')}</td>
+                            <td>${escapeHtml(s.meals || '-')}</td>
+                            <td>${status}</td>
+                        </tr>
+                    `;
+                }).join('');
+        }
+
+        // 예약 로드
+        async function loadBookings() {
+            try {
+                const response = await fetch('/tables/bookings');
+                allBookings = await response.json();
+                filterBookings();
+            } catch (error) {
+                console.error('예약 로드 실패:', error);
+                document.getElementById('bookings-tbody').innerHTML =
+                    '<tr><td colspan="8" class="empty-message">데이터를 불러올 수 없습니다.</td></tr>';
+            }
+        }
+
+        function filterBookings() {
+            const filter = document.getElementById('booking-filter').value;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let filtered = allBookings;
+
+            if (filter === 'upcoming') {
+                filtered = filtered.filter(b => {
+                    if (!b.departure_date) return true;
+                    return new Date(b.departure_date) >= today;
+                });
+            } else if (filter === 'past') {
+                filtered = filtered.filter(b => {
+                    if (!b.departure_date) return false;
+                    return new Date(b.departure_date) < today;
+                });
+            }
+
+            renderBookings(filtered);
+        }
+
+        function renderBookings(bookings) {
+            const tbody = document.getElementById('bookings-tbody');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (bookings.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-message">예약이 없습니다.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = bookings
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .map(b => {
+                    const isPast = b.departure_date && new Date(b.departure_date) < today;
+                    const rowClass = isPast ? 'class="past-schedule"' : '';
+
+                    return `
+                        <tr ${rowClass}>
+                            <td>${escapeHtml(b.id.substring(0, 8))}</td>
+                            <td>${escapeHtml(b.customer_name)}</td>
+                            <td>${escapeHtml(b.product_name)}</td>
+                            <td>${escapeHtml(b.departure_date || '-')}</td>
+                            <td>${escapeHtml(b.return_date || '-')}</td>
+                            <td>${b.participants}</td>
+                            <td>${escapeHtml(b.group_name || '-')}</td>
+                            <td>${escapeHtml(b.status)}</td>
+                        </tr>
+                    `;
+                }).join('');
+        }
+
+        // 고객 로드
+        async function loadCustomers() {
+            try {
+                const response = await fetch('/tables/customers');
+                allCustomers = await response.json();
+                filterCustomers();
+            } catch (error) {
+                console.error('고객 로드 실패:', error);
+                document.getElementById('customers-tbody').innerHTML =
+                    '<tr><td colspan="7" class="empty-message">데이터를 불러올 수 없습니다.</td></tr>';
+            }
+        }
+
+        function filterCustomers() {
+            const search = document.getElementById('customer-search').value.toLowerCase();
+
+            let filtered = allCustomers;
+
+            if (search) {
+                filtered = filtered.filter(c =>
+                    (c.name_kor || '').toLowerCase().includes(search) ||
+                    (c.name_eng || '').toLowerCase().includes(search) ||
+                    (c.passport_number || '').toLowerCase().includes(search)
+                );
+            }
+
+            renderCustomers(filtered);
+        }
+
+        function renderCustomers(customers) {
+            const tbody = document.getElementById('customers-tbody');
+
+            if (customers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-message">고객이 없습니다.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = customers.map(c => `
+                <tr>
+                    <td>${escapeHtml(c.name_kor || '-')}</td>
+                    <td>${escapeHtml(c.name_eng || '-')}</td>
+                    <td>${escapeHtml(c.passport_number || '-')}</td>
+                    <td>${escapeHtml(c.birth_date || '-')}</td>
+                    <td>${escapeHtml(c.phone || '-')}</td>
+                    <td>${escapeHtml(c.group_name || '-')}</td>
+                    <td>${escapeHtml(c.travel_region || '-')}</td>
+                </tr>
+            `).join('');
+        }
+
+        // 단체명단 로드 (LocalStorage)
+        function loadGroups() {
+            const container = document.getElementById('groups-container');
+            const groupsData = localStorage.getItem('group-roster-data');
+
+            if (!groupsData) {
+                container.innerHTML = '<div class="empty-message">단체명단 데이터가 없습니다.</div>';
+                return;
+            }
+
+            const groups = JSON.parse(groupsData);
+
+            container.innerHTML = groups.map(g => `
+                <div style="border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1rem;">
+                    <h3 style="margin-bottom: 1rem; color: #2c5282;">
+                        <i class="fas fa-users"></i> ${escapeHtml(g.name)}
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem; margin-bottom: 1rem;">
+                        <div><strong>목적지:</strong> ${escapeHtml(g.destination || '-')}</div>
+                        <div><strong>출발일:</strong> ${escapeHtml(g.departureDate || '-')}</div>
+                        <div><strong>귀국일:</strong> ${escapeHtml(g.returnDate || '-')}</div>
+                        <div><strong>인원:</strong> ${g.members?.length || 0}명</div>
+                    </div>
+                    ${g.members && g.members.length > 0 ? `
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>한글명</th>
+                                        <th>영문명</th>
+                                        <th>여권번호</th>
+                                        <th>생년월일</th>
+                                        <th>전화번호</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${g.members.map(m => `
+                                        <tr>
+                                            <td>${escapeHtml(m.nameKor || m.nameKr || '-')}</td>
+                                            <td>${escapeHtml(m.nameEng || m.nameEn || '-')}</td>
+                                            <td>${escapeHtml(m.passportNo || '-')}</td>
+                                            <td>${escapeHtml(m.birthDate || '-')}</td>
+                                            <td>${escapeHtml(m.phone || '-')}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : '<p class="empty-message">멤버가 없습니다.</p>'}
+                </div>
+            `).join('');
+        }
+
+        // 페이지 로드 시 일정 자동 로드
+        window.addEventListener('DOMContentLoaded', function() {
+            loadSchedules();
+        });
+    </script>
+</body>
+</html>

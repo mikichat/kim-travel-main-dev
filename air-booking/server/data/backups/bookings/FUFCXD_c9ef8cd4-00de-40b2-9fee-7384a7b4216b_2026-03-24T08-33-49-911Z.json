@@ -1,0 +1,86 @@
+{
+  "id": "c9ef8cd4-00de-40b2-9fee-7384a7b4216b",
+  "user_id": 55,
+  "customer_id": null,
+  "pnr": "FUFCXD",
+  "airline": "OZ",
+  "flight_number": "OZ731 / OZ736",
+  "route_from": "ICN",
+  "route_to": "ICN",
+  "name_kr": null,
+  "name_en": "YUN/AYEONG",
+  "passport_number": null,
+  "seat_number": null,
+  "fare": null,
+  "nmtl_date": null,
+  "tl_date": null,
+  "departure_date": "2026-07-20",
+  "return_date": "2026-07-27",
+  "status": "confirmed",
+  "remarks": null,
+  "pax_count": 3,
+  "agency": null,
+  "created_at": "2026-03-24 17:33:49",
+  "updated_at": "2026-03-24 17:33:49",
+  "passengers": [
+    {
+      "id": "848d4270-8207-43e3-bd51-ef1d8252922e",
+      "booking_id": "c9ef8cd4-00de-40b2-9fee-7384a7b4216b",
+      "name_en": "YUN/AYEONG",
+      "name_kr": null,
+      "title": "MS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-24 17:33:49"
+    },
+    {
+      "id": "275f6c77-6636-46fa-a354-d6b2a77c9689",
+      "booking_id": "c9ef8cd4-00de-40b2-9fee-7384a7b4216b",
+      "name_en": "PARK/JIEUN",
+      "name_kr": null,
+      "title": "MISS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-24 17:33:49"
+    },
+    {
+      "id": "98be5fe9-1dcd-4e3d-9576-b215a376417d",
+      "booking_id": "c9ef8cd4-00de-40b2-9fee-7384a7b4216b",
+      "name_en": "PARK/JIHUN",
+      "name_kr": null,
+      "title": "MSTR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-24 17:33:49"
+    }
+  ],
+  "segments": [
+    {
+      "id": "a0eb4f37-d0b9-4075-b29d-986373d4f7bd",
+      "booking_id": "c9ef8cd4-00de-40b2-9fee-7384a7b4216b",
+      "seg_index": 0,
+      "airline": "OZ",
+      "flight_number": "OZ731",
+      "route_from": "ICN",
+      "route_to": "SGN",
+      "departure_date": "2026-07-20",
+      "departure_time": null,
+      "arrival_time": null
+    },
+    {
+      "id": "5c9bea71-bd3e-42c0-8b66-1ca460b84464",
+      "booking_id": "c9ef8cd4-00de-40b2-9fee-7384a7b4216b",
+      "seg_index": 1,
+      "airline": "OZ",
+      "flight_number": "OZ736",
+      "route_from": "SGN",
+      "route_to": "ICN",
+      "departure_date": "2026-07-27",
+      "departure_time": null,
+      "arrival_time": null
+    }
+  ]
+}

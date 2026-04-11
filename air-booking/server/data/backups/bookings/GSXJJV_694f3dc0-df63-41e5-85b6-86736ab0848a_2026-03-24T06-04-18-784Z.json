@@ -1,0 +1,75 @@
+{
+  "id": "694f3dc0-df63-41e5-85b6-86736ab0848a",
+  "user_id": 55,
+  "customer_id": null,
+  "pnr": "GSXJJV",
+  "airline": "PR",
+  "flight_number": "PR403 / PR402",
+  "route_from": "ICN",
+  "route_to": "ICN",
+  "name_kr": null,
+  "name_en": "KO/YONGSOK",
+  "passport_number": null,
+  "seat_number": null,
+  "fare": null,
+  "nmtl_date": null,
+  "tl_date": null,
+  "departure_date": "2026-04-07",
+  "return_date": "2026-04-20",
+  "status": "ticketed",
+  "remarks": null,
+  "pax_count": 2,
+  "agency": null,
+  "created_at": "2026-03-24 15:03:43",
+  "updated_at": "2026-03-24 06:04:18",
+  "passengers": [
+    {
+      "id": "753636a1-8986-46e1-829e-fb57f2a70507",
+      "booking_id": "694f3dc0-df63-41e5-85b6-86736ab0848a",
+      "name_en": "KO/YONGSOK",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-24 15:03:43"
+    },
+    {
+      "id": "619c2bf9-876e-4bdb-92f6-46bcfc6be343",
+      "booking_id": "694f3dc0-df63-41e5-85b6-86736ab0848a",
+      "name_en": "YU/HYEJIN",
+      "name_kr": null,
+      "title": "MS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-24 15:03:43"
+    }
+  ],
+  "segments": [
+    {
+      "id": "d2e96211-04c3-4493-a588-c22bb276f4b7",
+      "booking_id": "694f3dc0-df63-41e5-85b6-86736ab0848a",
+      "seg_index": 0,
+      "airline": "PR",
+      "flight_number": "PR403",
+      "route_from": "ICN",
+      "route_to": "MNL",
+      "departure_date": "2026-04-07",
+      "departure_time": null,
+      "arrival_time": null
+    },
+    {
+      "id": "717915ac-e92d-4ca8-b441-2114343e40a9",
+      "booking_id": "694f3dc0-df63-41e5-85b6-86736ab0848a",
+      "seg_index": 1,
+      "airline": "PR",
+      "flight_number": "PR402",
+      "route_from": "MNL",
+      "route_to": "ICN",
+      "departure_date": "2026-04-20",
+      "departure_time": null,
+      "arrival_time": null
+    }
+  ]
+}

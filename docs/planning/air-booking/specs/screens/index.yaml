@@ -1,0 +1,35 @@
+# 항공 예약 관리 시스템 - 화면 목록
+version: "2.0"
+
+screens:
+  - id: screen-login
+    file: login.yaml
+    route: /login
+
+  - id: screen-dashboard
+    file: dashboard.yaml
+    route: /dashboard
+
+  - id: screen-bookings
+    file: bookings.yaml
+    route: /bookings
+
+  - id: screen-calendar
+    file: calendar.yaml
+    route: /calendar
+
+  - id: screen-settlements
+    file: settlements.yaml
+    route: /settlements
+
+  - id: screen-customers
+    file: customers.yaml
+    route: /customers
+
+  - id: screen-vendors
+    file: vendors.yaml
+    route: /vendors
+
+  - id: screen-settings
+    file: settings.yaml
+    route: /settings

@@ -1,0 +1,56 @@
+version: "2.0"
+
+shared_components:
+  - id: sidebar
+    type: navigation
+    function: 전체 화면 네비게이션 사이드바
+    items:
+      - { label: 대시보드, icon: home, route: /dashboard }
+      - { label: 예약장부, icon: book, route: /bookings }
+      - { label: 달력, icon: calendar, route: /calendar }
+      - { label: 정산 관리, icon: wallet, route: /settlements }
+      - { label: 고객 관리, icon: users, route: /customers }
+      - { label: 거래처, icon: building, route: /vendors }
+      - { label: 설정, icon: settings, route: /settings }
+
+  - id: header
+    type: detail
+    function: 페이지 타이틀 + 사용자 정보 + 로그아웃
+    events:
+      - on: click:logout
+        do: 세션 해제 → /login 이동
+
+  - id: toast
+    type: detail
+    function: 알림 메시지 (성공/에러/경고) — 3초 후 자동 사라짐
+
+  - id: modal
+    type: detail
+    function: 확인/삭제 다이얼로그
+    events:
+      - on: click:confirm
+        do: 확인 액션 실행
+      - on: click:cancel
+        do: 모달 닫기
+
+  - id: status_badge
+    type: detail
+    function: 상태 표시 배지 — 색상 + 텍스트
+    variants:
+      - { status: urgent, color: red, label: 긴급 }
+      - { status: soon, color: yellow, label: 임박 }
+      - { status: done, color: green, label: 완료 }
+      - { status: cancelled, color: gray, label: 취소 }
+
+  - id: ticket_status_badge
+    type: detail
+    function: 티켓 상태 표시 배지
+    variants:
+      - { status: issued, color: blue, label: 발권 }
+      - { status: refunded, color: orange, label: 환불 }
+      - { status: reissued, color: purple, label: 재발행 }
+      - { status: void, color: gray, label: VOID }
+
+  - id: loading_spinner
+    type: detail
+    function: 데이터 로딩 표시

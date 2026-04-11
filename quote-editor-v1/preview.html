@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>여행 견적서</title>
+    <link rel="stylesheet" href="css/document.css">
+    <link rel="stylesheet" href="css/print.css" media="print">
+</head>
+<body>
+    <div class="page-container">
+        <!-- Top Border (주황색 바) -->
+        <div class="page-border-top"></div>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Header (로고 + 담당자) -->
+            <header class="header">
+                <div class="header-logo">
+                    <img src="assets/images/25년11월중순 광저우 망산-1_hd1.png" alt="여행세상 로고" class="logo-image">
+                </div>
+                <div class="header-contact">
+                    <p class="contact-info" data-field="contact_info">담당자: 김국진 010-2662-9009</p>
+                </div>
+            </header>
+
+            <!-- Title Section (제목) -->
+            <section class="title-section">
+                <h1 class="document-title">여행 견적서</h1>
+                <div class="title-underline"></div>
+            </section>
+
+            <!-- Main Info Table (단체명, 일자, 여행지, 1인 요금) -->
+            <section class="main-info-section">
+                <table class="info-table">
+                    <tbody>
+                        <!-- 단체명 -->
+                        <tr class="table-row">
+                            <th class="table-header">단체명</th>
+                            <td class="table-data" data-field="group_name">중국 – 광저우 천저우 고의령 망산 PTY</td>
+                        </tr>
+
+                        <!-- 일자 -->
+                        <tr class="table-row">
+                            <th class="table-header">일 자</th>
+                            <td class="table-data" data-field="travel_dates">2025년 11월 14일 ~ 11월 18일</td>
+                        </tr>
+
+                        <!-- 여행지 -->
+                        <tr class="table-row">
+                            <th class="table-header">여행지</th>
+                            <td class="table-data" data-field="destination">중국 – 광저우 천저우 고의령 망산</td>
+                        </tr>
+
+                        <!-- 1인 여행요금 -->
+                        <tr class="table-row-last">
+                            <th class="table-header table-header-top">1인 여행요금</th>
+                            <td class="table-data-pricing">
+                                <div class="price-box">
+                                    <!-- 요금 Grid -->
+                                    <div class="price-grid">
+                                        <!-- 항공사명 -->
+                                        <div class="price-cell price-airline" data-field="airline_name">
+                                            아시아나<br />항공
+                                        </div>
+
+                                        <!-- 스케줄 -->
+                                        <div class="price-cell price-schedule">
+                                            <p data-field="departure_flight">인천 (08:40) - 광저우 (11:15)</p>
+                                            <p data-field="return_flight">광저우 (12:20) - 인천 (17:00)</p>
+                                        </div>
+
+                                        <!-- 옵션 -->
+                                        <div class="price-cell price-option" data-field="option_type">
+                                            노옵션
+                                        </div>
+
+                                        <!-- 금액 -->
+                                        <div class="price-cell price-amount" data-field="price_amount">
+                                            1,540,000원
+                                        </div>
+                                    </div>
+
+                                    <!-- 요금 안내 -->
+                                    <div class="price-note">
+                                        <p data-field="price_note">※ 상기 요금은 1인 기준이며 항공 및 세금 변동 시 재확인 필요</p>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Conditions Table (여행 조건) -->
+            <section class="conditions-section">
+                <!-- 헤더 -->
+                <div class="conditions-header">
+                    <h2 class="conditions-title">여 행 조 건</h2>
+                </div>
+
+                <!-- 조건 테이블 -->
+                <table class="conditions-table">
+                    <tbody>
+                        <!-- 항공료 -->
+                        <tr class="condition-row">
+                            <th class="condition-header">항공료</th>
+                            <td class="condition-content">전 일정에 명시된 항공료</td>
+                            <td class="condition-note condition-note-red">선발권 기준으로 추후에 요금이 변동 될 수 있습니다</td>
+                        </tr>
+
+                        <!-- 숙박 -->
+                        <tr class="condition-row">
+                            <th class="condition-header">숙 박</th>
+                            <td class="condition-content">일정에 있는 숙박 포함</td>
+                            <td class="condition-note">2인 1실 기준</td>
+                        </tr>
+
+                        <!-- 식사 -->
+                        <tr class="condition-row">
+                            <th class="condition-header">식 사</th>
+                            <td class="condition-content">일정에 있는 식사 포함</td>
+                            <td class="condition-note"></td>
+                        </tr>
+
+                        <!-- 교통편 -->
+                        <tr class="condition-row">
+                            <th class="condition-header">교통편</th>
+                            <td class="condition-content">일정에 따른 차량 이용 교통 포함</td>
+                            <td class="condition-note">집결지 ↔ 인천국제공항1청사 왕복 리무진 제공</td>
+                        </tr>
+
+                        <!-- 관광 -->
+                        <tr class="condition-row">
+                            <th class="condition-header">관 광</th>
+                            <td class="condition-content">전 일정에 명시된 관광 비용 포함</td>
+                            <td class="condition-note condition-note-red">전신맛사지 90분 2회 포함 (단 팁은 별도)</td>
+                        </tr>
+
+                        <!-- 여행자 보험 -->
+                        <tr class="condition-row">
+                            <th class="condition-header">여행자 보험</th>
+                            <td class="condition-content">여행 기간 해외 여행자 보험 가입</td>
+                            <td class="condition-note"></td>
+                        </tr>
+
+                        <!-- 기타 세금 -->
+                        <tr class="condition-row">
+                            <th class="condition-header">기타 세금</th>
+                            <td class="condition-content">공항 이용료, 출국세, 입국세 포함</td>
+                            <td class="condition-note"></td>
+                        </tr>
+
+                        <!-- 비고 사항 -->
+                        <tr class="condition-row-last">
+                            <th class="condition-header condition-header-top">비고 사항</th>
+                            <td class="condition-content-full" colspan="2">
+                                <ul class="condition-list">
+                                    <li>상기 일정은 기상악화나 현지 사정으로 인하여 변동될 수 있습니다.</li>
+                                    <li>견적서 인원 (8명 이상)에 따른 행사 조건입니다.</li>
+                                    <li>현금 결제 조건입니다.</li>
+                                    <li>식사 시 음료(주류) 및 식사 추가는 불포함입니다.</li>
+                                    <li>단독 요금 진행 조건입니다.</li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Signature (서명) -->
+            <section class="signature-section">
+                <p class="signature-text">위와 같이 여행 경비 견적서를 제출합니다.</p>
+                <p class="signature-date">2025년 07월 09일</p>
+                <p class="signature-company">(유) 여행세상 대표이사</p>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="assets/images/25년11월중순 광저우 망산-1_hd2.png" alt="여행세상 하단 로고" class="footer-logo-image">
+                </div>
+                <div class="footer-info">
+                    <span>A: 전주시 완산구 서신동 856-1번지</span>
+                    <span>T: 063)271-9090</span>
+                    <span>F: 063)271-9030</span>
+                </div>
+                <div class="footer-spacer"></div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Data Binding Script -->
+    <script type="module" src="js/data-binding.js"></script>
+    <script type="module">
+        // 메시지 수신 (편집기에서 전송)
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'UPDATE_FIELD') {
+                bindField(event.data.field, event.data.value);
+            } else if (event.data.type === 'LOAD_DATA') {
+                bindAllData(event.data.data);
+            }
+        });
+    </script>
+</body>
+</html>

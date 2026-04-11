@@ -1,0 +1,167 @@
+# 저장된 항공편 화면 명세
+# @COMPONENT SavedFlights.tsx
+# @ROUTE /converter/saved
+# 변환기의 "저장된 항공편" 탭
+
+version: "2.0"
+screen: converter-saved
+component: SavedFlights.tsx
+
+title: "저장된 항공편"
+description: "DB 저장된 항공편 목록 (불러오기, 삭제, 팀 병합)"
+note: "flight_saves + air_bookings 통합 목록"
+
+data_requirements:
+  resources:
+    - bookings: "air_bookings 테이블 + original_pnr_text 포함"
+  fields:
+    - airline: "항공사"
+    - flight_number: "항공편번호"
+    - route_from: "3코드"
+    - route_to: "3코드"
+    - departure_date: "ISO"
+    - return_date: "ISO"
+    - created_at: "생성일"
+    - created_by: "저장한 사용자"
+
+layout:
+  type: list
+  sections:
+    - header:
+        title: "저장된 항공편"
+        actions: [search, filter, bulk-delete, merge-team]
+    - toolbar:
+        elements: [search-input, date-range-filter]
+    - content:
+        type: card-list
+        pagination: true
+    - modals: [preview, delete-confirm, merge-team]
+
+features:
+  search:
+    fields: [airline, flight_number, route_from, route_to, created_by]
+    placeholder: "항공사, 항공편, 경로, 저장자 검색"
+
+  filters:
+    date_range: [created_at]
+    created_by: autocomplete
+
+  list_columns:
+    - flight: { type: text, computed: "airline flight_number", width: 120 }
+    - route: { type: text, computed: "route_from→route_to", width: 120 }
+    - departure: { type: date, width: 100 }
+    - return: { type: date, width: 100 }
+    - created_by: { type: text, width: 100 }
+    - created_at: { type: date, width: 100 }
+    - actions: { type: actions, width: 150 }
+
+card_display:
+  layout: grid
+  items:
+    - header:
+        title: "{{ airline }} {{ flight_number }}"
+        badge: "{{ created_by }}"
+    - content:
+        - route: "{{ route_from | getAirportName }} → {{ route_to | getAirportName }}"
+        - departure: "{{ departure_date | formatDate }}"
+        - return: "{{ return_date | formatDate if exists }}"
+    - actions: [load, preview, delete, edit]
+
+actions:
+  row:
+    - id: load
+      label: "불러오기"
+      icon: download
+      action: load-to-converter
+      note: "original_pnr_text를 변환기에 채움"
+
+    - id: preview
+      label: "미리보기"
+      icon: eye
+      modal: preview
+
+    - id: edit
+      label: "편집"
+      icon: edit
+      action: open-edit-form
+
+    - id: delete
+      label: "삭제"
+      icon: trash
+      modal: delete-confirm
+      warning: "AB- prefix 항목은 삭제 불가"
+
+  bulk:
+    - id: bulk-delete
+      label: "선택 삭제"
+      icon: trash
+      enabled_on: checkbox-select
+      modal: delete-confirm
+      warning: "AB- prefix 항목 자동 제외"
+
+    - id: merge-team
+      label: "팀 병합"
+      icon: git-merge
+      modal: merge-team
+      note: "여러 저장 항공편을 하나로 병합"
+
+modals:
+  preview:
+    title: "항공편 미리보기"
+    size: large
+    content:
+      - sections: "segments (구간별 상세정보)"
+      - passengers: "passengers (탑승객)"
+      - button: "카드 복사 (html2canvas)"
+
+  delete-confirm:
+    title: "항공편 삭제"
+    message: "정말 삭제하시겠습니까?"
+    warning: "AB- prefix로 시작하는 항목은 삭제할 수 없습니다."
+    actions: [delete, cancel]
+
+  merge-team:
+    title: "팀 병합"
+    description: "여러 저장 항공편을 하나의 단체로 합치기"
+    fields:
+      - selected: "선택된 항공편 ({{ count }}개)"
+      - merge_target: { type: select, label: "병합 대상", options: [selected-list] }
+    actions: [merge, cancel]
+
+components:
+  GetAirportName:
+    description: "3코드 → 도시명 변환 (예: ICN → 서울)"
+    usage: "{{ code | getAirportName }}"
+
+  MobileCard:
+    description: "항공편 카드 (html2canvas 캡처 가능)"
+    display: "미리보기 모달에서 표시"
+
+protection:
+  ab_prefix:
+    description: "AB- 로 시작하는 항목 (내부 포탈용)"
+    rules:
+      - "삭제 불가"
+      - "수동으로만 생성"
+      - "워크스페이스 동기화 불가"
+
+tests:
+  - id: search-saved-flights
+    when: "저장된 항공편 검색"
+    then: "필터링된 결과 표시"
+
+  - id: load-to-converter
+    when: "항공편 불러오기 클릭"
+    then: "변환기 탭으로 이동 + original_pnr_text 입력"
+
+  - id: delete-flight
+    when: "항공편 삭제 클릭"
+    then: "확인 후 삭제 완료"
+
+  - id: protect-ab-prefix
+    when: "AB- 항목 삭제 시도"
+    then: "삭제 금지 경고"
+
+  - id: merge-flights
+    when: "여러 항공편 선택 → 병합"
+    then: "병합 완료 + 타임라인 통합"

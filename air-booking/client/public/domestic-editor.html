@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>국내 내역서</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=Pretendard:wght@300;400;500;600;700;900&display=swap');
+:root { --primary:#1a3a5c; --border:#333; --bl:#bbb; --bg:#f2f4f7; }
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+/* ── 툴바 ── */
+.toolbar{background:var(--primary);color:#fff;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(0,0,0,.3);}
+.toolbar-title{font-size:15px;font-weight:700;}
+.toolbar-sub{font-size:11px;color:rgba(255,255,255,.55);margin-top:2px;}
+.toolbar-btns{display:flex;gap:8px;}
+.tbtn{padding:7px 18px;border-radius:5px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.tbtn-outline{background:transparent;border:1.5px solid rgba(255,255,255,.4);color:#fff;}
+.tbtn-outline:hover{background:rgba(255,255,255,.12);}
+.tbtn-save{background:#1a7a4c;color:#fff;}
+.tbtn-save:hover{background:#1d9056;}
+.tbtn-print{background:#c9a227;color:#1a3a5c;font-weight:700;}
+.tbtn-print:hover{background:#e0b830;}
+.tbtn-load{background:#2c6fbb;color:#fff;}
+.tbtn-load:hover{background:#3580d0;}
+.tbtn-danger{background:#c0392b;color:#fff;}
+.tbtn-danger:hover{background:#e04838;}
+
+/* ── 문서 타입 토글 ── */
+.doc-type-toggle{display:flex;gap:0;margin-right:16px;}
+.doc-type-btn{padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,.4);background:transparent;color:rgba(255,255,255,.7);font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.doc-type-btn:first-child{border-radius:5px 0 0 5px;}
+.doc-type-btn:last-child{border-radius:0 5px 5px 0;border-left:none;}
+.doc-type-btn.active{background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.7);}
+
+/* ── 저장 목록 드롭다운 ── */
+.load-dropdown{position:relative;display:inline-block;}
+.load-menu{display:none;position:absolute;top:100%;right:0;background:#fff;border:1px solid #ccc;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.15);min-width:360px;max-height:400px;overflow-y:auto;z-index:300;margin-top:4px;}
+.load-menu.show{display:block;}
+.load-menu-item{padding:10px 14px;border-bottom:1px solid #eee;cursor:pointer;font-size:12px;color:#333;display:flex;justify-content:space-between;align-items:center;}
+.load-menu-item:hover{background:#f0f4fa;}
+.load-menu-item:last-child{border-bottom:none;}
+.load-menu-item .lm-title{font-weight:700;color:#1a3a5c;}
+.load-menu-item .lm-sub{font-size:11px;color:#888;}
+.load-menu-item .lm-type{font-size:10px;padding:2px 6px;border-radius:3px;font-weight:700;}
+.lm-type.est{background:#e8f5e9;color:#2e7d32;}
+.lm-type.stl{background:#fff3e0;color:#e65100;}
+.load-menu-empty{padding:20px;text-align:center;color:#999;font-size:12px;}
+.lm-del{background:none;border:1px solid #ddd;color:#bbb;font-size:10px;padding:2px 6px;border-radius:3px;cursor:pointer;margin-left:8px;}
+.lm-del:hover{border-color:#e74c3c;color:#e74c3c;}
+
+/* ── 페이지 ── */
+body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;font-size:13px;color:#111;}
+.page-wrap{max-width:860px;margin:28px auto 60px;padding:0 16px;}
+.doc{background:#fff;border:1px solid #ccc;padding:36px 40px 40px;box-shadow:0 2px 16px rgba(0,0,0,.08);}
+
+/* ── 제목 ── */
+.doc-title{text-align:center;font-size:26px;font-weight:900;letter-spacing:12px;border-bottom:3px double var(--border);padding-bottom:14px;margin-bottom:20px;}
+
+/* ── 공통 테이블 ── */
+.info-table{width:100%;border-collapse:collapse;margin-bottom:16px;border:1px solid var(--border);}
+.info-table th{background:#e8ecf2;font-weight:700;font-size:12px;padding:7px 12px;border:1px solid var(--bl);text-align:center;white-space:nowrap;width:90px;}
+.info-table td{border:1px solid var(--bl);padding:5px 10px;}
+.info-table td input{width:100%;border:none;outline:none;font-size:13px;font-family:'Noto Sans KR',sans-serif;background:transparent;color:#111;}
+.info-table td input:focus{background:#fffde7;border-radius:3px;}
+
+/* ── 2단 헤더 레이아웃 ── */
+.header-row{display:flex;gap:16px;margin-bottom:16px;align-items:stretch;}
+.header-left{flex:1;min-width:0;display:flex;flex-direction:column;}
+.header-right{width:320px;flex-shrink:0;display:flex;flex-direction:column;}
+.header-left .info-table,.header-right .info-table{margin-bottom:0;}
+.header-right .info-table{flex:1;}
+.header-left .ea-table{flex:1;}
+
+/* ── 공급자 헤더 ── */
+.supplier-header{background:#1a3a5c;color:#fff;font-weight:700;font-size:12px;padding:6px 14px;letter-spacing:1px;border:1px solid var(--primary);}
+.header-right .supplier-header{font-size:11px;padding:5px 12px;}
+.header-right .info-table th{font-size:11px;padding:5px 8px;width:72px;}
+.header-right .info-table td input{font-size:12px;}
+
+/* ── 여행 개요 ── */
+.overview-table{width:100%;border-collapse:collapse;margin-bottom:16px;border:1px solid var(--bl);table-layout:fixed;}
+.overview-table th{background:#e8ecf2;font-weight:700;font-size:11px;padding:7px 10px;border:1px solid var(--bl);text-align:center;color:#1a3a5c;width:80px;white-space:nowrap;}
+.overview-table td{border:1px solid var(--bl);padding:5px 10px;overflow:hidden;}
+.overview-table td input,.overview-table td select{width:100%;border:none;outline:none;font-size:13px;font-family:'Noto Sans KR',sans-serif;background:transparent;font-weight:600;}
+.overview-table td input:focus,.overview-table td select:focus{background:#fffde7;border-radius:3px;}
+
+/* ── 견적금액 강조 행 ── */
+.ea-table{margin-bottom:0!important;border:2px solid #1a3a5c!important;}
+.ea-row th{background:#1a3a5c!important;color:#fff!important;font-size:13px;font-weight:900;letter-spacing:2px;border:none!important;vertical-align:middle;}
+.ea-row td{background:#eef2f8!important;border:none!important;border-left:2px solid #1a3a5c!important;padding:8px 14px!important;}
+.ea-amount{font-size:22px;font-weight:900;color:#1a3a5c;}
+.ea-won{font-size:14px;font-weight:700;color:#333;margin-right:14px;}
+.ea-per-inline{font-size:12px;color:#555;}
+.ea-per-inline b{font-size:14px;font-weight:900;color:#1a3a5c;}
+.ea-line1{display:flex;align-items:baseline;gap:4px;flex-wrap:nowrap;}
+.ea-line2{font-size:10px;color:#888;margin-top:2px;}
+
+/* ── 합계 금액 바 ── */
+.total-amount-bar{border:2px solid var(--border);padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;background:#f7f8fa;}
+.tab-label{font-size:13px;font-weight:700;}
+.tab-right{display:flex;align-items:baseline;gap:6px;}
+.tab-amount{font-size:22px;font-weight:900;color:#1a3a5c;}
+.tab-won{font-size:13px;font-weight:700;color:#444;}
+.tab-per{font-size:12px;color:#555;}
+.tab-per b{color:#1a3a5c;}
+
+/* ── 섹션 헤더 ── */
+.section-label{background:#1a3a5c;color:#fff;font-size:12px;font-weight:700;padding:5px 12px;letter-spacing:.5px;margin-top:10px;display:flex;align-items:center;justify-content:space-between;}
+.section-sub{font-size:11px;font-weight:400;color:#b0c8e0;}
+.fx-badge{display:inline-block;background:rgba(255,220,80,.2);border:1px solid rgba(255,220,80,.5);border-radius:3px;font-size:10px;padding:1px 6px;margin-left:6px;vertical-align:middle;font-weight:600;letter-spacing:.3px;color:#ffe57a;}
+
+/* ── 비용 테이블 ── */
+table.detail{width:100%;border-collapse:collapse;font-size:12px;}
+table.detail thead th{background:#e8ecf2;border:1px solid var(--bl);padding:6px 8px;font-size:11px;font-weight:700;text-align:center;color:#1a3a5c;white-space:nowrap;}
+table.detail tbody td{border:1px solid #ddd;padding:5px 7px;vertical-align:middle;}
+table.detail tbody td input{width:100%;border:none;outline:none;font-size:12px;font-family:'Noto Sans KR',sans-serif;background:transparent;padding:1px 2px;}
+table.detail tbody td input:focus{background:#fffde7;border-radius:2px;}
+table.detail tbody td input.r{text-align:right;font-weight:600;}
+table.detail tbody td.c-amt{text-align:right;font-weight:600;color:#1a3a5c;white-space:nowrap;background:#f7f8fa;padding-right:10px;}
+table.detail tbody td.c-del{text-align:center;width:40px;}
+table.detail tbody tr:hover td{background:#fdfbf0;}
+table.detail tbody tr:hover td.c-amt{background:#f0f2e8;}
+.btn-del{background:none;border:1px solid #ddd;color:#bbb;font-size:11px;padding:2px 7px;border-radius:3px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.btn-del:hover{border-color:#e74c3c;color:#e74c3c;background:#fff5f5;}
+.add-row-bar{border:1px solid #ddd;border-top:none;padding:5px 8px;background:#fafafa;}
+.btn-add-row{background:none;border:1px dashed #bbb;color:#888;font-size:11px;padding:3px 12px;border-radius:3px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.btn-add-row:hover{border-color:#1a3a5c;color:#1a3a5c;background:#eef2f8;}
+
+/* ── 합계 블록 ── */
+.total-block{margin-top:14px;border:1px solid var(--border);}
+.t-row{display:flex;align-items:center;border-bottom:1px solid #ddd;}
+.t-row:last-child{border-bottom:none;}
+.t-label{background:#e8ecf2;font-weight:700;padding:8px 16px;width:220px;flex-shrink:0;font-size:12px;border-right:1px solid #bbb;}
+.t-val{flex:1;padding:8px 16px;font-weight:700;text-align:right;color:#1a3a5c;font-size:14px;}
+.t-val.grand{font-size:18px;font-weight:900;color:#c0392b;}
+.t-input-wrap{flex:1;padding:5px 16px;display:flex;align-items:center;justify-content:flex-end;gap:6px;}
+.t-input-wrap input{text-align:right;border:1px solid #ddd;border-radius:4px;padding:5px 10px;font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;width:160px;outline:none;color:#1a3a5c;}
+.t-input-wrap input:focus{border-color:#1a3a5c;background:#fffde7;}
+
+/* ── 특기사항 ── */
+.notice-section{margin-top:20px;border:1px solid var(--bl);}
+.notice-header{background:#e8ecf2;font-weight:700;font-size:12px;padding:6px 12px;border-bottom:1px solid var(--bl);letter-spacing:.5px;}
+.notice-list{list-style:none;padding:8px 12px;}
+.notice-item{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px dashed #eee;font-size:12px;}
+.notice-item:last-child{border-bottom:none;}
+.notice-item::before{content:'·';font-weight:900;color:#1a3a5c;flex-shrink:0;}
+.notice-item input{flex:1;border:none;outline:none;font-size:12px;font-family:'Noto Sans KR',sans-serif;background:transparent;color:#333;padding:1px 4px;}
+.notice-item input:focus{background:#fffde7;border-radius:2px;}
+.notice-add-bar{padding:6px 12px;border-top:1px solid #eee;}
+
+/* ── 서명란 ── */
+.sign-block{margin-top:28px;display:flex;justify-content:flex-end;gap:24px;}
+.sign-item{border:1px solid var(--bl);width:180px;text-align:center;}
+.sign-label{background:#e8ecf2;font-size:11px;font-weight:700;padding:5px;border-bottom:1px solid var(--bl);}
+.sign-name{padding:6px 8px;border-bottom:1px solid var(--bl);}
+.sign-name input{width:100%;border:none;outline:none;text-align:center;font-size:13px;font-family:'Noto Sans KR',sans-serif;background:transparent;}
+.sign-name input:focus{background:#fffde7;}
+.sign-box{height:52px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px;}
+
+/* ── B+C 헤더 (사용 안 함 — 원본 디자인 유지) ── */
+.print-bc-header,.print-bc-recipient{display:none;}
+
+/* ── 인쇄 ── */
+@media print{
+  /* 편집 UI 숨김 */
+  .toolbar,.add-row-bar,.notice-add-bar,.btn-del,.load-dropdown,.doc-type-toggle,.flight-toggle,.c-del,.print-settings-overlay{display:none!important;}
+  body{background:#fff;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;font-family:'Pretendard','Noto Sans KR',sans-serif!important;}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;font-family:'Pretendard','Noto Sans KR',sans-serif!important;}
+
+  @page{size:A4 portrait;margin:18mm 12mm 14mm 12mm;}
+
+  .page-wrap{margin:0;padding:0;max-width:100%;}
+  .doc{border:none;box-shadow:none;padding:24px 28px 28px;font-size:12px;}
+
+  /* input/select 투명화 */
+  input{border:none!important;outline:none!important;background:transparent!important;padding:0!important;color:#111!important;}
+  select{-webkit-appearance:none;appearance:none;border:none!important;background:transparent!important;color:#fff!important;}
+  #guideLabelSelect{border:none!important;padding:0!important;-webkit-appearance:none;appearance:none;color:#fff!important;background:#1a3a5c!important;}
+
+  /* ── 원본 제목/헤더 유지 ── */
+
+  /* ── 견적금액 — info-table 그리드 해제 후 네이비 바 ── */
+  .info-table.ea-table{display:table!important;grid-template-columns:none!important;border:none!important;border-radius:6px;overflow:hidden;background:#1a3a5c!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;margin-top:6px;margin-bottom:16px;}
+  .info-table.ea-table tbody{display:table-row-group!important;}
+  .info-table.ea-table tr{display:table-row!important;flex-direction:row!important;padding:0!important;border:none!important;background:transparent!important;}
+  .info-table.ea-table th{display:table-cell!important;background:transparent!important;color:#fff!important;font-size:11px!important;font-weight:600!important;letter-spacing:1px;padding:12px 16px!important;border:none!important;vertical-align:middle;text-align:left;margin:0!important;text-transform:none!important;width:auto!important;}
+  .info-table.ea-table td{display:table-cell!important;background:transparent!important;border:none!important;padding:12px 16px!important;text-align:right;}
+  .ea-amount{font-size:24px!important;color:#fff!important;font-weight:900;}
+  .ea-won{font-size:12px!important;color:rgba(255,255,255,.85)!important;}
+  .ea-per-inline{font-size:10px!important;color:rgba(255,255,255,.75)!important;}
+  .ea-per-inline b{font-size:11px!important;color:#fff!important;}
+  .ea-line2{font-size:9px!important;color:rgba(255,255,255,.65)!important;}
+
+  /* ── 여행 개요 → B+C 카드형 2열 그리드 ── */
+  .overview-table th{font-size:10px;padding:5px 8px;}
+  .overview-table td input{font-size:11px;}
+
+  /* ── 합계 금액 바 (상단) ── */
+  .total-amount-bar{padding:10px 16px;margin-bottom:14px;border:none!important;border-radius:6px;background:#f7f8fa!important;}
+  .tab-label{font-size:13px;color:#555;}
+  .tab-amount{font-size:20px;color:#1a3a5c!important;}
+  .tab-won{font-size:13px;}
+  .tab-per{font-size:11px;}
+  .tab-per b{color:#1a3a5c!important;}
+
+  /* ── 섹션 헤더 (네이비 바) ── */
+  .section-label{background:#1a3a5c!important;color:#fff!important;font-size:11px;font-weight:700;padding:6px 12px;margin-top:12px;letter-spacing:.5px;}
+  .section-sub{color:#b0c8e0!important;font-size:10px;}
+  .fx-badge{background:rgba(255,220,80,.25)!important;border-color:rgba(255,220,80,.6)!important;color:#ffe57a!important;font-size:9px;}
+
+  /* ── 비용 테이블 (B안 미니멀) ── */
+  table.detail{font-size:11px;border:none!important;}
+  table.detail thead th{font-size:8px!important;padding:5px 7px;background:transparent!important;color:#1a3a5c!important;border:none!important;border-bottom:2px solid #1a3a5c!important;font-weight:700;text-transform:uppercase;letter-spacing:.8px;}
+  table.detail tbody td{padding:7px 8px;border:none!important;border-bottom:1px solid #f0f0f0!important;}
+  table.detail tbody td input{font-size:11px;}
+  table.detail tbody td input.r{font-weight:700;}
+  table.detail tbody td.c-amt{text-align:right;font-weight:700;font-size:11px;color:#1a3a5c!important;background:transparent!important;padding-right:10px;border-left:none!important;}
+  table.detail tbody tr:last-child td{border-bottom:2px solid #1a3a5c!important;}
+  table.detail tbody tr:hover td{background:transparent!important;}
+  table.detail tbody tr:hover td.c-amt{background:transparent!important;}
+
+  /* ── 합계 블록 (하단 B+C 우측 정렬) ── */
+  .total-block{margin-top:8px;border:none!important;display:flex;flex-direction:column;align-items:flex-end;}
+  .t-row{border-bottom:1px solid #f0f0f0!important;display:flex;justify-content:space-between;width:260px;font-size:10px;}
+  .t-row:last-child{border-bottom:none!important;border-top:2px solid #1a3a5c!important;padding-top:6px;margin-top:4px;}
+  .t-row:last-child .t-label{font-size:12px;font-weight:900;}
+  .t-label{background:transparent!important;font-size:10px;font-weight:600;padding:5px 0;width:auto;border:none!important;color:#555;}
+  .t-val{font-size:11px;font-weight:700;padding:5px 0;color:#1a3a5c!important;text-align:right;width:auto;}
+  .t-val.grand{font-size:16px;font-weight:900;color:#1a3a5c!important;}
+  .t-input-wrap input{font-size:11px;font-weight:700;border:none!important;color:#1a3a5c!important;}
+
+  /* ── 특기사항 ── */
+  .notice-section{margin-top:18px;border:none!important;border-top:1px solid #eee!important;}
+  .notice-header{background:transparent!important;font-size:8px;font-weight:700;padding:6px 12px;border:none!important;color:#aaa;text-transform:uppercase;letter-spacing:2px;}
+  .notice-list{padding:8px 12px;}
+  .notice-item{font-size:9px;padding:4px 0;border:none!important;color:#888;}
+  .notice-item:last-child{border-bottom:none!important;}
+  .notice-item::before{color:#1a3a5c!important;}
+  .notice-item input{font-size:9px;color:#888!important;}
+
+  /* ── 서명란 → B+C (우측 정렬 + 직인) ── */
+  .sign-block{display:flex!important;justify-content:flex-end;align-items:center;gap:16px;margin-top:16px;padding-bottom:12px;border-bottom:1px solid #eee;}
+  .sign-item{display:flex!important;align-items:center;gap:12px;border:none!important;width:auto;}
+  .sign-label{display:none!important;}
+  .sign-name{padding:0;border:none!important;}
+  .sign-name input{font-size:11px;text-align:right;color:#333!important;}
+  .sign-box{width:56px!important;height:56px!important;min-width:56px;border:1.5px solid #c0392b!important;border-radius:50%;color:#c0392b!important;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+
+  /* ── 페이지 나눔 제어 ── */
+  table.detail,table.detail tbody{page-break-inside:auto;}
+  table.detail tr{page-break-inside:avoid;page-break-after:auto;}
+  table.detail thead{display:table-header-group;}
+  .info-table tr,.overview-table tr{page-break-inside:avoid;}
+  .section-label{page-break-after:avoid;page-break-inside:avoid;}
+  .section-label + table.detail{page-break-before:avoid;}
+  .total-block{page-break-inside:avoid;}
+  .notice-section{page-break-inside:avoid;}
+  .sign-block{page-break-inside:avoid;}
+
+  /* 헤더 영역 잘림 방지 */
+  .header-row{page-break-inside:avoid;}
+  .ea-table{page-break-inside:avoid;}
+  .overview-table{page-break-inside:avoid;}
+
+  /* 페이지 상단 여백 제거 — 2페이지 이후 상단 빈 공간 방지 */
+  .doc{padding-top:24px;}
+  table.detail{margin-top:0;}
+  .section-label{margin-top:10px;}
+  .section-label:first-of-type{margin-top:0;}
+
+  /* 페이지 나뉠 때 테이블 상하단 여백 정리 */
+  table.detail thead th{padding-top:6px;padding-bottom:6px;}
+  table.detail tbody tr:first-child td{padding-top:5px;}
+  table.detail tbody tr:last-child td{padding-bottom:5px;}
+
+  /* orphan/widow 제어 — 페이지 끝에 행 1개만 남지 않도록 */
+  table.detail tbody tr{orphans:2;widows:2;}
+}
+
+/* ── 인쇄 설정 패널 ── */
+.print-settings-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:500;}
+.print-settings-overlay.show{display:flex;align-items:center;justify-content:center;}
+.print-settings{background:#fff;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.25);width:480px;max-height:90vh;overflow-y:auto;font-family:'Noto Sans KR',sans-serif;}
+.ps-header{background:var(--primary);color:#fff;padding:14px 20px;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:space-between;}
+.ps-header h3{font-size:14px;font-weight:700;letter-spacing:1px;}
+.ps-close{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 4px;}
+.ps-body{padding:20px;}
+.ps-section{margin-bottom:18px;}
+.ps-section-title{font-size:12px;font-weight:700;color:var(--primary);margin-bottom:10px;padding-bottom:4px;border-bottom:2px solid #e8ecf2;}
+.ps-row{display:flex;gap:12px;margin-bottom:8px;}
+.ps-field{flex:1;}
+.ps-field label{display:block;font-size:11px;font-weight:600;color:#666;margin-bottom:3px;}
+.ps-field input[type=range]{width:100%;accent-color:var(--primary);}
+.ps-field .ps-val{font-size:12px;font-weight:700;color:var(--primary);float:right;margin-top:-16px;}
+.ps-presets{display:flex;gap:6px;margin-bottom:14px;}
+.ps-preset{padding:6px 14px;border:1.5px solid #ddd;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;color:#555;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.ps-preset:hover{border-color:var(--primary);color:var(--primary);}
+.ps-preset.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+.ps-footer{padding:14px 20px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:8px;}
+.ps-btn{padding:8px 20px;border-radius:5px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.ps-btn-cancel{background:#f0f0f0;color:#555;}
+.ps-btn-cancel:hover{background:#e0e0e0;}
+.ps-btn-print{background:var(--primary);color:#fff;}
+.ps-btn-print:hover{background:#24527a;}
+.ps-tabs{display:flex;gap:0;margin-bottom:12px;}
+.ps-tab{flex:1;padding:7px 0;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid #ddd;background:#f7f8fa;color:#888;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.ps-tab:first-child{border-radius:5px 0 0 5px;}
+.ps-tab:last-child{border-radius:0 5px 5px 0;border-left:none;}
+.ps-tab.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+.ps-tab-content{padding-top:4px;}
+.ps-preview{background:#f7f8fa;border:1px solid #ddd;border-radius:6px;padding:12px;margin-top:10px;text-align:center;}
+.ps-preview-page{display:inline-block;width:120px;height:170px;background:#fff;border:1px solid #bbb;box-shadow:0 1px 4px rgba(0,0,0,.1);position:relative;}
+.ps-preview-content{position:absolute;background:#e8ecf2;border-radius:2px;top:6%;bottom:5%;left:6%;right:6%;transition:all .2s ease;}
+
+/* ── 항공 체크박스 ── */
+.flight-toggle{margin:10px 0;display:flex;align-items:center;gap:8px;}
+.flight-toggle input[type=checkbox]{width:18px;height:18px;accent-color:#1a3a5c;cursor:pointer;}
+.flight-toggle label{font-size:13px;font-weight:700;color:#1a3a5c;cursor:pointer;user-select:none;}
+.flight-section{display:none;}
+.flight-section.show{display:block;}
+
+/* 토스트 */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a3a5c;color:#fff;padding:10px 24px;border-radius:24px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.2);opacity:0;pointer-events:none;transition:opacity .25s;z-index:9999;}
+.toast.show{opacity:1;}
+
+/* ── 엑셀 버튼 ── */
+.tbtn-excel{background:#217346;color:#fff;}
+.tbtn-excel:hover{background:#2a8f56;}
+.excel-dropdown{position:relative;display:inline-block;}
+.excel-menu{display:none;position:absolute;top:100%;right:0;background:#fff;border:1px solid #ccc;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.15);min-width:200px;z-index:300;margin-top:4px;}
+.excel-menu.show{display:block;}
+.excel-menu-item{padding:10px 14px;cursor:pointer;font-size:12px;color:#333;border-bottom:1px solid #eee;display:flex;align-items:center;gap:8px;}
+.excel-menu-item:hover{background:#f0f4fa;}
+.excel-menu-item:last-child{border-bottom:none;}
+.excel-menu-item i{font-size:14px;color:#217346;width:18px;text-align:center;}
+</style>
+<script src="/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<!-- 툴바 -->
+<div class="toolbar">
+  <div>
+    <div class="toolbar-title">국내 내역서</div>
+    <div class="toolbar-sub">수정 후 [DB 저장] · [인쇄/PDF]로 제출용 출력</div>
+  </div>
+  <div class="toolbar-btns">
+    <div class="doc-type-toggle">
+      <button class="doc-type-btn active" data-type="domestic" onclick="setDocType('domestic')">견적서</button>
+      <button class="doc-type-btn" data-type="domestic_settlement" onclick="setDocType('domestic_settlement')">정산서</button>
+    </div>
+    <div class="excel-dropdown">
+      <button class="tbtn tbtn-excel" onclick="toggleExcelMenu()">엑셀 ▾</button>
+      <div class="excel-menu" id="excelMenu">
+        <div class="excel-menu-item" onclick="downloadTemplate()"><i>↓</i> 템플릿 다운로드</div>
+        <div class="excel-menu-item" onclick="importExcel()"><i>↑</i> 엑셀 불러오기</div>
+        <div class="excel-menu-item" onclick="exportExcel()"><i>→</i> 엑셀 내보내기</div>
+      </div>
+    </div>
+    <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display:none" onchange="handleExcelFile(this)">
+    <button class="tbtn tbtn-outline" onclick="addNotice()">+ 특기사항</button>
+    <div class="load-dropdown">
+      <button class="tbtn tbtn-load" onclick="toggleLoadMenu()">불러오기 ▾</button>
+      <div class="load-menu" id="loadMenu"></div>
+    </div>
+    <button class="tbtn tbtn-save" onclick="saveToDb()">DB 저장</button>
+    <button class="tbtn tbtn-outline" onclick="newDoc()">새 문서</button>
+    <button class="tbtn tbtn-outline" onclick="saveHTML()">HTML 저장</button>
+    <button class="tbtn tbtn-print" onclick="autoFitPrint()">인쇄 / PDF</button>
+    <button class="tbtn tbtn-outline" onclick="openPrintSettings()" title="인쇄 여백/글꼴 수동 설정">⚙</button>
+  </div>
+</div>
+
+<div class="page-wrap">
+<div class="doc">
+
+  <!-- 인쇄 전용 B+C 헤더 (화면에서는 숨김) -->
+  <div class="print-bc-header">
+    <div class="print-bc-left">
+      <div class="print-bc-company" id="printCompany">여행세상</div>
+      <div class="print-bc-sub"><span id="printBizNo">사업자 405-81-02196</span> · <span id="printAddress">전북특별자치도 전주시 완산구 서신로 8</span> · <span id="printPhone2">063-271-9090</span></div>
+    </div>
+    <div class="print-bc-right">
+      <div class="print-bc-doctype" id="printDocType">국내내역서</div>
+      <div class="print-bc-docno" id="printDocNo"></div>
+    </div>
+  </div>
+  <div class="print-bc-recipient">
+    <span class="print-bc-recip-label">수신</span>
+    <span class="print-bc-recip-value" id="printRecipient"></span>
+  </div>
+
+  <!-- 제목 -->
+  <div class="doc-title">국&nbsp;&nbsp;내&nbsp;&nbsp;내&nbsp;&nbsp;역&nbsp;&nbsp;서</div>
+
+  <!-- 2단 헤더: 좌=수신/제목, 우=공급자 -->
+  <div class="header-row">
+    <div class="header-left">
+      <table class="info-table">
+        <tr>
+          <th>수&nbsp;&nbsp;&nbsp;신</th>
+          <td><input id="recipient" value=""></td>
+        </tr>
+        <tr>
+          <th>제&nbsp;&nbsp;&nbsp;목</th>
+          <td><input id="subject" value=""></td>
+        </tr>
+        <tr>
+          <th>견적일자</th>
+          <td><input id="quoteDate" type="date" value=""></td>
+        </tr>
+        <tr>
+          <th>유효기간</th>
+          <td><input id="validPeriod" value="견적일로부터 30일"></td>
+        </tr>
+      </table>
+      <!-- 견적금액 (테이블 연장) -->
+      <table class="info-table ea-table" style="margin-top:-1px;">
+        <tr class="ea-row">
+          <th>견적금액</th>
+          <td>
+            <div class="ea-line1">
+              <span class="ea-amount" id="recipientTotal">—</span><span class="ea-won">원</span>
+              <span class="ea-per-inline">1인당 <b id="perPersonDisplay">—</b> 원</span>
+            </div>
+            <div class="ea-line2">알선수수료 부가세 포함</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="header-right">
+      <div class="supplier-header">공급자 정보</div>
+      <table class="info-table" style="margin-top:0;border-top:none;">
+        <tr>
+          <th>상호명</th>
+          <td><input id="companyName" placeholder="업체명 입력"></td>
+        </tr>
+        <tr>
+          <th>대표자</th>
+          <td><input id="ceoName" placeholder="대표자명 (인)"></td>
+        </tr>
+        <tr>
+          <th>사업자</th>
+          <td><input id="bizNo" placeholder="000-00-00000"></td>
+        </tr>
+        <tr>
+          <th>전&nbsp;&nbsp;화</th>
+          <td><input id="phone" placeholder=""></td>
+        </tr>
+        <tr>
+          <th>담당자</th>
+          <td><input id="manager" placeholder="담당자명"></td>
+        </tr>
+        <tr>
+          <th>이메일</th>
+          <td><input id="email" placeholder=""></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+
+
+  <!-- 여행 개요 -->
+  <table class="overview-table">
+    <colgroup>
+      <col style="width:80px"><col style="width:auto">
+      <col style="width:80px"><col style="width:auto">
+      <col style="width:80px"><col style="width:auto">
+    </colgroup>
+    <tr>
+      <th>단 체 명</th>
+      <td><input id="groupName" value=""></td>
+      <th>여 행 지</th>
+      <td><input id="itinerary" value=""></td>
+      <th>여행일정</th>
+      <td><input id="travelDate" value=""></td>
+    </tr>
+    <tr>
+      <th>참가인원</th>
+      <td style="text-align:center;"><input id="paxSize" type="number" value="1" oninput="syncPaxToRows();recalcAll()" style="width:50px;text-align:center;"> 명</td>
+      <th>인 솔 자</th>
+      <td style="text-align:center;"><input id="leader" value="" style="text-align:center;"></td>
+      <th>가 이 드</th>
+      <td style="text-align:center;"><input id="guide" value="" style="text-align:center;"></td>
+    </tr>
+    <tr>
+      <th>숙박조건</th>
+      <td><input id="conditions" value=""></td>
+      <th>룸 구 성</th>
+      <td colspan="3"><input id="roomStyle" value=""></td>
+    </tr>
+  </table>
+
+  <!-- 항공 포함 체크박스 -->
+  <div class="flight-toggle">
+    <input type="checkbox" id="flightToggle" onchange="toggleFlightSection()">
+    <label for="flightToggle">국내 항공 포함</label>
+  </div>
+
+  <!-- ■ 항공비 (토글) -->
+  <div class="flight-section" id="flightSection">
+    <div class="section-label">
+      <span>항공비 <span class="fx-badge">KRW</span></span>
+      <span class="section-sub" id="sub_flight"></span>
+    </div>
+    <table class="detail">
+      <thead><tr>
+        <th style="width:30%">구간</th><th style="width:16%">항공사</th><th style="width:10%">인원</th>
+        <th style="width:15%">단가 (원)</th><th style="width:8%">횟수</th>
+        <th style="width:15%">금액 (원)</th><th></th>
+      </tr></thead>
+      <tbody id="flightRows">
+        <tr>
+          <td><input value=""></td>
+          <td><input value=""></td>
+          <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcFlightRow(this,true)" oninput="calcFlightRow(this)"></td>
+          <td><input class="r" type="text" value="0" onfocus="stripFmt(this)" onblur="calcFlightRow(this,true)" oninput="calcFlightRow(this)"></td>
+          <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcFlightRow(this,true)" oninput="calcFlightRow(this)"></td>
+          <td class="c-amt">0</td>
+          <td class="c-del"><button class="btn-del" onclick="delRow(this)">삭제</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="add-row-bar"><button class="btn-add-row" onclick="addFlightRow()">+ 항공 추가</button></div>
+  </div>
+
+  <!-- ■ 차량비 -->
+  <div class="section-label">
+    <span>차량비 <span class="fx-badge">KRW</span></span>
+    <span class="section-sub" id="sub_car"></span>
+  </div>
+  <table class="detail">
+    <thead><tr>
+      <th style="width:46%">내역</th><th style="width:10%">수량</th>
+      <th style="width:15%">단가 (원)</th><th style="width:8%">횟수</th>
+      <th style="width:15%">금액 (원)</th><th></th>
+    </tr></thead>
+    <tbody id="carRows">
+      <tr>
+        <td><input value="관광버스 (45인승)"></td>
+        <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td><input class="r" type="text" value="0" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td class="c-amt">0</td>
+        <td class="c-del"><button class="btn-del" onclick="delRow(this)">삭제</button></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="add-row-bar"><button class="btn-add-row" onclick="addRow('carRows')">+ 항목 추가</button></div>
+
+  <!-- ■ 숙박비 -->
+  <div class="section-label">
+    <span>숙박비 <span class="fx-badge">KRW</span></span>
+    <span class="section-sub" id="sub_hotel"></span>
+  </div>
+  <table class="detail">
+    <thead><tr>
+      <th style="width:16%">날짜</th><th style="width:26%">숙소명</th><th style="width:8%">객실수</th>
+      <th style="width:12%">단가 (원)</th><th style="width:8%">박수</th>
+      <th style="width:16%">금액 (원)</th><th></th>
+    </tr></thead>
+    <tbody id="hotelRows">
+      <tr>
+        <td><input type="date" value=""></td>
+        <td><input value=""></td>
+        <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td><input class="r" type="text" value="0" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td class="c-amt">0</td>
+        <td class="c-del"><button class="btn-del" onclick="delRow(this)">삭제</button></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="add-row-bar"><button class="btn-add-row" onclick="addHotelRow()">+ 숙소 추가</button></div>
+
+  <!-- ■ 식사비 -->
+  <div class="section-label">
+    <span>식사비 <span class="fx-badge">KRW</span></span>
+    <span class="section-sub" id="sub_meal"></span>
+  </div>
+  <table class="detail">
+    <thead><tr>
+      <th style="width:46%">내역</th><th style="width:10%">인원</th>
+      <th style="width:15%">단가 (원)</th><th style="width:8%">횟수</th>
+      <th style="width:15%">금액 (원)</th><th></th>
+    </tr></thead>
+    <tbody id="mealRows">
+      <tr>
+        <td><input value=""></td>
+        <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td><input class="r" type="text" value="0" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td class="c-amt">0</td>
+        <td class="c-del"><button class="btn-del" onclick="delRow(this)">삭제</button></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="add-row-bar"><button class="btn-add-row" onclick="addRow('mealRows')">+ 항목 추가</button></div>
+
+  <!-- ■ 입장료/체험비 -->
+  <div class="section-label">
+    <span>입장료 / 체험비 <span class="fx-badge">KRW</span></span>
+    <span class="section-sub" id="sub_entry"></span>
+  </div>
+  <table class="detail">
+    <thead><tr>
+      <th style="width:38%">내역</th><th style="width:10%">인원</th>
+      <th style="width:15%">단가 (원)</th><th style="width:8%">횟수</th>
+      <th style="width:15%">금액 (원)</th><th></th>
+    </tr></thead>
+    <tbody id="entryRows">
+      <tr>
+        <td><input value=""></td>
+        <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td><input class="r" type="text" value="0" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td class="c-amt">0</td>
+        <td class="c-del"><button class="btn-del" onclick="delRow(this)">삭제</button></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="add-row-bar"><button class="btn-add-row" onclick="addRow('entryRows')">+ 항목 추가</button></div>
+
+  <!-- ■ 가이드비용 -->
+  <div class="section-label">
+    <span>
+      <select id="guideLabelSelect" onchange="updateGuideLabel()" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:3px;font-size:12px;font-weight:700;font-family:'Noto Sans KR',sans-serif;padding:2px 6px;cursor:pointer;outline:none;">
+        <option value="가이드비용" style="color:#111;">가이드비용</option>
+        <option value="진행요원" style="color:#111;">진행요원</option>
+        <option value="안전요원" style="color:#111;">안전요원</option>
+      </select>
+      <span class="fx-badge">KRW</span>
+    </span>
+    <span class="section-sub" id="sub_guide"></span>
+  </div>
+  <table class="detail">
+    <thead><tr>
+      <th style="width:46%">내역</th><th style="width:10%">수량</th>
+      <th style="width:15%">단가 (원)</th><th style="width:8%">횟수</th>
+      <th style="width:15%">금액 (원)</th><th></th>
+    </tr></thead>
+    <tbody id="guideRows">
+      <tr>
+        <td><input value=""></td>
+        <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td><input class="r" type="text" value="0" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td class="c-amt">0</td>
+        <td class="c-del"><button class="btn-del" onclick="delRow(this)">삭제</button></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="add-row-bar"><button class="btn-add-row" onclick="addRow('guideRows')">+ 항목 추가</button></div>
+
+  <!-- ■ 기타 -->
+  <div class="section-label">
+    <span>기타 <span class="fx-badge">KRW</span></span>
+    <span class="section-sub" id="sub_etc"></span>
+  </div>
+  <table class="detail">
+    <thead><tr>
+      <th style="width:46%">내역</th><th style="width:10%">인원</th>
+      <th style="width:15%">단가 (원)</th><th style="width:8%">횟수</th>
+      <th style="width:15%">금액 (원)</th><th></th>
+    </tr></thead>
+    <tbody id="etcRows">
+      <tr>
+        <td><input value="여행자보험"></td>
+        <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td><input class="r" type="text" value="0" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+        <td class="c-amt">0</td>
+        <td class="c-del"><button class="btn-del" onclick="delRow(this)">삭제</button></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="add-row-bar"><button class="btn-add-row" onclick="addRow('etcRows')">+ 항목 추가</button></div>
+
+  <!-- 합계 블록 -->
+  <div class="total-block">
+    <div class="t-row">
+      <div class="t-label">소계 합계</div>
+      <div class="t-val"><span id="subTotalVal">—</span> 원</div>
+    </div>
+    <div class="t-row">
+      <div class="t-label">알선 수수료 (VAT 포함)</div>
+      <div class="t-input-wrap">
+        <input type="text" id="commission" value="0" onfocus="stripFmt(this)" onblur="fmtCommission()" oninput="recalcAll()">
+        <span style="font-size:12px;color:#555;">원</span>
+      </div>
+    </div>
+    <div class="t-row">
+      <div class="t-label">합계 금액</div>
+      <div class="t-val grand"><span id="grandTotalVal">—</span> 원</div>
+    </div>
+    <div class="t-row">
+      <div class="t-label">1인당 금액 (백원 단위 절사)</div>
+      <div class="t-val"><span id="perPersonVal">—</span> 원</div>
+    </div>
+  </div>
+
+  <!-- 특기사항 -->
+  <div class="notice-section">
+    <div class="notice-header">특기사항 / NOTICE</div>
+    <ul class="notice-list" id="noticeList">
+      <li class="notice-item"><input value="상기 견적은 예정 견적이며, 현지 사정에 따라 요금이 변동될 수 있습니다."><button class="btn-del" onclick="delRow(this)">삭제</button></li>
+      <li class="notice-item"><input value="인원 감소 시 1인당 가격이 상승하고 취소·환불 수수료가 발생할 수 있습니다."><button class="btn-del" onclick="delRow(this)">삭제</button></li>
+    </ul>
+    <div class="notice-add-bar">
+      <button class="btn-add-row" onclick="addNotice()">+ 특기사항 추가</button>
+    </div>
+  </div>
+
+  <!-- 서명란 -->
+  <div class="sign-block">
+    <div class="sign-item">
+      <div class="sign-label">작성자</div>
+      <div class="sign-name"><input placeholder="성명 입력"></div>
+      <div class="sign-box">(서명 또는 인)</div>
+    </div>
+    <div class="sign-item">
+      <div class="sign-label">대표자</div>
+      <div class="sign-name"><input placeholder="대표자명 입력"></div>
+      <div class="sign-box">(인)</div>
+    </div>
+  </div>
+
+</div><!-- /doc -->
+</div><!-- /page-wrap -->
+<!-- 인쇄 설정 패널 -->
+<div class="print-settings-overlay" id="printSettingsOverlay" onclick="if(event.target===this)closePrintSettings()">
+  <div class="print-settings">
+    <div class="ps-header">
+      <h3>인쇄 설정</h3>
+      <button class="ps-close" onclick="closePrintSettings()">&times;</button>
+    </div>
+    <div class="ps-body">
+      <!-- 프리셋 -->
+      <div class="ps-section">
+        <div class="ps-section-title">빠른 설정</div>
+        <div class="ps-presets">
+          <button class="ps-preset" onclick="applyPreset('compact')">좁게</button>
+          <button class="ps-preset active" onclick="applyPreset('normal')">보통</button>
+          <button class="ps-preset" onclick="applyPreset('wide')">넓게</button>
+        </div>
+      </div>
+      <!-- 페이지 탭 -->
+      <div class="ps-section">
+        <div class="ps-section-title">페이지 여백 (mm)</div>
+        <div class="ps-tabs">
+          <button class="ps-tab active" onclick="switchPageTab('first')">첫 페이지</button>
+          <button class="ps-tab" onclick="switchPageTab('rest')">이후 페이지</button>
+        </div>
+        <!-- 첫 페이지 여백 -->
+        <div class="ps-tab-content" id="tabFirst">
+          <div class="ps-row">
+            <div class="ps-field">
+              <label>상단 <span class="ps-val" id="valTop">12</span></label>
+              <input type="range" id="marginTop" min="5" max="30" value="12" oninput="updatePrintPreview()">
+            </div>
+            <div class="ps-field">
+              <label>하단 <span class="ps-val" id="valBottom">14</span></label>
+              <input type="range" id="marginBottom" min="5" max="30" value="14" oninput="updatePrintPreview()">
+            </div>
+          </div>
+          <div class="ps-row">
+            <div class="ps-field">
+              <label>좌측 <span class="ps-val" id="valLeft">12</span></label>
+              <input type="range" id="marginLeft" min="5" max="25" value="12" oninput="updatePrintPreview()">
+            </div>
+            <div class="ps-field">
+              <label>우측 <span class="ps-val" id="valRight">12</span></label>
+              <input type="range" id="marginRight" min="5" max="25" value="12" oninput="updatePrintPreview()">
+            </div>
+          </div>
+        </div>
+        <!-- 이후 페이지 여백 -->
+        <div class="ps-tab-content" id="tabRest" style="display:none;">
+          <div class="ps-row">
+            <div class="ps-field">
+              <label>상단 <span class="ps-val" id="valTop2">18</span></label>
+              <input type="range" id="marginTop2" min="5" max="30" value="18" oninput="updatePrintPreview()">
+            </div>
+            <div class="ps-field">
+              <label>하단 <span class="ps-val" id="valBottom2">14</span></label>
+              <input type="range" id="marginBottom2" min="5" max="30" value="14" oninput="updatePrintPreview()">
+            </div>
+          </div>
+          <div class="ps-row">
+            <div class="ps-field">
+              <label>좌측 <span class="ps-val" id="valLeft2">12</span></label>
+              <input type="range" id="marginLeft2" min="5" max="25" value="12" oninput="updatePrintPreview()">
+            </div>
+            <div class="ps-field">
+              <label>우측 <span class="ps-val" id="valRight2">12</span></label>
+              <input type="range" id="marginRight2" min="5" max="25" value="12" oninput="updatePrintPreview()">
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 글자 크기 -->
+      <div class="ps-section">
+        <div class="ps-section-title">글자 크기</div>
+        <div class="ps-row">
+          <div class="ps-field">
+            <label>본문 <span class="ps-val" id="valFont">12</span>px</label>
+            <input type="range" id="fontSize" min="9" max="15" value="12" oninput="updatePrintPreview()">
+          </div>
+          <div class="ps-field">
+            <label>테이블 <span class="ps-val" id="valTable">11</span>px</label>
+            <input type="range" id="tableFontSize" min="8" max="14" value="11" oninput="updatePrintPreview()">
+          </div>
+        </div>
+      </div>
+      <!-- 미리보기 -->
+      <div class="ps-preview">
+        <div style="display:flex;justify-content:center;gap:16px;">
+          <div style="text-align:center;">
+            <div class="ps-preview-page" id="previewPage1">
+              <div class="ps-preview-content" id="previewContent1"></div>
+              <div style="position:absolute;bottom:-16px;width:100%;text-align:center;font-size:9px;color:#999;">1페이지</div>
+            </div>
+          </div>
+          <div style="text-align:center;">
+            <div class="ps-preview-page" id="previewPage2">
+              <div class="ps-preview-content" id="previewContent2"></div>
+              <div style="position:absolute;bottom:-16px;width:100%;text-align:center;font-size:9px;color:#999;">2페이지~</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:#888;margin-top:22px;">A4 페이지 미리보기</div>
+      </div>
+    </div>
+    <div class="ps-footer">
+      <button class="ps-btn ps-btn-cancel" onclick="closePrintSettings()">취소</button>
+      <button class="ps-btn ps-btn-print" onclick="applyAndPrint()">인쇄하기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── 인쇄 설정 ──
+let printStyle = null;
+const PRINT_PRESETS = {
+  compact: { top:8,  bottom:8,  left:8,  right:8,  top2:10, bottom2:8,  left2:8,  right2:8,  font:11, table:10 },
+  normal:  { top:12, bottom:14, left:12, right:12, top2:18, bottom2:14, left2:12, right2:12, font:12, table:11 },
+  wide:    { top:18, bottom:18, left:16, right:16, top2:22, bottom2:18, left2:16, right2:16, font:13, table:12 },
+};
+
+// ── 인쇄 전 B+C 헤더 동기화 ──
+function syncPrintHeader() {
+  const v = id => (document.getElementById(id)?.value || '').trim();
+  const company = v('companyName').replace(/^\(주\)/, '').trim();
+  document.getElementById('printCompany').textContent = company || '여행세상';
+  const biz = v('bizNo');
+  if (biz) document.getElementById('printBizNo').textContent = '사업자 ' + biz;
+  const phone = v('phone');
+  if (phone) document.getElementById('printPhone2').textContent = phone;
+  const docType = document.querySelector('.doc-title').textContent.replace(/\s/g, '');
+  document.getElementById('printDocType').textContent = docType;
+  const dt = v('quoteDate') || new Date().toISOString().slice(0,10);
+  const prefix = docType.includes('정산') ? 'STL' : 'DOM';
+  document.getElementById('printDocNo').textContent = prefix + '-' + dt.replace(/-/g,'') + '-001';
+  document.getElementById('printRecipient').textContent = v('recipient') || '';
+}
+
+// ── 자동 여백 인쇄 ──
+function autoFitPrint() {
+  const doc = document.querySelector('.doc');
+  const MM = 3.7795;
+
+  const tiers = [
+    { top:18, bottom:16, left:14, right:14, top2:18, bottom2:16, left2:14, right2:14 },
+    { top:14, bottom:12, left:12, right:12, top2:14, bottom2:12, left2:12, right2:12 },
+    { top:10, bottom:10, left:10, right:10, top2:10, bottom2:10, left2:10, right2:10 },
+    { top:8,  bottom:8,  left:8,  right:8,  top2:8,  bottom2:8,  left2:8,  right2:8  },
+  ];
+
+  const saved = { w: doc.style.width, mw: doc.style.maxWidth, pos: doc.style.position };
+  let chosen = tiers[tiers.length - 1];
+
+  for (const t of tiers) {
+    const printW = (210 - t.left - t.right) * MM;
+    const pageH  = (297 - t.top - t.bottom) * MM;
+
+    doc.style.width = printW + 'px';
+    doc.style.maxWidth = printW + 'px';
+    doc.style.position = 'absolute';
+
+    const contentH = doc.scrollHeight;
+    if (contentH <= pageH) { chosen = t; break; }
+  }
+
+  doc.style.width = saved.w;
+  doc.style.maxWidth = saved.mw;
+  doc.style.position = saved.pos;
+
+  if (printStyle) printStyle.remove();
+  printStyle = document.createElement('style');
+  printStyle.id = 'dynamicPrintStyle';
+  printStyle.textContent = `
+    @media print {
+      @page { margin: ${chosen.top2}mm ${chosen.right2}mm ${chosen.bottom2}mm ${chosen.left2}mm !important; }
+      @page :first { margin: ${chosen.top}mm ${chosen.right}mm ${chosen.bottom}mm ${chosen.left}mm !important; }
+    }
+  `;
+  document.head.appendChild(printStyle);
+  setTimeout(() => window.print(), 200);
+}
+
+function openPrintSettings() {
+  document.getElementById('printSettingsOverlay').classList.add('show');
+  updatePrintPreview();
+}
+function closePrintSettings() {
+  document.getElementById('printSettingsOverlay').classList.remove('show');
+}
+
+function switchPageTab(tab) {
+  document.querySelectorAll('.ps-tab').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.ps-tab[onclick*="${tab}"]`).classList.add('active');
+  document.getElementById('tabFirst').style.display = tab === 'first' ? 'block' : 'none';
+  document.getElementById('tabRest').style.display = tab === 'rest' ? 'block' : 'none';
+}
+
+function applyPreset(name) {
+  const p = PRINT_PRESETS[name];
+  document.getElementById('marginTop').value = p.top;
+  document.getElementById('marginBottom').value = p.bottom;
+  document.getElementById('marginLeft').value = p.left;
+  document.getElementById('marginRight').value = p.right;
+  document.getElementById('marginTop2').value = p.top2;
+  document.getElementById('marginBottom2').value = p.bottom2;
+  document.getElementById('marginLeft2').value = p.left2;
+  document.getElementById('marginRight2').value = p.right2;
+  document.getElementById('fontSize').value = p.font;
+  document.getElementById('tableFontSize').value = p.table;
+  document.querySelectorAll('.ps-preset').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.ps-preset[onclick*="${name}"]`).classList.add('active');
+  updatePrintPreview();
+}
+
+function updatePrintPreview() {
+  // 첫 페이지 값
+  const v = id => document.getElementById(id).value;
+  const top = v('marginTop'), bottom = v('marginBottom'), left = v('marginLeft'), right = v('marginRight');
+  const top2 = v('marginTop2'), bottom2 = v('marginBottom2'), left2 = v('marginLeft2'), right2 = v('marginRight2');
+  const font = v('fontSize'), table = v('tableFontSize');
+
+  // 표시 값 업데이트
+  document.getElementById('valTop').textContent = top;
+  document.getElementById('valBottom').textContent = bottom;
+  document.getElementById('valLeft').textContent = left;
+  document.getElementById('valRight').textContent = right;
+  document.getElementById('valTop2').textContent = top2;
+  document.getElementById('valBottom2').textContent = bottom2;
+  document.getElementById('valLeft2').textContent = left2;
+  document.getElementById('valRight2').textContent = right2;
+  document.getElementById('valFont').textContent = font;
+  document.getElementById('valTable').textContent = table;
+
+  // 미리보기 1페이지
+  const el1 = document.getElementById('previewContent1');
+  el1.style.top = (top / 297 * 100).toFixed(1) + '%';
+  el1.style.bottom = (bottom / 297 * 100).toFixed(1) + '%';
+  el1.style.left = (left / 210 * 100).toFixed(1) + '%';
+  el1.style.right = (right / 210 * 100).toFixed(1) + '%';
+
+  // 미리보기 2페이지~
+  const el2 = document.getElementById('previewContent2');
+  el2.style.top = (top2 / 297 * 100).toFixed(1) + '%';
+  el2.style.bottom = (bottom2 / 297 * 100).toFixed(1) + '%';
+  el2.style.left = (left2 / 210 * 100).toFixed(1) + '%';
+  el2.style.right = (right2 / 210 * 100).toFixed(1) + '%';
+
+  // 프리셋 자동 매칭
+  document.querySelectorAll('.ps-preset').forEach(btn => btn.classList.remove('active'));
+  for (const [name, p] of Object.entries(PRINT_PRESETS)) {
+    if (p.top==top && p.bottom==bottom && p.left==left && p.right==right &&
+        p.top2==top2 && p.bottom2==bottom2 && p.left2==left2 && p.right2==right2 &&
+        p.font==font && p.table==table) {
+      document.querySelector(`.ps-preset[onclick*="${name}"]`).classList.add('active');
+    }
+  }
+}
+
+function applyAndPrint() {
+  syncPrintHeader();
+  const v = id => document.getElementById(id).value;
+  const top = v('marginTop'), bottom = v('marginBottom'), left = v('marginLeft'), right = v('marginRight');
+  const top2 = v('marginTop2'), bottom2 = v('marginBottom2'), left2 = v('marginLeft2'), right2 = v('marginRight2');
+  const font = v('fontSize'), table = v('tableFontSize');
+
+  if (printStyle) printStyle.remove();
+  printStyle = document.createElement('style');
+  printStyle.id = 'dynamicPrintStyle';
+  printStyle.textContent = `
+    @media print {
+      @page { margin: ${top2}mm ${right2}mm ${bottom2}mm ${left2}mm !important; }
+      @page :first { margin: ${top}mm ${right}mm ${bottom}mm ${left}mm !important; }
+      .doc { font-size: ${font}px !important; }
+      table.detail { font-size: ${table}px !important; }
+      table.detail thead th { font-size: ${Math.max(table - 1, 8)}px !important; }
+      table.detail tbody td input { font-size: ${table}px !important; }
+      .info-table th, .overview-table th { font-size: ${Math.max(font - 1, 9)}px !important; }
+      .info-table td input, .overview-table td input { font-size: ${font}px !important; }
+      .section-label { font-size: ${Math.max(table, 10)}px !important; }
+      .notice-item, .notice-item input { font-size: ${Math.max(table, 10)}px !important; }
+      .t-label { font-size: ${Math.max(table, 10)}px !important; }
+    }
+  `;
+  document.head.appendChild(printStyle);
+
+  closePrintSettings();
+  syncPrintHeader();
+  setTimeout(() => window.print(), 200);
+}
+
+// ── 유틸 ──
+const fmt  = n => Math.round(n).toLocaleString('ko-KR');
+const parseNum = v => parseFloat(String(v).replace(/,/g,'')) || 0;
+
+function fmtInput(input) {
+  const raw = String(input.value).replace(/,/g,'');
+  const num = parseFloat(raw);
+  if (!isNaN(num) && raw !== '') {
+    input.value = Math.round(num).toLocaleString('ko-KR');
+  }
+}
+
+function stripFmt(input) {
+  input.value = String(input.value).replace(/,/g,'');
+}
+
+const getVal = input => parseNum(input.value);
+
+function fmtCommission() {
+  const el = document.getElementById('commission');
+  const n = parseNum(el.value);
+  if (!isNaN(n)) el.value = fmt(n);
+  recalcAll();
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ── 계산 함수 ── (국내는 모두 KRW, 환율 없음)
+function calcRow(input, doFmt) {
+  if (doFmt) fmtInput(input);
+  const tr = input.closest('tr');
+  const nums = [...tr.querySelectorAll('input.r')];
+  if (nums.length < 3) return;
+  const amt = getVal(nums[0]) * getVal(nums[1]) * getVal(nums[2]);
+  tr.querySelector('td.c-amt').textContent = fmt(amt);
+  recalcAll();
+}
+
+function sumRows(id) {
+  const tbody = document.getElementById(id);
+  if (!tbody) return 0;
+  let t = 0;
+  tbody.querySelectorAll('td.c-amt').forEach(td => { t += parseInt(td.textContent.replace(/[^0-9]/g,''))||0; });
+  return t;
+}
+
+const SECTIONS = [
+  ['flightRows','sub_flight'],
+  ['carRows','sub_car'],
+  ['hotelRows','sub_hotel'],
+  ['mealRows','sub_meal'],
+  ['entryRows','sub_entry'],
+  ['guideRows','sub_guide'],
+  ['etcRows','sub_etc'],
+];
+
+function recalcAll() {
+  // 모든 행 금액 재계산
+  SECTIONS.forEach(([id]) => {
+    const tbody = document.getElementById(id);
+    if (!tbody) return;
+    tbody.querySelectorAll('tr').forEach(tr => {
+      const nums = [...tr.querySelectorAll('input.r')];
+      if (nums.length >= 3) {
+        const amt = getVal(nums[0]) * getVal(nums[1]) * getVal(nums[2]);
+        const amtCell = tr.querySelector('td.c-amt');
+        if (amtCell) amtCell.textContent = fmt(amt);
+      }
+    });
+  });
+
+  const flightEnabled = document.getElementById('flightToggle')?.checked;
+  let totalSum = 0;
+  SECTIONS.forEach(([id, sid]) => {
+    if (id === 'flightRows' && !flightEnabled) return;
+    const s = sumRows(id); totalSum += s;
+    const el = document.getElementById(sid);
+    if (el) el.textContent = '소계 ' + fmt(s) + ' 원';
+  });
+
+  const commission = parseNum(document.getElementById('commission').value) || 0;
+  const grand = totalSum + commission;
+  const pax = parseInt(document.getElementById('paxSize').value) || 1;
+  const per = Math.floor(grand / pax / 100) * 100;
+
+  document.getElementById('subTotalVal').textContent = fmt(totalSum);
+  document.getElementById('grandTotalVal').textContent = fmt(grand);
+  document.getElementById('perPersonVal').textContent = fmt(per);
+  const gdEl = document.getElementById('grandTotalDisplay'); if (gdEl) gdEl.textContent = fmt(grand);
+  const ppEl = document.getElementById('perPersonDisplay'); if (ppEl) ppEl.textContent = fmt(per);
+  document.getElementById('recipientTotal').textContent = fmt(grand);
+}
+
+// ── 가이드비용 라벨 변경 ──
+function updateGuideLabel() {
+  // 선택값은 저장 시 collectFormData에서 자동 수집됨
+}
+
+// ── 참가인원 → 인원 칸 자동 반영 ──
+const PAX_SYNC_SECTIONS = ['mealRows','entryRows','etcRows','flightRows'];
+
+function syncPaxToRows() {
+  const pax = parseInt(document.getElementById('paxSize').value) || 1;
+  PAX_SYNC_SECTIONS.forEach(id => {
+    const tbody = document.getElementById(id);
+    if (!tbody) return;
+    tbody.querySelectorAll('tr').forEach(tr => {
+      const nums = [...tr.querySelectorAll('input.r')];
+      if (nums.length >= 1) {
+        nums[0].value = fmt(pax);
+      }
+    });
+  });
+}
+
+// ── 행 추가/삭제 ──
+function delRow(btn) {
+  btn.closest('tr, li').remove();
+  recalcAll();
+  toast('항목이 삭제되었습니다.');
+}
+
+function addRow(tbodyId) {
+  const tbody = document.getElementById(tbodyId);
+  const tr = document.createElement('tr');
+  const usePax = PAX_SYNC_SECTIONS.includes(tbodyId);
+  const pax = usePax ? (parseInt(document.getElementById('paxSize').value) || 1) : 1;
+  tr.innerHTML = `
+    <td><input value="내역 입력"></td>
+    <td><input class="r" type="text" value="${fmt(pax)}" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+    <td><input class="r" type="text" value="0" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+    <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+    <td class="c-amt">0</td>
+    <td class="c-del"><button class="btn-del" onclick="delRow(this)">삭제</button></td>`;
+  tbody.appendChild(tr);
+  toast('항목이 추가되었습니다.');
+}
+
+function addHotelRow() {
+  const tbody = document.getElementById('hotelRows');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="date" value=""></td>
+    <td><input value="숙소명 입력"></td>
+    <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+    <td><input class="r" type="text" value="0" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+    <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>
+    <td class="c-amt">0</td>
+    <td class="c-del"><button class="btn-del" onclick="delRow(this)">삭제</button></td>`;
+  tbody.appendChild(tr);
+  toast('숙소 항목이 추가되었습니다.');
+}
+
+// ── 항공비 토글 ──
+function toggleFlightSection() {
+  const checked = document.getElementById('flightToggle').checked;
+  document.getElementById('flightSection').classList.toggle('show', checked);
+  recalcAll();
+}
+
+function calcFlightRow(input, doFmt) {
+  if (doFmt) fmtInput(input);
+  const tr = input.closest('tr');
+  const nums = [...tr.querySelectorAll('input.r')];
+  if (nums.length < 3) return;
+  const amt = getVal(nums[0]) * getVal(nums[1]) * getVal(nums[2]);
+  tr.querySelector('td.c-amt').textContent = fmt(amt);
+  recalcAll();
+}
+
+function addFlightRow() {
+  const tbody = document.getElementById('flightRows');
+  const tr = document.createElement('tr');
+  const pax = parseInt(document.getElementById('paxSize').value) || 1;
+  tr.innerHTML = `
+    <td><input value=""></td>
+    <td><input value=""></td>
+    <td><input class="r" type="text" value="${fmt(pax)}" onfocus="stripFmt(this)" onblur="calcFlightRow(this,true)" oninput="calcFlightRow(this)"></td>
+    <td><input class="r" type="text" value="0" onfocus="stripFmt(this)" onblur="calcFlightRow(this,true)" oninput="calcFlightRow(this)"></td>
+    <td><input class="r" type="text" value="1" onfocus="stripFmt(this)" onblur="calcFlightRow(this,true)" oninput="calcFlightRow(this)"></td>
+    <td class="c-amt">0</td>
+    <td class="c-del"><button class="btn-del" onclick="delRow(this)">삭제</button></td>`;
+  tbody.appendChild(tr);
+  toast('항공 항목이 추가되었습니다.');
+}
+
+function addNotice() {
+  const ul = document.getElementById('noticeList');
+  const li = document.createElement('li');
+  li.className = 'notice-item';
+  li.innerHTML = `<input value="내용을 입력하세요."><button class="btn-del" onclick="delRow(this)">삭제</button>`;
+  ul.appendChild(li);
+  li.querySelector('input').focus();
+  toast('특기사항이 추가되었습니다.');
+}
+
+// ── 초기화 ──
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('quoteDate').value = today;
+  document.querySelectorAll('input.r').forEach(input => fmtInput(input));
+  recalcAll();
+});
+
+function saveHTML() {
+  const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const g = document.getElementById('groupName').value || '국내내역서';
+  const d = document.getElementById('quoteDate').value || new Date().toISOString().slice(0,10);
+  const typeLabel = currentDocType === 'domestic_settlement' ? '정산서' : '견적서';
+  a.download = g + '_국내_' + typeLabel + '_' + d + '.html';
+  a.click();
+  toast('HTML 파일로 저장되었습니다.');
+}
+
+// ── 문서 타입 ──
+let currentDocType = 'domestic';
+let currentDocId = null;
+
+function setDocType(type) {
+  currentDocType = type;
+  document.querySelectorAll('.doc-type-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.type === type);
+  });
+  const titleEl = document.querySelector('.doc-title');
+  if (type === 'domestic_settlement') {
+    titleEl.innerHTML = '국&nbsp;&nbsp;내&nbsp;&nbsp;정&nbsp;&nbsp;산&nbsp;&nbsp;서';
+  } else {
+    titleEl.innerHTML = '국&nbsp;&nbsp;내&nbsp;&nbsp;내&nbsp;&nbsp;역&nbsp;&nbsp;서';
+  }
+}
+
+function newDoc() {
+  if (!confirm('현재 내용을 버리고 새 문서를 만드시겠습니까?')) return;
+  currentDocId = null;
+  ['recipient','subject','groupName','itinerary','travelDate','leader','guide','conditions','roomStyle'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('paxSize').value = '1';
+  document.getElementById('commission').value = '0';
+  ['flightRows','carRows','hotelRows','mealRows','entryRows','guideRows','etcRows'].forEach(id => {
+    const tbody = document.getElementById(id);
+    if (tbody) tbody.innerHTML = '';
+  });
+  document.getElementById('flightToggle').checked = false;
+  document.getElementById('flightSection').classList.remove('show');
+  document.getElementById('guideLabelSelect').value = '가이드비용';
+  document.getElementById('noticeList').innerHTML = '';
+  recalcAll();
+  toast('새 문서가 준비되었습니다.');
+}
+
+// ── 데이터 수집/복원 ──
+function collectSections() {
+  const sections = {};
+  const tbodyIds = ['flightRows','carRows','hotelRows','mealRows','entryRows','guideRows','etcRows'];
+  tbodyIds.forEach(id => {
+    const tbody = document.getElementById(id);
+    if (!tbody) return;
+    const rows = [];
+    tbody.querySelectorAll('tr').forEach(tr => {
+      const inputs = [...tr.querySelectorAll('input')];
+      const vals = inputs.map(inp => inp.value);
+      const amt = tr.querySelector('td.c-amt')?.textContent || '0';
+      rows.push({ values: vals, amount: amt, fx: false });
+    });
+    sections[id] = rows;
+  });
+  sections._guideLabel = document.getElementById('guideLabelSelect').value;
+  return sections;
+}
+
+function restoreSections(sections) {
+  if (!sections) return;
+  Object.keys(sections).forEach(id => {
+    if (id.startsWith('_')) return;
+    const tbody = document.getElementById(id);
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    const rows = sections[id];
+    if (!rows || !rows.length) return;
+    rows.forEach(rowData => {
+      const tr = document.createElement('tr');
+      const isHotel = id === 'hotelRows';
+      const isFlight = id === 'flightRows';
+      let html = '';
+      if (isFlight && rowData.values.length >= 5) {
+        html += `<td><input value="${(rowData.values[0]||'').replace(/"/g,'&quot;')}"></td>`;
+        html += `<td><input value="${(rowData.values[1]||'').replace(/"/g,'&quot;')}"></td>`;
+        html += `<td><input class="r" type="text" value="${rowData.values[2]||'1'}" onfocus="stripFmt(this)" onblur="calcFlightRow(this,true)" oninput="calcFlightRow(this)"></td>`;
+        html += `<td><input class="r" type="text" value="${rowData.values[3]||'0'}" onfocus="stripFmt(this)" onblur="calcFlightRow(this,true)" oninput="calcFlightRow(this)"></td>`;
+        html += `<td><input class="r" type="text" value="${rowData.values[4]||'1'}" onfocus="stripFmt(this)" onblur="calcFlightRow(this,true)" oninput="calcFlightRow(this)"></td>`;
+      } else if (isHotel && rowData.values.length >= 5) {
+        html += `<td><input type="date" value="${rowData.values[0] || ''}"></td>`;
+        html += `<td><input value="${(rowData.values[1]||'').replace(/"/g,'&quot;')}"></td>`;
+        html += `<td><input class="r" type="text" value="${rowData.values[2]||'0'}" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>`;
+        html += `<td><input class="r" type="text" value="${rowData.values[3]||'0'}" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>`;
+        html += `<td><input class="r" type="text" value="${rowData.values[4]||'1'}" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>`;
+      } else {
+        rowData.values.forEach((val, i) => {
+          const isDate = val && /^\d{4}-\d{2}-\d{2}$/.test(val);
+          const stripped = String(val).replace(/,/g,'');
+          const isNum = i > 0 && !isDate && !isNaN(parseFloat(stripped)) && stripped !== '';
+          if (isDate) {
+            html += `<td><input type="date" value="${val}"></td>`;
+          } else if (isNum) {
+            html += `<td><input class="r" type="text" value="${val}" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>`;
+          } else {
+            html += `<td><input value="${String(val).replace(/"/g,'&quot;')}"></td>`;
+          }
+        });
+      }
+      html += `<td class="c-amt">${rowData.amount}</td>`;
+      html += `<td class="c-del"><button class="btn-del" onclick="delRow(this)">삭제</button></td>`;
+      tr.innerHTML = html;
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function collectNotices() {
+  const notices = [];
+  document.querySelectorAll('#noticeList .notice-item input').forEach(inp => {
+    notices.push(inp.value);
+  });
+  return notices;
+}
+
+function restoreNotices(notices) {
+  const ul = document.getElementById('noticeList');
+  ul.innerHTML = '';
+  if (!notices || !notices.length) return;
+  notices.forEach(text => {
+    const li = document.createElement('li');
+    li.className = 'notice-item';
+    li.innerHTML = `<input value="${text.replace(/"/g,'&quot;')}"><button class="btn-del" onclick="delRow(this)">삭제</button>`;
+    ul.appendChild(li);
+  });
+}
+
+function collectFormData() {
+  return {
+    doc_type: currentDocType,
+    recipient: document.getElementById('recipient').value,
+    subject: document.getElementById('subject').value,
+    quote_date: document.getElementById('quoteDate').value,
+    valid_period: document.getElementById('validPeriod').value,
+    company_name: document.getElementById('companyName').value,
+    ceo_name: document.getElementById('ceoName').value,
+    biz_no: document.getElementById('bizNo').value,
+    phone: document.getElementById('phone').value,
+    address: document.getElementById('address')?.value || '',
+    manager: document.getElementById('manager').value,
+    email: document.getElementById('email').value,
+    group_name: document.getElementById('groupName').value,
+    itinerary: document.getElementById('itinerary').value,
+    travel_date: document.getElementById('travelDate').value,
+    pax_size: parseInt(document.getElementById('paxSize').value) || 1,
+    leader: document.getElementById('leader').value,
+    guide: document.getElementById('guide').value,
+    conditions: document.getElementById('conditions').value,
+    room_style: document.getElementById('roomStyle').value,
+    currency: 'KRW',
+    exchange_rate: 1,
+    rate_date: '',
+    rate_source: '',
+    flight_included: document.getElementById('flightToggle').checked,
+    guide_label: document.getElementById('guideLabelSelect').value,
+    sections_json: collectSections(),
+    commission: parseNum(document.getElementById('commission').value),
+    grand_total: parseNum(document.getElementById('grandTotalVal')?.textContent || '0'),
+    per_person: parseNum(document.getElementById('perPersonVal')?.textContent || '0'),
+    notices_json: collectNotices(),
+  };
+}
+
+function restoreFormData(est) {
+  setDocType(est.doc_type || 'domestic');
+  document.getElementById('recipient').value = est.recipient || '';
+  document.getElementById('subject').value = est.subject || '';
+  document.getElementById('quoteDate').value = est.quote_date || '';
+  document.getElementById('validPeriod').value = est.valid_period || '';
+  document.getElementById('companyName').value = est.company_name || '';
+  document.getElementById('ceoName').value = est.ceo_name || '';
+  document.getElementById('bizNo').value = est.biz_no || '';
+  document.getElementById('phone').value = est.phone || '';
+  if (document.getElementById('address')) document.getElementById('address').value = est.address || '';
+  document.getElementById('manager').value = est.manager || '';
+  document.getElementById('email').value = est.email || '';
+  document.getElementById('groupName').value = est.group_name || '';
+  document.getElementById('itinerary').value = est.itinerary || '';
+  document.getElementById('travelDate').value = est.travel_date || '';
+  document.getElementById('paxSize').value = est.pax_size || 1;
+  document.getElementById('leader').value = est.leader || '';
+  document.getElementById('guide').value = est.guide || '';
+  document.getElementById('conditions').value = est.conditions || '';
+  document.getElementById('roomStyle').value = est.room_style || '';
+  document.getElementById('commission').value = fmt(est.commission || 0);
+
+  // 가이드비용 라벨 복원
+  const guideLabel = est.guide_label || (est.sections_json && est.sections_json._guideLabel);
+  if (guideLabel) {
+    document.getElementById('guideLabelSelect').value = guideLabel;
+  }
+
+  // 항공 포함 여부 복원
+  const hasFlight = est.flight_included || (est.sections_json && est.sections_json.flightRows && est.sections_json.flightRows.length > 0);
+  document.getElementById('flightToggle').checked = !!hasFlight;
+  document.getElementById('flightSection').classList.toggle('show', !!hasFlight);
+
+  restoreSections(est.sections_json);
+  restoreNotices(est.notices_json);
+  recalcAll();
+}
+
+// ── API 통신 ──
+async function saveToDb() {
+  const data = collectFormData();
+  try {
+    let res;
+    if (currentDocId) {
+      res = await fetch(`/api/estimates/${currentDocId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+    } else {
+      res = await fetch('/api/estimates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+    }
+    const json = await res.json();
+    if (json.success) {
+      currentDocId = json.data.estimate.id;
+      const typeLabel = currentDocType === 'domestic_settlement' ? '정산서' : '견적서';
+      toast(`국내 ${typeLabel} 저장 완료 (${json.data.estimate.doc_number})`);
+    } else {
+      toast('저장 실패: ' + (json.error || ''));
+    }
+  } catch (err) {
+    toast('저장 실패: 서버 연결 오류');
+    console.error(err);
+  }
+}
+
+async function loadFromDb(id) {
+  try {
+    const res = await fetch(`/api/estimates/${id}`, { credentials: 'include' });
+    const json = await res.json();
+    if (json.success) {
+      currentDocId = json.data.estimate.id;
+      restoreFormData(json.data.estimate);
+      closeLoadMenu();
+      toast('문서를 불러왔습니다.');
+    } else {
+      toast('불러오기 실패: ' + (json.error || ''));
+    }
+  } catch (err) {
+    toast('불러오기 실패: 서버 연결 오류');
+  }
+}
+
+async function deleteFromDb(id, e) {
+  e.stopPropagation();
+  if (!confirm('이 문서를 삭제하시겠습니까?')) return;
+  try {
+    const res = await fetch(`/api/estimates/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    const json = await res.json();
+    if (json.success) {
+      if (currentDocId === id) currentDocId = null;
+      toast('삭제되었습니다.');
+      toggleLoadMenu();
+    }
+  } catch (err) {
+    toast('삭제 실패');
+  }
+}
+
+async function toggleLoadMenu() {
+  const menu = document.getElementById('loadMenu');
+  if (menu.classList.contains('show')) {
+    closeLoadMenu();
+    return;
+  }
+  menu.innerHTML = '<div class="load-menu-empty">불러오는 중...</div>';
+  menu.classList.add('show');
+
+  try {
+    const res = await fetch('/api/estimates?limit=30&doc_type=domestic', { credentials: 'include' });
+    const json = await res.json();
+    if (!json.success || !json.data.estimates.length) {
+      menu.innerHTML = '<div class="load-menu-empty">저장된 국내 내역서가 없습니다.</div>';
+      return;
+    }
+    menu.innerHTML = json.data.estimates.map(est => {
+      const isStl = est.doc_type === 'domestic_settlement';
+      return `<div class="load-menu-item" onclick="loadFromDb('${est.id}')">
+        <div>
+          <div class="lm-title">${est.group_name || est.recipient || '(제목 없음)'}</div>
+          <div class="lm-sub">${est.doc_number} · ${est.quote_date} · ${fmt(est.grand_total)}원</div>
+        </div>
+        <div style="display:flex;align-items:center;">
+          <span class="lm-type ${isStl?'stl':'est'}">${isStl?'정산서':'견적서'}</span>
+          <button class="lm-del" onclick="deleteFromDb('${est.id}',event)">삭제</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch {
+    menu.innerHTML = '<div class="load-menu-empty">서버 연결 실패</div>';
+  }
+}
+
+function closeLoadMenu() {
+  document.getElementById('loadMenu').classList.remove('show');
+}
+
+// 외부 클릭 시 메뉴 닫기
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.load-dropdown')) closeLoadMenu();
+  if (!e.target.closest('.excel-dropdown')) closeExcelMenu();
+});
+
+// ── 엑셀 메뉴 ──
+function toggleExcelMenu() {
+  document.getElementById('excelMenu').classList.toggle('show');
+}
+function closeExcelMenu() {
+  document.getElementById('excelMenu').classList.remove('show');
+}
+
+// ── 엑셀 섹션 매핑 ──
+const SECTION_MAP = {
+  '항공비':       { id: 'flightRows', cols: ['구간','항공사','인원','단가(원)','횟수'] },
+  '차량비':       { id: 'carRows',    cols: ['내역','수량','단가(원)','횟수'] },
+  '숙박비':       { id: 'hotelRows',  cols: ['날짜','숙소명','객실수','단가(원)','박수'] },
+  '식사비':       { id: 'mealRows',   cols: ['내역','인원','단가(원)','횟수'] },
+  '입장료체험비': { id: 'entryRows',  cols: ['내역','인원','단가(원)','횟수'] },
+  '가이드비용':   { id: 'guideRows',  cols: ['내역','수량','단가(원)','횟수'] },
+  '기타':         { id: 'etcRows',    cols: ['내역','인원','단가(원)','횟수'] },
+};
+
+// ── 템플릿 다운로드 ──
+function downloadTemplate() {
+  closeExcelMenu();
+  if (typeof XLSX === 'undefined') { toast('엑셀 라이브러리 로딩 실패'); return; }
+  const wb = XLSX.utils.book_new();
+
+  const infoData = [
+    ['항목','값','설명'],
+    ['수신','','예: ○○학교장 귀중'],
+    ['제목','','예: 제주도 수학여행 경비 견적의 건'],
+    ['견적일자','','예: 2026-03-26'],
+    ['유효기간','견적일로부터 30일',''],
+    ['단체명','','예: ○○중학교'],
+    ['여행지','','예: 제주도'],
+    ['여행일정','','예: 2026. 5. 10 ~ 12 (2박 3일)'],
+    ['참가인원','','숫자만 입력'],
+    ['인솔자','','예: 1명'],
+    ['가이드','','예: 1명'],
+    ['숙박조건','','예: 리조트 스탠다드'],
+    ['룸구성','','예: 10 TWN + 2 SGL'],
+    ['알선수수료','0','숫자만 입력 (VAT 포함)'],
+  ];
+  const ws1 = XLSX.utils.aoa_to_sheet(infoData);
+  ws1['!cols'] = [{wch:14},{wch:30},{wch:32}];
+  XLSX.utils.book_append_sheet(wb, ws1, '기본정보');
+
+  Object.entries(SECTION_MAP).forEach(([name, sec]) => {
+    const header = [...sec.cols, '금액(원)'];
+    const sample = sec.id === 'hotelRows'
+      ? [['2026-05-10','숙소명',8,100000,1,'']]
+      : sec.id === 'flightRows'
+      ? [['서울-제주','대한항공',1,80000,1,'']]
+      : [['내역 입력',1,0,1,'']];
+    const data = [header, ...sample];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!cols'] = header.map(() => ({wch:16}));
+    XLSX.utils.book_append_sheet(wb, ws, name);
+  });
+
+  const noticeData = [['특기사항'],['내용을 입력하세요.']];
+  const wsN = XLSX.utils.aoa_to_sheet(noticeData);
+  wsN['!cols'] = [{wch:80}];
+  XLSX.utils.book_append_sheet(wb, wsN, '특기사항');
+
+  XLSX.writeFile(wb, '국내내역서_템플릿.xlsx');
+  toast('템플릿을 다운로드했습니다.');
+}
+
+// ── 엑셀 불러오기 ──
+function importExcel() {
+  closeExcelMenu();
+  document.getElementById('excelFileInput').click();
+}
+
+function handleExcelFile(input) {
+  const file = input.files[0];
+  if (!file) { toast('파일이 선택되지 않았습니다.'); return; }
+  if (typeof XLSX === 'undefined') { toast('엑셀 라이브러리 로딩 실패 — 새로고침 후 재시도'); return; }
+  toast('파일 읽는 중: ' + file.name);
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array', cellDates: true });
+      parseWorkbook(wb);
+      toast('엑셀을 불러왔습니다. (' + wb.SheetNames.length + '개 시트)');
+    } catch (err) {
+      toast('엑셀 파싱 실패: ' + err.message);
+      console.error('[Excel] 파싱 에러:', err);
+    }
+  };
+  reader.onerror = function() { toast('파일 읽기 실패'); };
+  reader.readAsArrayBuffer(file);
+  input.value = '';
+}
+
+const str = v => (v == null ? '' : String(v).trim());
+const num = v => parseFloat(String(v).replace(/,/g,'')) || 0;
+
+function formatDateVal(v) {
+  if (v instanceof Date) return v.toISOString().slice(0,10);
+  const s = String(v).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const m = s.match(/(\d{4})[.\/-](\d{1,2})[.\/-](\d{1,2})/);
+  if (m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  return s;
+}
+
+function parseWorkbook(wb) {
+  // 기본정보 시트
+  const infoSheet = wb.Sheets['기본정보'];
+  if (infoSheet) {
+    const rows = XLSX.utils.sheet_to_json(infoSheet, { header: 1, raw: true });
+    const map = {};
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (r && r[0]) map[str(r[0])] = str(r[1]);
+    }
+    if (map['수신']) document.getElementById('recipient').value = map['수신'];
+    if (map['제목']) document.getElementById('subject').value = map['제목'];
+    if (map['견적일자']) document.getElementById('quoteDate').value = formatDateVal(map['견적일자']);
+    if (map['유효기간']) document.getElementById('validPeriod').value = map['유효기간'];
+    if (map['단체명']) document.getElementById('groupName').value = map['단체명'];
+    if (map['여행지']) document.getElementById('itinerary').value = map['여행지'];
+    if (map['여행일정']) document.getElementById('travelDate').value = map['여행일정'];
+    if (map['참가인원']) document.getElementById('paxSize').value = parseInt(map['참가인원']) || 1;
+    if (map['인솔자']) document.getElementById('leader').value = map['인솔자'];
+    if (map['가이드']) document.getElementById('guide').value = map['가이드'];
+    if (map['숙박조건']) document.getElementById('conditions').value = map['숙박조건'];
+    if (map['룸구성']) document.getElementById('roomStyle').value = map['룸구성'];
+    if (map['알선수수료']) document.getElementById('commission').value = fmt(num(map['알선수수료']));
+  }
+
+  // 비용 섹션 시트
+  Object.entries(SECTION_MAP).forEach(([sheetName, sec]) => {
+    const ws = wb.Sheets[sheetName];
+    if (!ws) return;
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, cellDates: true });
+    if (rows.length <= 1) return;
+    const tbody = document.getElementById(sec.id);
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r.length === 0) continue;
+      const tr = document.createElement('tr');
+      let html = '';
+      const isHotel = sec.id === 'hotelRows';
+      const isFlight = sec.id === 'flightRows';
+      if (isFlight) {
+        // 항공비 시트가 있으면 자동으로 체크 활성화
+        document.getElementById('flightToggle').checked = true;
+        document.getElementById('flightSection').classList.add('show');
+        html += `<td><input value="${str(r[0]).replace(/"/g,'&quot;')}"></td>`;
+        html += `<td><input value="${str(r[1]).replace(/"/g,'&quot;')}"></td>`;
+        html += `<td><input class="r" type="text" value="${num(r[2]) || 1}" onfocus="stripFmt(this)" onblur="calcFlightRow(this,true)" oninput="calcFlightRow(this)"></td>`;
+        html += `<td><input class="r" type="text" value="${num(r[3])}" onfocus="stripFmt(this)" onblur="calcFlightRow(this,true)" oninput="calcFlightRow(this)"></td>`;
+        html += `<td><input class="r" type="text" value="${num(r[4]) || 1}" onfocus="stripFmt(this)" onblur="calcFlightRow(this,true)" oninput="calcFlightRow(this)"></td>`;
+      } else if (isHotel) {
+        html += `<td><input type="date" value="${formatDateVal(r[0] || '')}"></td>`;
+        html += `<td><input value="${str(r[1]).replace(/"/g,'&quot;')}"></td>`;
+        html += `<td><input class="r" type="text" value="${num(r[2])}" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>`;
+        html += `<td><input class="r" type="text" value="${num(r[3])}" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>`;
+        html += `<td><input class="r" type="text" value="${num(r[4]) || 1}" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>`;
+      } else {
+        html += `<td><input value="${str(r[0]).replace(/"/g,'&quot;')}"></td>`;
+        html += `<td><input class="r" type="text" value="${num(r[1]) || 1}" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>`;
+        html += `<td><input class="r" type="text" value="${num(r[2])}" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>`;
+        html += `<td><input class="r" type="text" value="${num(r[3]) || 1}" onfocus="stripFmt(this)" onblur="calcRow(this,true)" oninput="calcRow(this)"></td>`;
+      }
+      html += `<td class="c-amt">0</td>`;
+      html += `<td class="c-del"><button class="btn-del" onclick="delRow(this)">삭제</button></td>`;
+      tr.innerHTML = html;
+      tbody.appendChild(tr);
+    }
+  });
+
+  // 특기사항
+  const noticeSheet = wb.Sheets['특기사항'];
+  if (noticeSheet) {
+    const rows = XLSX.utils.sheet_to_json(noticeSheet, { header: 1, raw: true });
+    const ul = document.getElementById('noticeList');
+    ul.innerHTML = '';
+    for (let i = 1; i < rows.length; i++) {
+      const text = str(rows[i]?.[0]);
+      if (!text) continue;
+      const li = document.createElement('li');
+      li.className = 'notice-item';
+      li.innerHTML = `<input value="${text.replace(/"/g,'&quot;')}"><button class="btn-del" onclick="delRow(this)">삭제</button>`;
+      ul.appendChild(li);
+    }
+  }
+
+  // 숫자 포맷 + 재계산
+  document.querySelectorAll('input.r').forEach(input => fmtInput(input));
+  recalcAll();
+}
+
+// ── 엑셀 내보내기 ──
+function exportExcel() {
+  closeExcelMenu();
+  if (typeof XLSX === 'undefined') { toast('엑셀 라이브러리 로딩 실패'); return; }
+  const wb = XLSX.utils.book_new();
+
+  // 기본정보
+  const infoData = [
+    ['항목','값'],
+    ['수신', document.getElementById('recipient').value],
+    ['제목', document.getElementById('subject').value],
+    ['견적일자', document.getElementById('quoteDate').value],
+    ['유효기간', document.getElementById('validPeriod').value],
+    ['단체명', document.getElementById('groupName').value],
+    ['여행지', document.getElementById('itinerary').value],
+    ['여행일정', document.getElementById('travelDate').value],
+    ['참가인원', parseInt(document.getElementById('paxSize').value) || 1],
+    ['인솔자', document.getElementById('leader').value],
+    ['가이드', document.getElementById('guide').value],
+    ['숙박조건', document.getElementById('conditions').value],
+    ['룸구성', document.getElementById('roomStyle').value],
+    ['알선수수료', parseNum(document.getElementById('commission').value)],
+    ['합계금액', parseNum(document.getElementById('grandTotalVal')?.textContent || '0')],
+    ['1인당금액', parseNum(document.getElementById('perPersonVal')?.textContent || '0')],
+  ];
+  const ws1 = XLSX.utils.aoa_to_sheet(infoData);
+  ws1['!cols'] = [{wch:14},{wch:30}];
+  XLSX.utils.book_append_sheet(wb, ws1, '기본정보');
+
+  // 비용 섹션
+  Object.entries(SECTION_MAP).forEach(([name, sec]) => {
+    const tbody = document.getElementById(sec.id);
+    if (!tbody) return;
+    const header = [...sec.cols, '금액(원)'];
+    const data = [header];
+    tbody.querySelectorAll('tr').forEach(tr => {
+      const inputs = [...tr.querySelectorAll('input')];
+      const vals = inputs.map(inp => {
+        const v = inp.value;
+        const n = parseNum(v);
+        return (inp.type === 'date' || isNaN(n) || v === '') ? v : n;
+      });
+      const amt = parseNum(tr.querySelector('td.c-amt')?.textContent || '0');
+      vals.push(amt);
+      data.push(vals);
+    });
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!cols'] = header.map(() => ({wch:16}));
+    XLSX.utils.book_append_sheet(wb, ws, name);
+  });
+
+  // 특기사항
+  const notices = [['특기사항']];
+  document.querySelectorAll('#noticeList .notice-item input').forEach(inp => {
+    notices.push([inp.value]);
+  });
+  const wsN = XLSX.utils.aoa_to_sheet(notices);
+  wsN['!cols'] = [{wch:80}];
+  XLSX.utils.book_append_sheet(wb, wsN, '특기사항');
+
+  const g = document.getElementById('groupName').value || '국내내역서';
+  const d = document.getElementById('quoteDate').value || new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `${g}_국내내역서_${d}.xlsx`);
+  toast('엑셀로 내보냈습니다.');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+{
+  "id": "dccf9b74-1c9f-4298-b4a3-f55a8bf86d1b",
+  "user_id": 55,
+  "customer_id": null,
+  "pnr": "GWERTD",
+  "airline": "OZ",
+  "flight_number": "OZ729 / OZ734",
+  "route_from": "ICN",
+  "route_to": "ICN",
+  "name_kr": null,
+  "name_en": "LEE/KYOUNGHO",
+  "passport_number": null,
+  "seat_number": null,
+  "fare": null,
+  "nmtl_date": null,
+  "tl_date": null,
+  "departure_date": "2026-11-22",
+  "return_date": "2026-11-25",
+  "status": "pending",
+  "remarks": null,
+  "pax_count": 9,
+  "agency": null,
+  "created_at": "2026-03-11 10:29:27",
+  "updated_at": "2026-03-11 10:29:27",
+  "passengers": [
+    {
+      "id": "53901227-124c-4e23-a284-a2da1617e837",
+      "booking_id": "dccf9b74-1c9f-4298-b4a3-f55a8bf86d1b",
+      "name_en": "LEE/KYOUNGHO",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-11 10:29:27"
+    },
+    {
+      "id": "308447e2-801f-4bef-bf14-3c04160f86c8",
+      "booking_id": "dccf9b74-1c9f-4298-b4a3-f55a8bf86d1b",
+      "name_en": "PARK/SUKMOON",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-11 10:29:27"
+    },
+    {
+      "id": "e8e0dd74-61e4-44de-aef6-a659d956a6cf",
+      "booking_id": "dccf9b74-1c9f-4298-b4a3-f55a8bf86d1b",
+      "name_en": "YU/YOUNGWAN",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-11 10:29:27"
+    },
+    {
+      "id": "365753ec-70bf-49bd-965e-072c792423da",
+      "booking_id": "dccf9b74-1c9f-4298-b4a3-f55a8bf86d1b",
+      "name_en": "KIM/HEUNGMOON",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-11 10:29:27"
+    },
+    {
+      "id": "2dd50688-876e-46e7-927b-6ff2262bd369",
+      "booking_id": "dccf9b74-1c9f-4298-b4a3-f55a8bf86d1b",
+      "name_en": "LEE/YOUNGDAE",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-11 10:29:27"
+    },
+    {
+      "id": "26cffd53-65b3-40d0-ba13-576f632e3c98",
+      "booking_id": "dccf9b74-1c9f-4298-b4a3-f55a8bf86d1b",
+      "name_en": "LEE/WOOTEAK",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-11 10:29:27"
+    },
+    {
+      "id": "44c09528-593a-4a1e-88c4-0fa79fe1413b",
+      "booking_id": "dccf9b74-1c9f-4298-b4a3-f55a8bf86d1b",
+      "name_en": "CHANG/JAEOK",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-11 10:29:27"
+    },
+    {
+      "id": "f7d1864c-51bf-49ce-abec-a5018822cd9d",
+      "booking_id": "dccf9b74-1c9f-4298-b4a3-f55a8bf86d1b",
+      "name_en": "JANG/SANGIG",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-11 10:29:27"
+    },
+    {
+      "id": "371f624a-0cf5-4d34-a670-a1f1191f795b",
+      "booking_id": "dccf9b74-1c9f-4298-b4a3-f55a8bf86d1b",
+      "name_en": "JEON/DEOKKI",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-11 10:29:27"
+    }
+  ],
+  "segments": [
+    {
+      "id": "cd47abf2-c302-4692-95c5-c07817ca7ca7",
+      "booking_id": "dccf9b74-1c9f-4298-b4a3-f55a8bf86d1b",
+      "seg_index": 0,
+      "airline": "OZ",
+      "flight_number": "OZ729",
+      "route_from": "ICN",
+      "route_to": "HAN",
+      "departure_date": "2026-11-22"
+    },
+    {
+      "id": "99e28e7e-9d8e-43dd-82c9-999b883c5e67",
+      "booking_id": "dccf9b74-1c9f-4298-b4a3-f55a8bf86d1b",
+      "seg_index": 1,
+      "airline": "OZ",
+      "flight_number": "OZ734",
+      "route_from": "HAN",
+      "route_to": "ICN",
+      "departure_date": "2026-11-25"
+    }
+  ]
+}

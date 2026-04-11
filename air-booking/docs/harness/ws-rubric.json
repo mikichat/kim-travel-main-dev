@@ -1,0 +1,48 @@
+{
+  "project_type": "realtime-notification",
+  "pass_threshold": 7,
+  "criteria": [
+    {
+      "name": "WebSocket 연결",
+      "weight": 0.30,
+      "threshold": 7,
+      "checklist": [
+        "서버 시작 시 WebSocket 리스너 활성화",
+        "클라이언트 접속 시 연결 수립",
+        "연결 해제 시 정리 (메모리 누수 방지)",
+        "재연결 자동 시도 (끊김 시)"
+      ]
+    },
+    {
+      "name": "알림 기능",
+      "weight": 0.35,
+      "threshold": 7,
+      "checklist": [
+        "마감일 임박 시 브라우저 토스트 표시",
+        "알림 벨 아이콘 + 읽지 않은 카운트 배지",
+        "알림 목록 드롭다운",
+        "알림 읽음 처리"
+      ]
+    },
+    {
+      "name": "안정성",
+      "weight": 0.20,
+      "threshold": 7,
+      "checklist": [
+        "서버 재시작 후 자동 재연결",
+        "다중 탭 동시 연결 처리",
+        "기존 API/기능에 영향 없음"
+      ]
+    },
+    {
+      "name": "UX",
+      "weight": 0.15,
+      "threshold": 6,
+      "checklist": [
+        "토스트 자동 소멸 (5초)",
+        "벨 아이콘 애니메이션 (새 알림 시)",
+        "빈 알림 상태 메시지"
+      ]
+    }
+  ]
+}

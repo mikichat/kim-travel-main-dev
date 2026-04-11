@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalStorage 데이터 복구</title>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.danger {
+            background: #dc3545;
+        }
+        button.danger:hover {
+            background: #c82333;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 400px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-card h3 {
+            margin: 0;
+            font-size: 32px;
+        }
+        .stat-card p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 단체명단 LocalStorage 데이터 복구</h1>
+
+        <div id="status" class="status info">
+            준비 중...
+        </div>
+
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat-card">
+                <h3 id="dbCount">0</h3>
+                <p>데이터베이스 고객 수</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="groupCount">0</h3>
+                <p>그룹 수</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="localCount">0</h3>
+                <p>LocalStorage 고객 수</p>
+            </div>
+        </div>
+
+        <div style="margin: 20px 0;">
+            <button type="button" onclick="checkData()">📊 데이터 확인</button>
+            <button type="button" onclick="restoreFromDB()">✅ 데이터베이스에서 복구</button>
+            <button type="button" onclick="viewLocalStorage()">👁️ LocalStorage 내용 보기</button>
+            <button type="button" class="danger" onclick="clearLocalStorage()">🗑️ LocalStorage 지우기</button>
+        </div>
+
+        <div id="output"></div>
+    </div>
+
+    <script>
+        const API_URL = '';
+
+        async function checkData() {
+            try {
+                updateStatus('데이터를 확인하는 중...', 'info');
+
+                // DB에서 데이터 가져오기
+                const response = await fetch(`${API_URL}/tables/customers?limit=1000`);
+                const result = await response.json();
+                const customers = result.data || [];
+
+                // 그룹별로 분류
+                const groups = {};
+                customers.forEach(customer => {
+                    const groupName = customer.group_name || '미분류';
+                    if (!groups[groupName]) {
+                        groups[groupName] = [];
+                    }
+                    groups[groupName].push(customer);
+                });
+
+                // LocalStorage 데이터
+                const localData = localStorage.getItem('group-roster-data');
+                const localGroups = localData ? JSON.parse(localData) : {};
+                const localCustomerCount = Object.values(localGroups).reduce((sum, group) => sum + group.length, 0);
+
+                // 통계 표시
+                document.getElementById('dbCount').textContent = customers.length;
+                document.getElementById('groupCount').textContent = Object.keys(groups).length;
+                document.getElementById('localCount').textContent = localCustomerCount;
+                document.getElementById('stats').style.display = 'grid';
+
+                updateStatus(`
+                    ✅ 데이터 확인 완료!<br>
+                    - 데이터베이스: ${customers.length}명 (${Object.keys(groups).length}개 그룹)<br>
+                    - LocalStorage: ${localCustomerCount}명 (${Object.keys(localGroups).length}개 그룹)<br>
+                    - 그룹 목록: ${Object.keys(groups).join(', ')}
+                `, 'success');
+
+            } catch (error) {
+                updateStatus(`❌ 오류: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        async function restoreFromDB() {
+            if (!confirm('데이터베이스의 데이터를 LocalStorage로 복구하시겠습니까?\n\n현재 LocalStorage 데이터는 덮어씌워집니다.')) {
+                return;
+            }
+
+            try {
+                updateStatus('데이터베이스에서 데이터를 가져오는 중...', 'info');
+
+                // DB에서 모든 고객 데이터 가져오기
+                const response = await fetch(`${API_URL}/tables/customers?limit=1000`);
+                const result = await response.json();
+                const customers = result.data || [];
+
+                if (customers.length === 0) {
+                    updateStatus('❌ 데이터베이스에 데이터가 없습니다.', 'error');
+                    return;
+                }
+
+                // 그룹별로 데이터 변환
+                const groups = {};
+                customers.forEach(customer => {
+                    const groupName = customer.group_name || '미분류';
+
+                    if (!groups[groupName]) {
+                        groups[groupName] = [];
+                    }
+
+                    // LocalStorage 형식으로 변환
+                    groups[groupName].push({
+                        id: customer.id,
+                        name_kor: customer.name_kor || '',
+                        name_eng: customer.name_eng || '',
+                        gender: customer.gender || '',
+                        passport_number: customer.passport_number || '',
+                        birth_date: customer.birth_date || '',
+                        passport_expiry: customer.passport_expiry || '',
+                        phone: customer.phone || '',
+                        email: customer.email || '',
+                        address: customer.address || '',
+                        notes: customer.notes || '',
+                        departure_date: customer.departure_date || '',
+                        travel_region: customer.travel_region || '',
+                        created_at: customer.created_at,
+                        last_modified: customer.last_modified
+                    });
+                });
+
+                // LocalStorage에 저장
+                localStorage.setItem('group-roster-data', JSON.stringify(groups));
+
+                const totalCustomers = customers.length;
+                const totalGroups = Object.keys(groups).length;
+
+                updateStatus(`
+                    ✅ 복구 완료!<br>
+                    - ${totalCustomers}명의 고객 데이터가 복구되었습니다.<br>
+                    - ${totalGroups}개 그룹: ${Object.keys(groups).join(', ')}<br><br>
+                    이제 <a href="group-roster-manager-v2 (3).html" style="color: #007bff; font-weight: bold;">단체명단 관리 페이지</a>로 이동하세요.
+                `, 'success');
+
+                // 통계 업데이트
+                checkData();
+
+            } catch (error) {
+                updateStatus(`❌ 복구 실패: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        function viewLocalStorage() {
+            const data = localStorage.getItem('group-roster-data');
+            const output = document.getElementById('output');
+
+            if (!data) {
+                output.innerHTML = '<div class="status error">LocalStorage에 데이터가 없습니다.</div>';
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(data);
+                output.innerHTML = `
+                    <h3>LocalStorage 데이터:</h3>
+                    <pre>${JSON.stringify(parsed, null, 2)}</pre>
+                `;
+            } catch (error) {
+                output.innerHTML = `<div class="status error">데이터 파싱 오류: ${error.message}</div>`;
+            }
+        }
+
+        function clearLocalStorage() {
+            if (!confirm('정말로 LocalStorage의 모든 단체명단 데이터를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다!')) {
+                return;
+            }
+
+            localStorage.removeItem('group-roster-data');
+            updateStatus('✅ LocalStorage 데이터가 삭제되었습니다.', 'success');
+            checkData();
+        }
+
+        function updateStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.className = `status ${type}`;
+            statusEl.innerHTML = message;
+        }
+
+        // 페이지 로드시 자동 확인
+        window.addEventListener('load', () => {
+            checkData();
+        });
+    </script>
+</body>
+</html>

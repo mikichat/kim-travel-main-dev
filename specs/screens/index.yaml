@@ -1,0 +1,46 @@
+version: "2.0"
+project: 항공 예약 관리 시스템
+
+screens:
+  - id: login
+    name: 로그인
+    route: /login
+    file: login.yaml
+
+  - id: dashboard
+    name: 대시보드
+    route: /dashboard
+    file: dashboard.yaml
+
+  - id: bookings
+    name: 예약장부
+    route: /bookings
+    file: bookings.yaml
+
+  - id: calendar
+    name: 달력
+    route: /calendar
+    file: calendar.yaml
+
+  - id: settlements
+    name: 정산 관리
+    route: /settlements
+    file: settlements.yaml
+
+  - id: customers
+    name: 고객 관리
+    route: /customers
+    file: customers.yaml
+
+  - id: vendors
+    name: 거래처 관리
+    route: /vendors
+    file: vendors.yaml
+
+  - id: settings
+    name: 설정
+    route: /settings
+    file: settings.yaml
+
+default_route: /dashboard
+auth_redirect: /login

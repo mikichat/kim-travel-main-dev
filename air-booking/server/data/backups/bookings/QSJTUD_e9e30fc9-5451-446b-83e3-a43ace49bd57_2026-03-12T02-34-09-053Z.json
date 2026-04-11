@@ -1,0 +1,60 @@
+{
+  "id": "e9e30fc9-5451-446b-83e3-a43ace49bd57",
+  "user_id": 55,
+  "customer_id": null,
+  "pnr": "QSJTUD",
+  "airline": "OZ",
+  "flight_number": "OZ369 / OZ370",
+  "route_from": "ICN",
+  "route_to": "ICN",
+  "name_kr": null,
+  "name_en": "TAW/",
+  "passport_number": null,
+  "seat_number": null,
+  "fare": null,
+  "nmtl_date": "2026-04-05",
+  "tl_date": "2026-04-28",
+  "departure_date": "2026-05-05",
+  "return_date": "2026-05-09",
+  "status": "confirmed",
+  "remarks": "연락처: 063-271-9090 (CTW GJ/KIM) / 010-9866-4249 (CHOI/EUNHA)",
+  "pax_count": 1,
+  "agency": null,
+  "created_at": "2026-03-12 11:34:09",
+  "updated_at": "2026-03-12 11:34:09",
+  "passengers": [
+    {
+      "id": "35df9c3f-fea2-4c68-8e69-7be3397bf6e1",
+      "booking_id": "e9e30fc9-5451-446b-83e3-a43ace49bd57",
+      "name_en": "TAW/",
+      "name_kr": null,
+      "title": "",
+      "gender": "",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-12 11:34:09"
+    }
+  ],
+  "segments": [
+    {
+      "id": "a5b3b608-6f20-40b1-b68c-92937d299e25",
+      "booking_id": "e9e30fc9-5451-446b-83e3-a43ace49bd57",
+      "seg_index": 0,
+      "airline": "OZ",
+      "flight_number": "OZ369",
+      "route_from": "ICN",
+      "route_to": "CAN",
+      "departure_date": "2026-05-05"
+    },
+    {
+      "id": "4bbb0b43-6b77-4748-a3f3-9f3114e8fe15",
+      "booking_id": "e9e30fc9-5451-446b-83e3-a43ace49bd57",
+      "seg_index": 1,
+      "airline": "OZ",
+      "flight_number": "OZ370",
+      "route_from": "CAN",
+      "route_to": "ICN",
+      "departure_date": "2026-05-09"
+    }
+  ]
+}

@@ -1,0 +1,141 @@
+{
+  "id": "753154f3-c913-4730-9851-ea0e53cf9bb7",
+  "user_id": 55,
+  "customer_id": null,
+  "pnr": "AWRDUK",
+  "airline": "OZ",
+  "flight_number": "OZ521 / OZ522",
+  "route_from": "ICN",
+  "route_to": "ICN",
+  "name_kr": null,
+  "name_en": "JEONG/HYOJIN",
+  "passport_number": null,
+  "seat_number": null,
+  "fare": null,
+  "nmtl_date": null,
+  "tl_date": null,
+  "departure_date": "2026-06-04",
+  "return_date": "2026-06-10",
+  "status": "confirmed",
+  "remarks": null,
+  "pax_count": 8,
+  "agency": "전북사대부고 영국",
+  "created_at": "2026-03-27 15:02:17",
+  "updated_at": "2026-03-27 15:02:17",
+  "passengers": [
+    {
+      "id": "ef01ccd0-6712-4c8a-bba0-aa068fe753f0",
+      "booking_id": "753154f3-c913-4730-9851-ea0e53cf9bb7",
+      "name_en": "JEONG/HYOJIN",
+      "name_kr": "",
+      "title": "MS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-27 15:02:17"
+    },
+    {
+      "id": "e75300e9-fc43-482d-bd36-ee483782e6fc",
+      "booking_id": "753154f3-c913-4730-9851-ea0e53cf9bb7",
+      "name_en": "KIM/SUHYEON",
+      "name_kr": "",
+      "title": "MS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-27 15:02:17"
+    },
+    {
+      "id": "9c2e6339-2740-4df1-b10e-1a4ca296f860",
+      "booking_id": "753154f3-c913-4730-9851-ea0e53cf9bb7",
+      "name_en": "KIM/HYEONJI",
+      "name_kr": "",
+      "title": "MS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-27 15:02:17"
+    },
+    {
+      "id": "49176066-080e-4913-9f86-f31f5c3082a9",
+      "booking_id": "753154f3-c913-4730-9851-ea0e53cf9bb7",
+      "name_en": "PARK/SUYEON",
+      "name_kr": "",
+      "title": "MS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-27 15:02:17"
+    },
+    {
+      "id": "92a62e0f-ad64-49a2-8582-2fd63d24c76f",
+      "booking_id": "753154f3-c913-4730-9851-ea0e53cf9bb7",
+      "name_en": "HAN/JIHYO",
+      "name_kr": "",
+      "title": "MS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-27 15:02:17"
+    },
+    {
+      "id": "77966b27-77b8-4cc0-807f-fc2c0f106052",
+      "booking_id": "753154f3-c913-4730-9851-ea0e53cf9bb7",
+      "name_en": "SONG/EUNCHAE",
+      "name_kr": "",
+      "title": "MS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-27 15:02:17"
+    },
+    {
+      "id": "08e85c1b-7f79-4421-83bb-48c78387f189",
+      "booking_id": "753154f3-c913-4730-9851-ea0e53cf9bb7",
+      "name_en": "KIM/DOYUN",
+      "name_kr": "",
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-27 15:02:17"
+    },
+    {
+      "id": "135c0212-39d5-4186-893b-2aefdba92168",
+      "booking_id": "753154f3-c913-4730-9851-ea0e53cf9bb7",
+      "name_en": "SHIN/IKHYEON",
+      "name_kr": "",
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-27 15:02:17"
+    }
+  ],
+  "segments": [
+    {
+      "id": "431fddfd-e646-4e5e-b7fa-801ff0b65670",
+      "booking_id": "753154f3-c913-4730-9851-ea0e53cf9bb7",
+      "seg_index": 0,
+      "airline": "OZ",
+      "flight_number": "OZ521",
+      "route_from": "ICN",
+      "route_to": "LHR",
+      "departure_date": "2026-06-04",
+      "departure_time": "07:50",
+      "arrival_time": "14:20"
+    },
+    {
+      "id": "ee00dc81-55fa-4691-8e10-4a8b6f46d947",
+      "booking_id": "753154f3-c913-4730-9851-ea0e53cf9bb7",
+      "seg_index": 1,
+      "airline": "OZ",
+      "flight_number": "OZ522",
+      "route_from": "LHR",
+      "route_to": "ICN",
+      "departure_date": "2026-06-10",
+      "departure_time": "16:35",
+      "arrival_time": "13:20"
+    }
+  ]
+}

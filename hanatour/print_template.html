@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>여행 견적서 출력</title>
+    <script src="../js/toast.js"></script>
+    <style>
+        @media print {
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .print-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 20mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #333;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 28pt;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .company-info {
+            text-align: right;
+            font-size: 10pt;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 11pt;
+        }
+
+        table.info-table th {
+            background: #f3ebe1;
+            padding: 12px;
+            border: 1px solid #bbb;
+            text-align: left;
+            width: 25%;
+            font-weight: bold;
+        }
+
+        table.info-table td {
+            padding: 12px;
+            border: 1px solid #bbb;
+        }
+
+        table.condition-table th {
+            background: #f3ebe1;
+            padding: 10px;
+            border: 1px solid #bbb;
+            width: 20%;
+            font-weight: bold;
+        }
+
+        table.condition-table td {
+            padding: 10px;
+            border: 1px solid #bbb;
+        }
+
+        .section-title {
+            background: #333;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 13pt;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .itinerary-day {
+            background: #e8f4f8;
+            padding: 12px;
+            margin: 15px 0;
+            border-left: 5px solid #5b9bd5;
+        }
+
+        .itinerary-day h3 {
+            color: #2e75b6;
+            margin-bottom: 10px;
+            font-size: 13pt;
+        }
+
+        .itinerary-meta {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 10pt;
+        }
+
+        .itinerary-meta div {
+            background: white;
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .itinerary-meta div strong {
+            color: #2e75b6;
+            display: block;
+            margin-bottom: 3px;
+            font-size: 9pt;
+        }
+
+        .itinerary-content {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            padding-top: 20px;
+            border-top: 2px solid #333;
+        }
+
+        .footer-text {
+            font-size: 11pt;
+            margin-bottom: 20px;
+        }
+
+        .footer-company {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .buttons {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14pt;
+            cursor: pointer;
+            font-family: 'Malgun Gothic', sans-serif;
+        }
+
+        .btn-print {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #45a049;
+        }
+
+        .btn-back {
+            background: #666;
+            color: white;
+        }
+
+        .btn-back:hover {
+            background: #555;
+        }
+
+        .price-highlight {
+            color: #c00;
+            font-weight: bold;
+            font-size: 12pt;
+        }
+
+        .note-box {
+            background: #fff9e6;
+            border: 2px solid #ffd700;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .note-box ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="buttons no-print">
+        <button type="button" class="btn btn-print" onclick="window.print()">🖨️ 인쇄하기</button>
+        <button type="button" class="btn btn-back" onclick="window.close()">← 돌아가기</button>
+    </div>
+
+    <div class="print-container">
+        <div class="company-info">
+            담당자: <span id="printManager"></span> | 연락처: <span id="printContact"></span>
+        </div>
+
+        <div class="header">
+            <h1>여행 견적서</h1>
+        </div>
+
+        <!-- 기본 정보 -->
+        <table class="info-table">
+            <tr>
+                <th>단체명</th>
+                <td colspan="3" id="printPackageName"></td>
+            </tr>
+            <tr>
+                <th>일자</th>
+                <td colspan="3" id="printDates"></td>
+            </tr>
+            <tr>
+                <th>여행지</th>
+                <td colspan="3" id="printDestination"></td>
+            </tr>
+            <tr>
+                <th>1인 여행요금</th>
+                <td id="printAirline"></td>
+                <td id="printFlightInfo"></td>
+                <td class="price-highlight" id="printPrice"></td>
+            </tr>
+        </table>
+
+        <!-- 여행 조건 -->
+        <div class="section-title">❙ 여 행 조 건 ❙</div>
+        <table class="condition-table">
+            <tr>
+                <th>항공료</th>
+                <td colspan="2">전 일정에 명시된 항공료</td>
+            </tr>
+            <tr>
+                <th>숙박</th>
+                <td colspan="2">일정에 있는 숙박 포함 (2인 1실 기준)</td>
+            </tr>
+            <tr>
+                <th>식사</th>
+                <td colspan="2">일정에 있는 식사 포함</td>
+            </tr>
+            <tr>
+                <th>교통편</th>
+                <td colspan="2" id="printTransport"></td>
+            </tr>
+            <tr>
+                <th>관광</th>
+                <td colspan="2">전 일정에 명시된 관광 비용 포함</td>
+            </tr>
+            <tr>
+                <th>여행자 보험</th>
+                <td colspan="2">여행 기간 해외 여행자 보험 가입</td>
+            </tr>
+            <tr>
+                <th>기타 세금</th>
+                <td colspan="2">공항 이용료, 출국세, 입국세 포함</td>
+            </tr>
+            <tr>
+                <th>비고 사항</th>
+                <td colspan="2" id="printNotes"></td>
+            </tr>
+        </table>
+
+        <!-- 일정 -->
+        <div class="section-title">❙ 여 행 일 정 ❙</div>
+        <div id="printItinerary"></div>
+
+        <!-- 포함/불포함 사항 -->
+        <div class="section-title">❙ 포함/불포함 사항 ❙</div>
+        <table class="condition-table">
+            <tr>
+                <th>포함사항</th>
+                <td style="white-space: pre-line;" id="printIncluded"></td>
+            </tr>
+            <tr>
+                <th>불포함사항</th>
+                <td style="white-space: pre-line;" id="printExcluded"></td>
+            </tr>
+        </table>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-text">
+                위와 같이 여행 경비 견적서를 제출합니다.
+            </div>
+            <div class="footer-text">
+                <span id="printDate"></span>
+            </div>
+            <div class="footer-company">
+                (유) 여 행 세 상  대 표 이 사
+            </div>
+            <div style="margin-top: 20px; font-size: 9pt; color: #666;">
+                A: 전주시 완산구 서신동 856-1번지 | T: 063)271-9090 | F: 063)271-9030
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+        }
+
+        // URL에서 패키지 ID 가져오기
+        const urlParams = new URLSearchParams(window.location.search);
+        const packageId = urlParams.get('id');
+
+        if (packageId) {
+            loadPackageData(packageId);
+        } else {
+            showToast('패키지 ID가 없습니다.', 'error');
+            window.close();
+        }
+
+        function loadPackageData(id) {
+            const stored = localStorage.getItem('hanatour_packages');
+            if (!stored) {
+                showToast('저장된 데이터가 없습니다.', 'error');
+                return;
+            }
+
+            const packages = JSON.parse(stored);
+            const pkg = packages.find(p => p.id === id);
+
+            if (!pkg) {
+                showToast('패키지를 찾을 수 없습니다.', 'error');
+                return;
+            }
+
+            // 데이터 채우기
+            fillPrintData(pkg);
+        }
+
+        function fillPrintData(pkg) {
+            // 기본 정보
+            document.getElementById('printManager').textContent = '김국진';
+            document.getElementById('printContact').textContent = '010-2662-9009';
+            document.getElementById('printPackageName').textContent = pkg.basicInfo.packageName || '';
+
+            // 출발일 정보
+            if (pkg.departureDates && pkg.departureDates.length > 0) {
+                const firstDate = pkg.departureDates[0].date;
+                const lastDate = pkg.departureDates[pkg.departureDates.length - 1].date;
+                document.getElementById('printDates').textContent = `${firstDate} ~ ${lastDate}`;
+            } else {
+                document.getElementById('printDates').textContent = pkg.basicInfo.duration || '';
+            }
+
+            document.getElementById('printDestination').textContent = pkg.basicInfo.destination || '';
+            document.getElementById('printAirline').textContent = pkg.basicInfo.airline || '';
+
+            // 항공편 정보 (일정에서 추출)
+            if (pkg.itinerary && pkg.itinerary.length > 0) {
+                const firstDay = pkg.itinerary[0];
+                const lastDay = pkg.itinerary[pkg.itinerary.length - 1];
+                let flightInfo = '';
+                if (firstDay.transport) flightInfo += escapeHtml(firstDay.transport);
+                if (firstDay.time) flightInfo += ` (${escapeHtml(firstDay.time)})`;
+                if (lastDay.transport && lastDay.transport !== firstDay.transport) {
+                    flightInfo += '<br>' + escapeHtml(lastDay.transport);
+                    if (lastDay.time) flightInfo += ` (${escapeHtml(lastDay.time)})`;
+                }
+                document.getElementById('printFlightInfo').innerHTML = flightInfo;
+            }
+
+            // 가격
+            const price = parseInt(pkg.pricing.priceAdult) || 0;
+            document.getElementById('printPrice').textContent = price.toLocaleString() + '원';
+
+            // 교통편
+            document.getElementById('printTransport').textContent = '일정에 따른 차량 이용 교통 포함';
+
+            // 비고사항
+            let notes = [];
+            notes.push('○ 상기 일정은 기상악화나 현지 사정으로 인하여 변동될 수 있습니다.');
+            notes.push('○ 현금 결제 조건입니다.');
+            notes.push('○ 식사 시 음료(주류) 및 식사 추가는 불포함');
+            if (pkg.notes) {
+                notes.push('○ ' + escapeHtml(pkg.notes).replace(/\n/g, '\n○ '));
+            }
+            document.getElementById('printNotes').innerHTML = notes.join('<br>');
+
+            // 일정
+            const itineraryHTML = pkg.itinerary.map(item => `
+                <div class="itinerary-day">
+                    <h3>DAY ${item.day}${item.date ? ` (${escapeHtml(item.date)})` : ''}</h3>
+                    <div class="itinerary-meta">
+                        ${item.region ? `<div><strong>지역</strong>${escapeHtml(item.region)}</div>` : ''}
+                        ${item.transport ? `<div><strong>교통편</strong>${escapeHtml(item.transport)}</div>` : ''}
+                        ${item.time ? `<div><strong>시간</strong>${escapeHtml(item.time)}</div>` : ''}
+                        ${item.meals ? `<div><strong>식사</strong>${escapeHtml(item.meals)}</div>` : ''}
+                    </div>
+                    ${item.schedule ? `
+                        <div class="itinerary-content">${escapeHtml(item.schedule)}</div>
+                    ` : ''}
+                    ${item.accommodation ? `
+                        <div style="margin-top: 10px; font-weight: bold;">🏨 숙박: ${escapeHtml(item.accommodation)}</div>
+                    ` : ''}
+                </div>
+            `).join('');
+            document.getElementById('printItinerary').innerHTML = itineraryHTML;
+
+            // 포함/불포함
+            document.getElementById('printIncluded').textContent = pkg.included || '일정에 명시된 내용';
+            document.getElementById('printExcluded').textContent = pkg.excluded || '개인 경비';
+
+            // 날짜
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            document.getElementById('printDate').textContent = `${year}년 ${month}월 ${day}일`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}견적서 - {{ group.name }}{% endblock %}
+{% block document_title %}여행 견적서{% endblock %}
+
+{% block content %}
+<div class="section">
+    <h2 class="section-title">단체 기본 정보</h2>
+    <div class="info-grid">
+        <div class="info-item">
+            <span class="info-label">단체명:</span>
+            <span class="info-value">{{ group.name }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">여행 기간:</span>
+            <span class="info-value">{{ group.nights }}박 {{ group.days }}일</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">출발일:</span>
+            <span class="info-value">{{ group.start_date|format_date }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">도착일:</span>
+            <span class="info-value">{{ group.end_date|format_date }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">인원:</span>
+            <span class="info-value">{{ group.pax }}명</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">상태:</span>
+            <span class="info-value">
+                {% if group.status == 'estimate' %}견적
+                {% elif group.status == 'contract' %}계약
+                {% elif group.status == 'confirmed' %}확정
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <h2 class="section-title">요금 정보</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>항목</th>
+                <th style="text-align: right;">금액</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1인당 요금</td>
+                <td style="text-align: right;">{{ group.price_per_pax|format_currency }}</td>
+            </tr>
+            <tr>
+                <td>인원 ({{ group.pax }}명)</td>
+                <td style="text-align: right;">-</td>
+            </tr>
+            <tr style="background-color: #f9fafb; font-weight: bold;">
+                <td>총액</td>
+                <td style="text-align: right;">{{ group.total_price|format_currency }}</td>
+            </tr>
+            <tr>
+                <td>계약금</td>
+                <td style="text-align: right;">{{ group.deposit|format_currency }}</td>
+            </tr>
+            <tr style="background-color: #f3f4f6; font-weight: bold;">
+                <td>잔액</td>
+                <td style="text-align: right;">{{ group.balance|format_currency }}</td>
+            </tr>
+            {% if group.balance_due_date %}
+            <tr>
+                <td>잔액 완납일</td>
+                <td style="text-align: right;">{{ group.balance_due_date|format_date }}</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+{% if itineraries %}
+<div class="section">
+    <h2 class="section-title">여행 일정</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 60px;">일차</th>
+                <th style="width: 100px;">날짜</th>
+                <th>일정</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for itinerary in itineraries %}
+            <tr>
+                <td style="text-align: center;">{{ itinerary.day_no }}일차</td>
+                <td>{{ itinerary.itinerary_date|format_date('%m/%d') }}</td>
+                <td>
+                    {% if itinerary.location %}<strong>{{ itinerary.location }}</strong><br>{% endif %}
+                    {% if itinerary.schedule %}{{ itinerary.schedule }}<br>{% endif %}
+                    {% if itinerary.meals %}식사: {{ itinerary.meals }}<br>{% endif %}
+                    {% if itinerary.accommodation %}숙박: {{ itinerary.accommodation }}{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if includes %}
+<div class="section">
+    <h2 class="section-title">포함/불포함 사항</h2>
+
+    {% set included_items = includes|selectattr('item_type', 'equalto', 'include')|list %}
+    {% if included_items %}
+    <div style="margin-bottom: 15px;">
+        <h3 style="color: #10B981; font-size: 12pt; margin-bottom: 10px;">✓ 포함 사항</h3>
+        <ul style="margin: 0; padding-left: 25px;">
+            {% for item in included_items|sort(attribute='display_order') %}
+            <li>{{ item.description }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% set excluded_items = includes|selectattr('item_type', 'equalto', 'exclude')|list %}
+    {% if excluded_items %}
+    <div>
+        <h3 style="color: #EF4444; font-size: 12pt; margin-bottom: 10px;">✗ 불포함 사항</h3>
+        <ul style="margin: 0; padding-left: 25px;">
+            {% for item in excluded_items|sort(attribute='display_order') %}
+            <li>{{ item.description }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="section" style="margin-top: 30px; padding: 15px; background-color: #f9fafb; border-left: 3px solid #2563EB;">
+    <p style="margin: 0; font-size: 10pt; color: #666;">
+        본 견적서는 {{ generated_date|format_date }} 기준으로 작성되었으며,
+        실제 계약 시 일부 내용이 변경될 수 있습니다.
+    </p>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+version: "2.0"
+
+screen:
+  name: 고객 관리
+  route: /customers
+  layout: sidebar-main
+  auth: true
+
+data_requirements:
+  - resource: customers
+    needs: [id, name_kr, name_en, phone, email, passport_number, passport_expiry, remarks]
+    filters:
+      search: "?q"
+
+  - resource: bookings
+    needs: [id, pnr, departure_date, status, airline, route_from, route_to]
+    filters:
+      customer_id: ":id"
+
+components:
+  - id: customer_search
+    type: search-form
+    position: main
+    function: 이름/여권번호 검색
+    events:
+      - on: input
+        do: 실시간 고객 검색 (debounce 300ms)
+
+  - id: customer_table
+    type: table
+    position: main
+    function: 고객 목록 테이블
+    data_source:
+      resource: customers
+    events:
+      - on: click:row
+        do: 고객 상세 정보 + 예약 이력 표시
+      - on: click:add
+        do: 고객 추가 폼 표시
+
+  - id: customer_form
+    type: form
+    position: overlay
+    function: 고객 정보 입력/편집 모달
+    data_source:
+      resource: customers
+    events:
+      - on: submit
+        do: 고객 정보 저장 (신규/수정)
+
+  - id: booking_history
+    type: list
+    position: main
+    function: 해당 고객의 예약 이력 목록
+    data_source:
+      resource: bookings
+    events:
+      - on: click:item
+        do: /bookings로 이동 (해당 예약 하이라이트)
+
+connections:
+  navigations:
+    - from: booking_history
+      to: /bookings
+
+  shared_components:
+    - sidebar
+    - header
+    - toast
+    - modal
+
+tests:
+  - name: 고객 목록 로드
+    when: 고객 관리 페이지 접속
+    then:
+      - 고객 목록 테이블 표시
+
+  - name: 고객 검색
+    when: 검색창에 이름 입력
+    then:
+      - 해당 이름 포함 고객만 표시
+
+  - name: 고객 상세 + 예약 이력
+    when: 고객 행 클릭
+    then:
+      - 고객 상세 정보 표시
+      - 해당 고객 예약 이력 목록 표시
+
+  - name: 고객 추가
+    when: 고객 추가 버튼 클릭 후 폼 작성
+    then:
+      - 고객 정보 저장
+      - 테이블에 추가

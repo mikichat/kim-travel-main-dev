@@ -1,0 +1,92 @@
+version: "2.0"
+
+screen:
+  name: 달력
+  route: /calendar
+  layout: sidebar-main
+  auth: true
+
+data_requirements:
+  - resource: bookings
+    needs: [id, pnr, name_kr, nmtl_date, tl_date, departure_date, status]
+    filters:
+      month: "?month"
+      year: "?year"
+
+  - resource: bsp_dates
+    needs: [id, payment_date, description, is_notified]
+    filters:
+      month: "?month"
+      year: "?year"
+
+components:
+  - id: monthly_calendar
+    type: grid
+    position: main
+    function: FullCalendar 기반 월간 달력 (NMTL/TL/BSP/출발일 표시)
+    data_source:
+      resource: bookings
+    events:
+      - on: click:date
+        do: 해당 날짜 이벤트 목록 표시
+      - on: click:event
+        do: /bookings로 이동 (해당 예약 하이라이트)
+      - on: click:nav
+        do: 이전/다음 월 이동
+
+  - id: event_marker
+    type: card
+    position: main
+    function: 색상별 이벤트 마커 (빨강-NMTL/TL 마감, 노랑-3일 이내, 초록-완료, 파랑-BSP)
+
+  - id: event_list
+    type: list
+    position: main
+    function: 선택 날짜의 이벤트 목록 (사이드 패널)
+    data_source:
+      resource: bookings
+    events:
+      - on: click:item
+        do: /bookings로 이동 (해당 예약 하이라이트)
+
+  - id: calendar_filter
+    type: filter-form
+    position: main
+    function: 이벤트 유형 필터 (NMTL/TL/BSP/출발일)
+    events:
+      - on: click:filter
+        do: 선택한 유형만 달력에 표시
+
+connections:
+  navigations:
+    - from: monthly_calendar
+      to: /bookings
+    - from: event_list
+      to: /bookings
+
+  shared_components:
+    - sidebar
+    - header
+
+tests:
+  - name: 월간 달력 로드
+    when: 달력 페이지 접속
+    then:
+      - 현재 월 달력 표시
+      - NMTL/TL/BSP/출발일 이벤트 색상별 마커 표시
+
+  - name: 날짜 클릭
+    when: 이벤트가 있는 날짜 클릭
+    then:
+      - 해당 날짜 이벤트 목록 표시
+
+  - name: 이벤트 클릭 → 예약장부
+    when: 달력 이벤트 클릭
+    then:
+      - /bookings로 이동
+      - 해당 예약 하이라이트
+
+  - name: BSP 입금일 표시
+    when: BSP 입금일이 등록된 월
+    then:
+      - 파란색 마커로 BSP 입금일 표시

@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일정 수정 - 여행사</title>
+    <script src="js/tailwind.min.js"></script>
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="js/toast.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-card h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .group-name {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .schedule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .schedule-item {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: move;
+        }
+
+        .schedule-item:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .schedule-item.dragging {
+            opacity: 0.5;
+        }
+
+        .schedule-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .drag-handle {
+            cursor: grab;
+            color: #cbd5e0;
+            font-size: 1.5rem;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .schedule-info {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .info-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .date-badge {
+            background: #edf2f7;
+            color: #667eea;
+        }
+
+        .location-badge {
+            background: #fef5e7;
+            color: #d97706;
+        }
+
+        .schedule-fields {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field-group label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+        }
+
+        .field-group input,
+        .field-group textarea {
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .field-group input:focus,
+        .field-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .field-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .field-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #fc8181;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #f56565;
+        }
+
+        .btn-secondary {
+            background: #718096;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4a5568;
+        }
+
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #dd6b20;
+        }
+
+        .action-bar {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .selected-count {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: white;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .bulk-actions {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .schedule-fields {
+                grid-template-columns: 1fr;
+            }
+
+            .action-bar {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header-card">
+            <div>
+                <h1><i class="fas fa-edit"></i> 일정 수정</h1>
+                <p class="group-name" id="groupNameDisplay">로딩 중...</p>
+            </div>
+            <div class="bulk-actions">
+                <button type="button" class="btn btn-sm btn-warning" onclick="selectAll()">
+                    <i class="fas fa-check-double"></i> 전체 선택
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" onclick="deleteSelected()">
+                    <i class="fas fa-trash"></i> 선택 삭제
+                </button>
+            </div>
+        </div>
+
+        <!-- 로딩 -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>일정을 불러오는 중...</p>
+        </div>
+
+        <!-- 일정 목록 -->
+        <div id="scheduleList" class="schedule-list" style="display: none;">
+            <!-- 동적으로 추가됩니다 -->
+        </div>
+
+        <!-- 액션 바 -->
+        <div id="actionBar" class="action-bar" style="display: none;">
+            <div>
+                <span class="selected-count" id="selectedCount">0개 선택됨</span>
+            </div>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-success" onclick="saveChanges()">
+                    <i class="fas fa-save"></i> 변경사항 저장
+                </button>
+                <button type="button" class="btn btn-primary" onclick="previewLanding()">
+                    <i class="fas fa-eye"></i> 랜딩 페이지 미리보기
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='/select-group.html'">
+                    <i class="fas fa-arrow-left"></i> 그룹 선택으로 돌아가기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+        }
+
+        let groupName = '';
+        let schedules = [];
+        let sortable;
+
+        // URL에서 그룹명 가져오기
+        function getGroupNameFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('group');
+        }
+
+        // 페이지 로드 시
+        document.addEventListener('DOMContentLoaded', function() {
+            groupName = getGroupNameFromURL();
+
+            if (!groupName) {
+                showToast('그룹명이 지정되지 않았습니다.', 'warning');
+                window.location.href = '/select-group.html';
+                return;
+            }
+
+            document.getElementById('groupNameDisplay').innerHTML =
+                `<i class="fas fa-users"></i> ${escapeHtml(groupName)}`;
+
+            loadSchedules();
+        });
+
+        async function loadSchedules() {
+            try {
+                const url = `/api/schedules?group=${encodeURIComponent(groupName)}`;
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error('일정을 불러오는데 실패했습니다.');
+                }
+
+                schedules = await response.json();
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (schedules.length === 0) {
+                    showToast('해당 그룹의 일정이 없습니다.', 'warning');
+                    window.location.href = '/select-group.html';
+                    return;
+                }
+
+                document.getElementById('scheduleList').style.display = 'flex';
+                document.getElementById('actionBar').style.display = 'flex';
+
+                renderScheduleList();
+                initializeSortable();
+
+            } catch (error) {
+                console.error('일정 로드 오류:', error);
+                showToast(`오류: ${error.message}`, 'error');
+                window.location.href = '/select-group.html';
+            }
+        }
+
+        function renderScheduleList() {
+            const listContainer = document.getElementById('scheduleList');
+            listContainer.innerHTML = '';
+
+            schedules.forEach((schedule, index) => {
+                const item = createScheduleItem(schedule, index);
+                listContainer.appendChild(item);
+            });
+
+            updateSelectedCount();
+        }
+
+        function createScheduleItem(schedule, index) {
+            const div = document.createElement('div');
+            div.className = 'schedule-item';
+            div.dataset.scheduleId = schedule.id;
+            div.dataset.index = index;
+
+            div.innerHTML = `
+                <div class="schedule-header">
+                    <i class="fas fa-grip-vertical drag-handle"></i>
+                    <div class="checkbox-container">
+                        <input type="checkbox" onchange="updateSelectedCount()">
+                    </div>
+                    <div class="schedule-info">
+                        <span class="info-badge date-badge">
+                            <i class="fas fa-calendar"></i> ${formatDate(schedule.event_date)}
+                        </span>
+                        <span class="info-badge location-badge">
+                            <i class="fas fa-map-marker-alt"></i> ${schedule.location || '위치 미정'}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="schedule-fields">
+                    <div class="field-group">
+                        <label><i class="fas fa-calendar"></i> 일자</label>
+                        <input type="date" value="${schedule.event_date}"
+                               onchange="updateScheduleField(${schedule.id}, 'event_date', this.value)" aria-label="일자">
+                    </div>
+                    <div class="field-group">
+                        <label><i class="fas fa-map-marker-alt"></i> 지역</label>
+                        <input type="text" value="${schedule.location || ''}"
+                               onchange="updateScheduleField(${schedule.id}, 'location', this.value)" aria-label="지역">
+                    </div>
+                    <div class="field-group">
+                        <label><i class="fas fa-bus"></i> 교통편</label>
+                        <input type="text" value="${schedule.transport || schedule.transportation || ''}"
+                               onchange="updateScheduleField(${schedule.id}, 'transport', this.value)" aria-label="교통편">
+                    </div>
+                    <div class="field-group">
+                        <label><i class="fas fa-clock"></i> 시간</label>
+                        <input type="text" value="${schedule.time || ''}"
+                               onchange="updateScheduleField(${schedule.id}, 'time', this.value)"
+                               placeholder="예: 09:00" aria-label="시간">
+                    </div>
+                    <div class="field-group full-width">
+                        <label><i class="fas fa-list"></i> 세부일정</label>
+                        <textarea onchange="updateScheduleField(${schedule.id}, 'schedule', this.value)" aria-label="세부일정">${schedule.schedule || schedule.itinerary || ''}</textarea>
+                    </div>
+                    <div class="field-group">
+                        <label><i class="fas fa-utensils"></i> 식사</label>
+                        <input type="text" value="${schedule.meals || schedule.meal || ''}"
+                               onchange="updateScheduleField(${schedule.id}, 'meals', this.value)"
+                               placeholder="예: 조식, 중식" aria-label="식사">
+                    </div>
+                </div>
+
+                <div class="item-actions">
+                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteScheduleItem(${schedule.id})">
+                        <i class="fas fa-trash"></i> 삭제
+                    </button>
+                </div>
+            `;
+
+            return div;
+        }
+
+        function initializeSortable() {
+            const listContainer = document.getElementById('scheduleList');
+
+            sortable = new Sortable(listContainer, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'dragging',
+                onEnd: function(evt) {
+                    // 순서 변경 시 배열 업데이트
+                    const oldIndex = evt.oldIndex;
+                    const newIndex = evt.newIndex;
+
+                    const movedItem = schedules.splice(oldIndex, 1)[0];
+                    schedules.splice(newIndex, 0, movedItem);
+
+                }
+            });
+        }
+
+        function updateScheduleField(scheduleId, field, value) {
+            const schedule = schedules.find(s => s.id === scheduleId);
+            if (schedule) {
+                schedule[field] = value;
+            }
+        }
+
+        async function deleteScheduleItem(scheduleId) {
+            if (!await showConfirmModal('일정 삭제', '이 일정을 삭제하시겠습니까?', { danger: true })) {
+                return;
+            }
+
+            schedules = schedules.filter(s => s.id !== scheduleId);
+            renderScheduleList();
+            initializeSortable();
+
+            // 서버에서도 삭제
+            fetch(`/api/schedules/${scheduleId}`, {
+                method: 'DELETE'
+            }).catch(error => {
+                console.error('삭제 오류:', error);
+            });
+        }
+
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('.schedule-item input[type="checkbox"]');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+
+            checkboxes.forEach(cb => {
+                cb.checked = !allChecked;
+            });
+
+            updateSelectedCount();
+        }
+
+        async function deleteSelected() {
+            const checkboxes = document.querySelectorAll('.schedule-item input[type="checkbox"]:checked');
+
+            if (checkboxes.length === 0) {
+                showToast('삭제할 일정을 선택해주세요.', 'warning');
+                return;
+            }
+
+            if (!await showConfirmModal('일정 삭제', `선택한 ${checkboxes.length}개의 일정을 삭제하시겠습니까?`, { danger: true })) {
+                return;
+            }
+
+            const idsToDelete = [];
+            checkboxes.forEach(cb => {
+                const item = cb.closest('.schedule-item');
+                const scheduleId = parseInt(item.dataset.scheduleId);
+                idsToDelete.push(scheduleId);
+            });
+
+            // 배열에서 제거
+            schedules = schedules.filter(s => !idsToDelete.includes(s.id));
+            renderScheduleList();
+            initializeSortable();
+
+            // 서버에서도 삭제
+            idsToDelete.forEach(id => {
+                fetch(`/api/schedules/${id}`, {
+                    method: 'DELETE'
+                }).catch(error => {
+                    console.error('삭제 오류:', error);
+                });
+            });
+        }
+
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('.schedule-item input[type="checkbox"]:checked');
+            document.getElementById('selectedCount').textContent = `${checkboxes.length}개 선택됨`;
+        }
+
+        async function saveChanges() {
+            if (!await showConfirmModal('변경사항 저장', '변경사항을 저장하시겠습니까?')) {
+                return;
+            }
+
+            try {
+                // 각 일정 업데이트
+                const promises = schedules.map(schedule =>
+                    fetch(`/api/schedules/${schedule.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            group_name: schedule.group_name,
+                            event_date: schedule.event_date,
+                            location: schedule.location,
+                            transport: schedule.transport || schedule.transportation,
+                            time: schedule.time,
+                            schedule: schedule.schedule || schedule.itinerary,
+                            meals: schedule.meals || schedule.meal
+                        })
+                    })
+                );
+
+                await Promise.all(promises);
+
+                showToast('변경사항이 저장되었습니다.', 'success');
+
+                // 랜딩 페이지로 이동
+                if (await showConfirmModal('저장 완료', '랜딩 페이지를 확인하시겠습니까?')) {
+                    previewLanding();
+                }
+
+            } catch (error) {
+                console.error('저장 오류:', error);
+                showToast('저장 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        function previewLanding() {
+            const url = `/landing.html?group=${encodeURIComponent(groupName)}`;
+            window.open(url, '_blank');
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+    </script>
+</body>
+</html>

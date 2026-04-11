@@ -1,0 +1,106 @@
+# 항공 예약 관리 시스템 - 도메인 리소스 정의
+version: "1.0"
+
+resources:
+  users:
+    fields:
+      id: { type: integer, pk: true }
+      email: { type: string, unique: true }
+      password_hash: { type: string }
+      name: { type: string }
+      role: { type: string, enum: [admin, staff] }
+      created_at: { type: datetime }
+
+  bookings:
+    fields:
+      id: { type: integer, pk: true }
+      user_id: { type: integer, fk: users.id }
+      customer_id: { type: integer, fk: customers.id }
+      pnr: { type: string }
+      airline: { type: string }
+      flight_number: { type: string }
+      route_from: { type: string }
+      route_to: { type: string }
+      name_kr: { type: string }
+      name_en: { type: string }
+      passport_number: { type: string }
+      seat_number: { type: string }
+      fare: { type: number }
+      nmtl_date: { type: date }
+      tl_date: { type: date }
+      departure_date: { type: date }
+      status: { type: string, enum: [pending, confirmed, ticketed, cancelled] }
+      remarks: { type: text }
+      created_at: { type: datetime }
+      updated_at: { type: datetime }
+
+  customers:
+    fields:
+      id: { type: integer, pk: true }
+      name_kr: { type: string }
+      name_en: { type: string }
+      phone: { type: string }
+      email: { type: string }
+      passport_number: { type: string }
+      passport_expiry: { type: date }
+      remarks: { type: text }
+      created_at: { type: datetime }
+
+  booking_history:
+    fields:
+      id: { type: integer, pk: true }
+      booking_id: { type: integer, fk: bookings.id }
+      field_changed: { type: string }
+      old_value: { type: string }
+      new_value: { type: string }
+      changed_by: { type: integer, fk: users.id }
+      changed_at: { type: datetime }
+
+  settlements:
+    fields:
+      id: { type: integer, pk: true }
+      booking_id: { type: integer, fk: bookings.id }
+      vendor_id: { type: integer, fk: vendors.id, nullable: true }
+      payment_type: { type: string, enum: [cash, card, transfer] }
+      amount: { type: number }
+      status: { type: string, enum: [unpaid, paid, partial] }
+      payment_date: { type: date }
+      remarks: { type: text }
+      created_at: { type: datetime }
+
+  invoices:
+    fields:
+      id: { type: integer, pk: true }
+      settlement_id: { type: integer, fk: settlements.id }
+      invoice_number: { type: string, unique: true }
+      issue_date: { type: date }
+      total_amount: { type: number }
+      items_json: { type: text }
+      created_at: { type: datetime }
+
+  vendors:
+    fields:
+      id: { type: integer, pk: true }
+      name: { type: string }
+      type: { type: string, enum: [travel_agency, airline] }
+      contact_name: { type: string }
+      phone: { type: string }
+      email: { type: string }
+      remarks: { type: text }
+      created_at: { type: datetime }
+
+  bsp_dates:
+    fields:
+      id: { type: integer, pk: true }
+      payment_date: { type: date }
+      description: { type: string }
+      is_notified: { type: boolean }
+      created_at: { type: datetime }
+
+  alert_settings:
+    fields:
+      id: { type: integer, pk: true }
+      user_id: { type: integer, fk: users.id }
+      hours_before: { type: integer }
+      alert_type: { type: string }
+      enabled: { type: boolean }

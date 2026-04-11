@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Package manager
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# IDE
+.idea/
+.vscode/
+
+# Husky
+.husky/
+
+# Legacy code (exclude from formatting)
+backend/
+frontend/
+
+# Generated files
+*.min.js
+*.min.css
+
+# Environment files
+.env
+.env.*
+
+# Prisma
+prisma/migrations/
+
+# HTML files (legacy)
+*.html
+
+# Other
+*.log
+.DS_Store

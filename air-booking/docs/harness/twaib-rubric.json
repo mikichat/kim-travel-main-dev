@@ -1,0 +1,67 @@
+{
+  "project_type": "webapp-internal-tool",
+  "pass_threshold": 7,
+  "criteria": [
+    {
+      "name": "Design & UI",
+      "weight": 0.30,
+      "threshold": 7,
+      "description": "40대+ 고객 친화 디자인, 고급스러운 톤",
+      "checklist": [
+        "아이보리/네이비/골드 컬러 팔레트 일관성",
+        "본문 16px+, 제목 24px+ 큰 글씨",
+        "높은 대비 (진한 차콜 텍스트 + 밝은 배경)",
+        "넉넉한 여백 (카드 간격, 패딩)",
+        "No-Icon 텍스트 중심 디자인",
+        "히어로 섹션 배경 이미지 표시",
+        "카드 레이아웃 깔끔함",
+        "모바일 최적화 (400px 폭에서도 가독성)",
+        "여행세상 브랜딩 푸터"
+      ]
+    },
+    {
+      "name": "Functionality",
+      "weight": 0.35,
+      "threshold": 7,
+      "description": "핵심 기능 동작 여부",
+      "checklist": [
+        "Gemini API 호출 → JSON 응답 수신",
+        "항공편 불러오기 → 모달 → 선택 → 자동 채움",
+        "출발 장소/시간/경비 직접 입력",
+        "AI 생성 결과 미리보기 렌더링",
+        "안내문 이미지 복사 (html2canvas → 클립보드)",
+        "섹션 토글 On/Off → 미리보기 즉시 반영",
+        "인라인 편집 (텍스트 클릭 → 수정)",
+        "안내문 저장/불러오기",
+        "API 에러 시 사용자 피드백"
+      ]
+    },
+    {
+      "name": "AI Quality",
+      "weight": 0.20,
+      "threshold": 7,
+      "description": "AI 생성 콘텐츠 품질 — 환각 방지, 간결성",
+      "checklist": [
+        "날씨: 해당 월 평균 기온 범위만",
+        "준비물: 검증된 고정 목록에서 선택",
+        "환율: '대략적 환산' 명시",
+        "각 섹션 3~5줄 이내",
+        "불확실한 정보 생략",
+        "40대+ 대상 따뜻하고 전문적인 톤"
+      ]
+    },
+    {
+      "name": "Integration",
+      "weight": 0.15,
+      "threshold": 6,
+      "description": "기존 air-booking 시스템과의 통합",
+      "checklist": [
+        "PnrConverter 안내문 탭에 정상 통합",
+        "기존 탭(변환기/저장된 항공편/버스예약) 영향 없음",
+        "flight_schedules API 정상 호출",
+        "travel_guides 테이블 정상 동작",
+        "콘솔 에러 0개"
+      ]
+    }
+  ]
+}

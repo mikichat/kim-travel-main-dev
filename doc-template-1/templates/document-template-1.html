@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>문서 템플릿 1</title>
+    <link rel="stylesheet" href="../styles/screen.css">
+    <link rel="stylesheet" href="../styles/print.css" media="print">
+    <script src="../../js/toast.js"></script>
+    <script src="../data-loader/data-loader-1.js"></script>
+</head>
+<body>
+    <div class="page">
+        <!-- Top Border Decoration -->
+        <div class="page-border-top"></div>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <!-- Header Section -->
+            <header class="header">
+                <div class="header-logo">
+                    <img src="" alt="로고" class="logo-image" data-field="logo_path">
+                </div>
+                <div class="header-info">
+                    <p class="contact-info" data-field="contact_info">담당자: </p>
+                </div>
+            </header>
+
+            <!-- Title Section -->
+            <section class="title-section">
+                <h1 class="document-title" data-field="doc_title">문서 제목</h1>
+                <div class="title-underline"></div>
+            </section>
+
+            <!-- Main Info Table -->
+            <section class="main-info-section">
+                <table class="info-table">
+                    <tbody>
+                        <tr>
+                            <th class="table-header">단체명</th>
+                            <td class="table-data" data-field="group_name"></td>
+                        </tr>
+                        <tr>
+                            <th class="table-header">일 자</th>
+                            <td class="table-data" data-field="travel_dates"></td>
+                        </tr>
+                        <tr>
+                            <th class="table-header">여행지</th>
+                            <td class="table-data" data-field="destination"></td>
+                        </tr>
+                        <tr>
+                            <th class="table-header">1인 여행요금</th>
+                            <td class="table-data">
+                                <div class="price-box">
+                                    <div class="price-grid">
+                                        <div class="price-airline" data-field="airline_name">항공사</div>
+                                        <div class="price-schedule">
+                                            <p data-field="departure_flight"></p>
+                                            <p data-field="return_flight"></p>
+                                        </div>
+                                        <div class="price-option" data-field="option_type">옵션</div>
+                                        <div class="price-amount" data-field="price_amount">0원</div>
+                                    </div>
+                                    <div class="price-note">
+                                        <p data-field="price_note">※ 상기 요금은 1인 기준이며 항공 및 세금 변동 시 재확인 필요</p>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Conditions Section -->
+            <section class="conditions-section">
+                <div class="conditions-header">
+                    <h2 class="conditions-title" data-field="conditions_title">여 행 조 건</h2>
+                </div>
+                <table class="conditions-table">
+                    <tbody>
+                        <tr>
+                            <th class="condition-header">항공료</th>
+                            <td class="condition-content" data-field="airfare_included"></td>
+                            <td class="condition-note" data-field="airfare_note"></td>
+                        </tr>
+                        <tr>
+                            <th class="condition-header">숙 박</th>
+                            <td class="condition-content" data-field="accommodation_included"></td>
+                            <td class="condition-note" data-field="accommodation_note"></td>
+                        </tr>
+                        <tr>
+                            <th class="condition-header">식 사</th>
+                            <td class="condition-content" data-field="meals_included"></td>
+                            <td class="condition-note" data-field="meals_note"></td>
+                        </tr>
+                        <tr>
+                            <th class="condition-header">교통편</th>
+                            <td class="condition-content" data-field="transport_included"></td>
+                            <td class="condition-note" data-field="transport_note"></td>
+                        </tr>
+                        <tr>
+                            <th class="condition-header">관광지</th>
+                            <td class="condition-content" data-field="attractions_included"></td>
+                            <td class="condition-note" data-field="attractions_note"></td>
+                        </tr>
+                        <tr>
+                            <th class="condition-header">가이드</th>
+                            <td class="condition-content" data-field="guide_included"></td>
+                            <td class="condition-note" data-field="guide_note"></td>
+                        </tr>
+                        <tr>
+                            <th class="condition-header">여행자 보험</th>
+                            <td class="condition-content" data-field="insurance_included"></td>
+                            <td class="condition-note" data-field="insurance_note"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Itinerary Schedule Section -->
+            <section class="itinerary-section">
+                <div class="itinerary-header">
+                    <h2 class="itinerary-title">여 행 일 정</h2>
+                </div>
+
+                <!-- Day 1 -->
+                <div class="itinerary-day">
+                    <div class="day-header">
+                        <h3 class="day-number">DAY 1</h3>
+                        <p class="day-date" data-field="day1_date">11월 14일 (목)</p>
+                    </div>
+                    <div class="day-content">
+                        <div class="day-images">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hd3.png" alt="Day 1 Image 1" class="itinerary-image">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hd4.png" alt="Day 1 Image 2" class="itinerary-image">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hd5.png" alt="Day 1 Image 3" class="itinerary-image">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Day 2 -->
+                <div class="itinerary-day">
+                    <div class="day-header">
+                        <h3 class="day-number">DAY 2</h3>
+                        <p class="day-date" data-field="day2_date">11월 15일 (금)</p>
+                    </div>
+                    <div class="day-content">
+                        <div class="day-images">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hd6.png" alt="Day 2 Image 1" class="itinerary-image">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hd7.png" alt="Day 2 Image 2" class="itinerary-image">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hd8.png" alt="Day 2 Image 3" class="itinerary-image">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Day 3 -->
+                <div class="itinerary-day">
+                    <div class="day-header">
+                        <h3 class="day-number">DAY 3</h3>
+                        <p class="day-date" data-field="day3_date">11월 16일 (토)</p>
+                    </div>
+                    <div class="day-content">
+                        <div class="day-images">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hd9.png" alt="Day 3 Image 1" class="itinerary-image">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hda.png" alt="Day 3 Image 2" class="itinerary-image">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hdb.png" alt="Day 3 Image 3" class="itinerary-image">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Day 4 -->
+                <div class="itinerary-day">
+                    <div class="day-header">
+                        <h3 class="day-number">DAY 4</h3>
+                        <p class="day-date" data-field="day4_date">11월 17일 (일)</p>
+                    </div>
+                    <div class="day-content">
+                        <div class="day-images">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hdc.png" alt="Day 4 Image 1" class="itinerary-image">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hdd.png" alt="Day 4 Image 2" class="itinerary-image">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hde.png" alt="Day 4 Image 3" class="itinerary-image">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Day 5 -->
+                <div class="itinerary-day">
+                    <div class="day-header">
+                        <h3 class="day-number">DAY 5</h3>
+                        <p class="day-date" data-field="day5_date">11월 18일 (월)</p>
+                    </div>
+                    <div class="day-content">
+                        <div class="day-images">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hdf.png" alt="Day 5 Image 1" class="itinerary-image">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hd10.png" alt="Day 5 Image 2" class="itinerary-image">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hd11.png" alt="Day 5 Image 3" class="itinerary-image">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Info -->
+                <div class="itinerary-day">
+                    <div class="day-header">
+                        <h3 class="day-number">추가 정보</h3>
+                    </div>
+                    <div class="day-content">
+                        <div class="day-images">
+                            <img src="../assets/images/25년11월중순 광저우 망산-1_hd12.png" alt="Additional Info" class="itinerary-image">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Footer Section -->
+            <footer class="footer">
+                <div class="footer-logo">
+                    <img src="../assets/images/25년11월중순 광저우 망산-1_hd2.png" alt="하단 로고" class="footer-logo-image">
+                </div>
+                <p class="footer-note" data-field="footer_note"></p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Initialize Document with Sample Data -->
+    <script>
+        // DOMContentLoaded 후 문서 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            // 샘플 데이터 사용 모드로 초기화
+            initializeDocument({
+                useSampleData: true,  // false로 변경 시 API 사용
+                docId: 'doc_001',
+                apiBaseUrl: '/api'
+            });
+        });
+    </script>
+</body>
+</html>

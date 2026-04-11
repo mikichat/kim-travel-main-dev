@@ -1,0 +1,141 @@
+{
+  "id": "d86f74ca-471e-49c1-9f62-710f3236fc96",
+  "user_id": 55,
+  "customer_id": null,
+  "pnr": "ENRLIY",
+  "airline": "KE",
+  "flight_number": "KE115 / KE116",
+  "route_from": "ICN",
+  "route_to": "ICN",
+  "name_kr": null,
+  "name_en": "OH/YOUNGSUN",
+  "passport_number": null,
+  "seat_number": null,
+  "fare": null,
+  "nmtl_date": null,
+  "tl_date": null,
+  "departure_date": "2026-07-30",
+  "return_date": "2026-08-02",
+  "status": "confirmed",
+  "remarks": null,
+  "pax_count": 8,
+  "agency": "여행세상 ",
+  "created_at": "2026-03-25 16:03:14",
+  "updated_at": "2026-03-25 07:17:10",
+  "passengers": [
+    {
+      "id": "838cc54d-380e-4ef2-b3d9-5f67e015c49e",
+      "booking_id": "d86f74ca-471e-49c1-9f62-710f3236fc96",
+      "name_en": "OH/YOUNGSUN",
+      "name_kr": null,
+      "title": "MS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-25 16:03:14"
+    },
+    {
+      "id": "ae19aa59-148a-4b14-ac2e-561d81d1ef33",
+      "booking_id": "d86f74ca-471e-49c1-9f62-710f3236fc96",
+      "name_en": "CHOI/SUNGSHIK",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-25 16:03:14"
+    },
+    {
+      "id": "4a973d77-70b3-4203-8602-241adfec7432",
+      "booking_id": "d86f74ca-471e-49c1-9f62-710f3236fc96",
+      "name_en": "HAHN/SUKYOUN",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-25 16:03:14"
+    },
+    {
+      "id": "cc41d655-d4ac-4cf2-8463-f1846fb9edf6",
+      "booking_id": "d86f74ca-471e-49c1-9f62-710f3236fc96",
+      "name_en": "CHO/NAMSOOK",
+      "name_kr": null,
+      "title": "MS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-25 16:03:14"
+    },
+    {
+      "id": "fa6ca176-9cad-40aa-a0bd-bb9441c5fa19",
+      "booking_id": "d86f74ca-471e-49c1-9f62-710f3236fc96",
+      "name_en": "YOU/JAEPIL",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-25 16:03:14"
+    },
+    {
+      "id": "efb66751-44d9-450b-aee4-33b26ef77ee4",
+      "booking_id": "d86f74ca-471e-49c1-9f62-710f3236fc96",
+      "name_en": "LEE/HWAJA",
+      "name_kr": null,
+      "title": "MS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-25 16:03:14"
+    },
+    {
+      "id": "5ccf51f2-27ee-44d4-b5c1-39d5b8dac245",
+      "booking_id": "d86f74ca-471e-49c1-9f62-710f3236fc96",
+      "name_en": "AN/DEOKHEON",
+      "name_kr": null,
+      "title": "MR",
+      "gender": "M",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-25 16:03:14"
+    },
+    {
+      "id": "efa2f635-e4f4-4af9-9e08-9275bffb318f",
+      "booking_id": "d86f74ca-471e-49c1-9f62-710f3236fc96",
+      "name_en": "BAEK/GWIRYE",
+      "name_kr": null,
+      "title": "MS",
+      "gender": "F",
+      "passport_number": null,
+      "seat_number": null,
+      "created_at": "2026-03-25 16:03:14"
+    }
+  ],
+  "segments": [
+    {
+      "id": "daf3165e-7ab9-4371-ad12-798933707269",
+      "booking_id": "d86f74ca-471e-49c1-9f62-710f3236fc96",
+      "seg_index": 0,
+      "airline": "KE",
+      "flight_number": "KE115",
+      "route_from": "ICN",
+      "route_to": "YNJ",
+      "departure_date": "2026-07-30",
+      "departure_time": null,
+      "arrival_time": null
+    },
+    {
+      "id": "9119cf1b-ffaa-4985-a36b-30557632e0ce",
+      "booking_id": "d86f74ca-471e-49c1-9f62-710f3236fc96",
+      "seg_index": 1,
+      "airline": "KE",
+      "flight_number": "KE116",
+      "route_from": "YNJ",
+      "route_to": "ICN",
+      "departure_date": "2026-08-02",
+      "departure_time": null,
+      "arrival_time": null
+    }
+  ]
+}

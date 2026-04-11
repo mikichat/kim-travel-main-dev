@@ -1,0 +1,93 @@
+version: "2.0"
+
+screen:
+  name: 설정
+  route: /settings
+  layout: sidebar-main
+  auth: true
+  roles: [admin, staff]
+
+data_requirements:
+  - resource: bsp_dates
+    needs: [id, payment_date, description, is_notified]
+
+  - resource: alert_settings
+    needs: [id, hours_before, alert_type, enabled]
+    auth_required: true
+
+  - resource: users
+    needs: [id, name, email]
+    auth_required: true
+
+components:
+  - id: bsp_date_manager
+    type: form
+    position: main
+    function: BSP 입금일 등록/삭제 관리
+    data_source:
+      resource: bsp_dates
+    events:
+      - on: submit
+        do: BSP 입금일 추가
+      - on: click:delete
+        do: BSP 입금일 삭제 (확인 모달)
+
+  - id: alert_settings
+    type: form
+    position: main
+    function: 알림 시간 설정 (24시간 전/12시간 전 등)
+    data_source:
+      resource: alert_settings
+    events:
+      - on: change
+        do: 알림 설정 저장
+
+  - id: account_settings
+    type: form
+    position: main
+    function: 비밀번호 변경
+    data_source:
+      resource: users
+    events:
+      - on: submit
+        do: 비밀번호 변경 API 호출
+
+  - id: ui_settings
+    type: form
+    position: main
+    function: UI 설정 (큰 글씨 모드, 다크모드 토글)
+    events:
+      - on: toggle:font_size
+        do: 본문 16px ↔ 18px 전환, localStorage 저장
+      - on: toggle:dark_mode
+        do: 다크모드 전환, localStorage 저장
+
+connections:
+  shared_components:
+    - sidebar
+    - header
+    - toast
+    - modal
+
+tests:
+  - name: BSP 입금일 등록
+    when: BSP 입금일 날짜 입력 후 저장
+    then:
+      - BSP 입금일 목록에 추가
+      - 달력에 파란색 마커 반영
+
+  - name: 알림 설정 변경
+    when: 알림 시간을 24시간 전으로 변경
+    then:
+      - 설정 저장 완료 토스트 표시
+
+  - name: 다크모드 토글
+    when: 다크모드 토글 클릭
+    then:
+      - 전체 UI 다크모드 전환
+      - 새로고침 후에도 유지
+
+  - name: 큰 글씨 모드
+    when: 큰 글씨 모드 토글 클릭
+    then:
+      - 본문 폰트 16px → 18px 전환

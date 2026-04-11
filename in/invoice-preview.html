@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인보이스 미리보기</title>
+    <base href="/in/">
+    <script src="/js/toast.js"></script>
+    <!-- PDF/이미지 저장 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 40px;
+            background-color: #f5f5f5;
+        }
+
+        .invoice-preview {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+        }
+
+        .logo-placeholder {
+            width: 288px;
+            height: 86px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .logo-placeholder img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .invoice-title {
+            font-size: 36px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .invoice-info {
+            margin-bottom: 30px;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .info-label {
+            width: 80px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .info-value {
+            flex: 1;
+            color: #111827;
+        }
+
+        .flight-schedule {
+            margin: 21px 0;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 14px;
+        }
+
+        .flight-schedule h3 {
+            font-size: 11px;
+            margin-bottom: 11px;
+            color: #111827;
+        }
+
+        .flight-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 7px;
+            font-size: 11px;
+        }
+
+        .flight-table th,
+        .flight-table td {
+            padding: 7px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .flight-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+            font-size: 10px;
+        }
+
+        .flight-table th:nth-child(1),
+        .flight-table td:nth-child(1) {
+            width: 8%;
+        }
+
+        .flight-table th:nth-child(2),
+        .flight-table td:nth-child(2) {
+            width: 15%;
+        }
+
+        .flight-table th:nth-child(3),
+        .flight-table td:nth-child(3) {
+            width: 20%;
+        }
+
+        .flight-table th:nth-child(4),
+        .flight-table td:nth-child(4) {
+            width: 12%;
+        }
+
+        .flight-table th:nth-child(5),
+        .flight-table td:nth-child(5) {
+            width: 20%;
+        }
+
+        .flight-table th:nth-child(6),
+        .flight-table td:nth-child(6) {
+            width: 12%;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+
+        .items-table th,
+        .items-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+
+        .items-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .items-table td:last-child {
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .total-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #111827;
+            text-align: right;
+        }
+
+        .total-label {
+            font-size: 18px;
+            font-weight: 600;
+            margin-right: 20px;
+            color: #111827;
+        }
+
+        .total-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563EB;
+        }
+
+        .bank-info {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f9fafb;
+            border-radius: 4px;
+        }
+
+        .bank-info h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #111827;
+        }
+
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 2px solid #333;
+            color: #1e293b;
+        }
+
+        .footer-top {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 40px;
+            gap: 20px;
+        }
+
+        .rep-info-group {
+            text-align: center;
+        }
+
+        .rep-company-name {
+            font-size: 26px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .rep-title-name {
+            font-size: 22px;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .seal-img-v3 {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+        }
+
+        .footer-bottom-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #f8fafc;
+            padding: 20px 30px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .footer-symbol-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .footer-symbol-img {
+            width: 48px;
+            height: auto;
+        }
+
+        .symbol-brand-text {
+            line-height: 1.2;
+        }
+
+        .symbol-brand-text .ko {
+            font-size: 16px;
+            font-weight: 800;
+            color: #0c618d;
+        }
+
+        .symbol-brand-text .en {
+            font-size: 10px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .footer-contact-info {
+            text-align: right;
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .footer-contact-info strong {
+            color: #334155;
+        }
+
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+
+            .invoice-preview {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            .download-buttons {
+                display: none !important;
+            }
+        }
+
+        /* 다운로드 버튼 스타일 */
+        .download-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .download-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-pdf {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-image {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .btn-print {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 다운로드 버튼 -->
+    <div class="download-buttons">
+        <button type="button" class="download-btn btn-pdf" onclick="downloadPDF()" id="pdf-btn">
+            📄 PDF 다운로드
+        </button>
+        <button type="button" class="download-btn btn-image" onclick="downloadImage()" id="image-btn">
+            🖼️ 이미지 저장
+        </button>
+        <button type="button" class="download-btn btn-print" onclick="window.print()">
+            🖨️ 인쇄
+        </button>
+    </div>
+
+    <div class="invoice-preview" id="invoice-capture-area">
+        <div class="invoice-header">
+            <div class="logo-placeholder">
+                <img src="이미지/브랜드.jpg" alt="로고" id="logo-img"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div
+                    style="display:none; width:240px; height:72px; background-color:#e5e7eb; border:1px dashed #9ca3af; line-height:72px; color:#6b7280; font-size:12px;">
+                    로고</div>
+            </div>
+            <div class="invoice-title">INVOICE</div>
+        </div>
+
+        <div class="invoice-info">
+            <div class="info-row">
+                <span class="info-label">수신:</span>
+                <span class="info-value" id="preview-recipient">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">송신:</span>
+                <span class="info-value">여행세상</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">일자:</span>
+                <span class="info-value" id="preview-date">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">내역:</span>
+                <span class="info-value" id="preview-description">-</span>
+            </div>
+        </div>
+
+        <div id="flight-schedule-section" class="flight-schedule" style="display: none;">
+            <h3>항공 스케줄</h3>
+            <table class="flight-table">
+                <thead>
+                    <tr>
+                        <th>구분</th>
+                        <th>날짜</th>
+                        <th>출발공항</th>
+                        <th>출발시간</th>
+                        <th>도착공항</th>
+                        <th>도착시간</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 동적으로 항목이 추가됨 -->
+                </tbody>
+            </table>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>항목</th>
+                    <th>1인 여행경비</th>
+                    <th>인원수</th>
+                    <th style="text-align: center;">합계</th>
+                </tr>
+            </thead>
+            <tbody id="preview-items-tbody">
+                <!-- 동적으로 항목이 추가됨 -->
+            </tbody>
+        </table>
+
+        <div class="total-section">
+            <span class="total-label">TOTAL:</span>
+            <span class="total-amount" id="preview-total">₩ 0</span>
+        </div>
+
+        <div id="bank-info-section" class="bank-info" style="display: none;">
+            <h3>입금 정보</h3>
+            <div class="info-row">
+                <span class="info-label">은행:</span>
+                <span class="info-value" id="preview-bank-name">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">계좌번호:</span>
+                <span class="info-value" id="preview-account-number">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">예금주:</span>
+                <span class="info-value" id="preview-account-holder">-</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-top">
+                <div class="rep-info-group">
+                    <div class="rep-company-name">(유) 여행세상</div>
+                    <div class="rep-title-name">대표이사 김국진</div>
+                </div>
+                <img src="이미지/사용인감2.jpg" alt="도장" class="seal-img-v3" onerror="this.style.display='none';">
+            </div>
+
+            <div class="footer-bottom-bar">
+                <div class="footer-symbol-group">
+                    <img src="이미지/심볼1.jpg" alt="심볼" class="footer-symbol-img" onerror="this.style.display='none';">
+                    <div class="symbol-brand-text">
+                        <div class="ko">여행세상</div>
+                        <div class="en">TRAVEL WORLD</div>
+                    </div>
+                </div>
+                <div class="footer-contact-info">
+                    <div>(560-170) <strong>전주시 완산구 서신동 856-1번지</strong></div>
+                    <div>Tel: <strong>063)271-9090</strong> | Fax: <strong>063)271-9030</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+        }
+
+        // URL 파라미터에서 데이터 가져오기
+        const urlParams = new URLSearchParams(window.location.search);
+        let data = {};
+
+        try {
+            // previewId가 있으면 sessionStorage에서 가져오기
+            const previewId = urlParams.get('previewId');
+            if (previewId) {
+                const storedData = sessionStorage.getItem(previewId);
+                if (storedData) {
+                    data = JSON.parse(storedData);
+                    // 사용 후 삭제
+                    sessionStorage.removeItem(previewId);
+                } else {
+                    console.error('미리보기 데이터를 찾을 수 없습니다. previewId:', previewId);
+                }
+            } else {
+                // 기존 방식: URL 파라미터에서 직접 가져오기
+                const dataParam = urlParams.get('data');
+                if (dataParam) {
+                    data = JSON.parse(decodeURIComponent(dataParam));
+                } else {
+                    console.warn('데이터 파라미터가 없습니다.');
+                }
+            }
+        } catch (error) {
+            console.error('데이터 로드 오류:', error);
+            showToast('미리보기 데이터를 불러올 수 없습니다: ' + error.message, 'error');
+        }
+
+        // 데이터 표시
+        document.getElementById('preview-recipient').textContent = data.recipient || '-';
+        document.getElementById('preview-date').textContent = formatDate(data.invoice_date) || '-';
+        document.getElementById('preview-description').textContent = data.description || '-';
+
+        // 항공 스케줄 정보 (모든 구간 표시)
+        if (data.flight_schedule) {
+            document.getElementById('flight-schedule-section').style.display = 'block';
+            const tbody = document.querySelector('#flight-schedule-section tbody');
+            tbody.innerHTML = '';
+
+            // 모든 구간이 있는 경우
+            if (data.flight_schedule.all_segments && data.flight_schedule.all_segments.length > 0) {
+                data.flight_schedule.all_segments.forEach((segment, index) => {
+                    const row = document.createElement('tr');
+                    const segmentType = segment.segment_type || (index === 0 ? '출발' : index === data.flight_schedule.all_segments.length - 1 ? '도착' : '경유');
+
+                    // 날짜 포맷팅 (출발 날짜 사용)
+                    const dateDisplay = formatDate(segment.departure_date) || '-';
+
+                    // 공항 정보 (한글 포함 처리)
+                    const departureAirport = segment.departure_airport || '-';
+                    const arrivalAirport = segment.arrival_airport || '-';
+
+                    // 시간 정보 (출발시간과 도착시간 분리)
+                    const departureTime = segment.departure_time || '-';
+                    const arrivalTime = segment.arrival_time || '-';
+
+                    row.innerHTML = `
+                        <td>${escapeHtml(segmentType)}</td>
+                        <td>${escapeHtml(dateDisplay)}</td>
+                        <td>${escapeHtml(departureAirport)}</td>
+                        <td>${escapeHtml(departureTime)}</td>
+                        <td>${escapeHtml(arrivalAirport)}</td>
+                        <td>${escapeHtml(arrivalTime)}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                // 단일 구간인 경우 (기존 방식 호환)
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>출발</td>
+                    <td>${escapeHtml(formatDate(data.flight_schedule.departure_date) || '-')}</td>
+                    <td>${escapeHtml(data.flight_schedule.departure_airport || '-')}</td>
+                    <td>${escapeHtml(data.flight_schedule.departure_time || '-')}</td>
+                    <td>${escapeHtml(data.flight_schedule.arrival_airport || '-')}</td>
+                    <td>${escapeHtml(data.flight_schedule.arrival_time || '-')}</td>
+                `;
+                tbody.appendChild(row);
+            }
+        }
+
+        // 항목 정보 렌더링
+        const itemsTbody = document.getElementById('preview-items-tbody');
+        itemsTbody.innerHTML = '';
+
+        let total = 0;
+
+        // 고급계산 모드 처리
+        if (data.calculation_mode === 'advanced' && data.advanced_calculation) {
+            const adv = data.advanced_calculation;
+            const items = adv.additional_items || {};
+            const groups = items.groups || [];
+            const extras = items.extras || [];
+
+            // 구 형식 호환 (additional_items가 배열인 경우)
+            const isOldFormat = Array.isArray(adv.additional_items);
+
+            if (!isOldFormat && groups.length > 0) {
+                // ── 새 형식: 그룹별 상세 표시 ──
+                const costLabel = items.cost_label || adv.cost_label || '여행경비';
+                const depositLabel = items.deposit_label || adv.deposit_label || '계약금';
+
+                // 테이블 헤더를 그룹용으로 변경
+                const thead = itemsTbody.closest('table').querySelector('thead tr');
+                thead.innerHTML = `
+                    <th>구분</th>
+                    <th>1인 ${escapeHtml(costLabel)}</th>
+                    <th>인원</th>
+                    <th style="text-align: center;">소계</th>
+                `;
+
+                let airfareTotal = 0;
+                let depositTotal = 0;
+
+                // 1. 그룹별 여행경비
+                groups.forEach(g => {
+                    const sub = (g.unitPrice || 0) * (g.count || 0);
+                    const depSub = (g.deposit || 0) * (g.count || 0);
+                    airfareTotal += sub;
+                    depositTotal += depSub;
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${escapeHtml(g.name || '여행경비')}</td>
+                        <td>${formatCurrency(g.unitPrice || 0)}</td>
+                        <td>${g.count || 0}명</td>
+                        <td style="text-align:center; font-weight:600">${formatCurrency(sub)}</td>
+                    `;
+                    itemsTbody.appendChild(row);
+                });
+
+                // 여행경비 소계
+                const airSubRow = document.createElement('tr');
+                airSubRow.style.backgroundColor = '#f9fafb';
+                airSubRow.style.fontWeight = 'bold';
+                airSubRow.innerHTML = `
+                    <td colspan="3" style="text-align: right;">${escapeHtml(costLabel)} 소계</td>
+                    <td style="text-align:center">${formatCurrency(airfareTotal)}</td>
+                `;
+                itemsTbody.appendChild(airSubRow);
+
+                // 2. 추가 항목
+                let extrasTotal = 0;
+                if (extras.length > 0) {
+                    // 구분선
+                    const sepRow = document.createElement('tr');
+                    sepRow.innerHTML = `<td colspan="4" style="padding:4px; border-bottom:2px solid #e5e7eb;"></td>`;
+                    itemsTbody.appendChild(sepRow);
+
+                    extras.forEach(ex => {
+                        const sub = (ex.unitPrice || 0) * (ex.count || 0);
+                        const signed = ex.type === 'subtract' ? -sub : sub;
+                        extrasTotal += signed;
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${ex.type === 'subtract' ? '(차감) ' : ''}${escapeHtml(ex.name)}</td>
+                            <td>${formatCurrency(ex.unitPrice || 0)}</td>
+                            <td>${ex.count || 0}명</td>
+                            <td style="text-align:center; color: ${ex.type === 'subtract' ? '#ef4444' : '#111'}; font-weight:600">${ex.type === 'subtract' ? '-' : ''}${formatCurrency(sub)}</td>
+                        `;
+                        itemsTbody.appendChild(row);
+                    });
+                }
+
+                // 3. 총 청구액
+                const totalCharge = airfareTotal + extrasTotal;
+                const chargeRow = document.createElement('tr');
+                chargeRow.style.backgroundColor = '#eff6ff';
+                chargeRow.style.fontWeight = 'bold';
+                chargeRow.innerHTML = `
+                    <td colspan="3" style="text-align: right; font-size: 15px;">총 청구액</td>
+                    <td style="text-align:center; font-size: 16px; color: #2563eb">${formatCurrency(totalCharge)}</td>
+                `;
+                itemsTbody.appendChild(chargeRow);
+
+                // 4. 그룹별 계약금 내역
+                const depSepRow = document.createElement('tr');
+                depSepRow.innerHTML = `<td colspan="4" style="padding:4px; border-bottom:2px solid #e5e7eb;"></td>`;
+                itemsTbody.appendChild(depSepRow);
+
+                groups.filter(g => g.deposit > 0).forEach(g => {
+                    const depSub = (g.deposit || 0) * (g.count || 0);
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td style="color: #059669">${escapeHtml(depositLabel)} — ${escapeHtml(g.name || '')}</td>
+                        <td style="color: #059669">${formatCurrency(g.deposit || 0)}</td>
+                        <td style="color: #059669">${g.count || 0}명</td>
+                        <td style="text-align:center; color: #059669; font-weight:600">-${formatCurrency(depSub)}</td>
+                    `;
+                    itemsTbody.appendChild(row);
+                });
+
+                // 계약금 소계
+                if (depositTotal > 0) {
+                    const depSubRow = document.createElement('tr');
+                    depSubRow.style.backgroundColor = '#f0fdf4';
+                    depSubRow.style.fontWeight = 'bold';
+                    depSubRow.innerHTML = `
+                        <td colspan="3" style="text-align: right; color: #059669;">${escapeHtml(depositLabel)} 합계</td>
+                        <td style="text-align:center; color: #059669">-${formatCurrency(depositTotal)}</td>
+                    `;
+                    itemsTbody.appendChild(depSubRow);
+                }
+
+                // 비고
+                if (adv.deposit_description) {
+                    const noteRow = document.createElement('tr');
+                    noteRow.innerHTML = `
+                        <td colspan="4" style="font-size: 13px; color: #6b7280; padding: 8px 12px;">※ ${escapeHtml(adv.deposit_description)}</td>
+                    `;
+                    itemsTbody.appendChild(noteRow);
+                }
+
+                // 5. 잔금
+                total = totalCharge - depositTotal;
+                const balanceRow = document.createElement('tr');
+                balanceRow.style.backgroundColor = '#f0f9ff';
+                balanceRow.style.fontWeight = 'bold';
+                balanceRow.innerHTML = `
+                    <td colspan="3" style="text-align: right; font-size: 16px;">잔금</td>
+                    <td style="text-align:center; font-size: 20px; color: ${total < 0 ? '#ef4444' : '#2563eb'}">${formatCurrency(total)}</td>
+                `;
+                itemsTbody.appendChild(balanceRow);
+
+            } else {
+                // ── 구 형식 호환: 단일 여행경비 행 ──
+                const travelCost = adv.total_travel_cost || (adv.base_price_per_person * adv.total_participants);
+                const row1 = document.createElement('tr');
+                row1.innerHTML = `
+                    <td>여행경비</td>
+                    <td>${formatCurrency(adv.base_price_per_person || 0)}</td>
+                    <td>${adv.total_participants || 0}명</td>
+                    <td style="text-align:center">${formatCurrency(travelCost)}</td>
+                `;
+                itemsTbody.appendChild(row1);
+                total = travelCost;
+
+                // 추가 비용 (구 형식 배열)
+                const oldExtras = isOldFormat ? adv.additional_items : [];
+                oldExtras.forEach(item => {
+                    const row = document.createElement('tr');
+                    const displayName = item.description ? `${escapeHtml(item.name)} (${escapeHtml(item.description)})` : escapeHtml(item.name);
+                    row.innerHTML = `
+                        <td>${displayName}</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td style="color: ${item.type === 'subtract' ? '#ef4444' : '#22c55e'}; text-align: center;">${formatCurrency(item.amount)}</td>
+                    `;
+                    itemsTbody.appendChild(row);
+                    total += item.type === 'subtract' ? -item.amount : item.amount;
+                });
+
+                // 계약금
+                if (adv.deposit_amount && adv.deposit_amount > 0) {
+                    const depositRow = document.createElement('tr');
+                    const depositDesc = adv.deposit_description ? ` (${escapeHtml(adv.deposit_description)})` : '';
+                    depositRow.innerHTML = `
+                        <td>계약금${depositDesc}</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td style="color: #ef4444; text-align:center">-${formatCurrency(adv.deposit_amount)}</td>
+                    `;
+                    itemsTbody.appendChild(depositRow);
+                    total -= adv.deposit_amount;
+                }
+
+                // 잔금
+                const balanceRow = document.createElement('tr');
+                balanceRow.style.backgroundColor = '#f0f9ff';
+                balanceRow.style.fontWeight = 'bold';
+                balanceRow.innerHTML = `
+                    <td colspan="3" style="text-align: right; font-size: 16px;">잔금</td>
+                    <td style="text-align:center; font-size: 18px; color: ${total < 0 ? '#ef4444' : '#2563eb'}">${formatCurrency(total)}</td>
+                `;
+                itemsTbody.appendChild(balanceRow);
+            }
+
+        } else if (data.items && data.items.length > 0) {
+            // 간편계산 모드 (기존 로직)
+            data.items.forEach(item => {
+                const row = document.createElement('tr');
+                const itemTotal = (item.unit_price || 0) * (item.quantity || 0);
+                total += itemTotal;
+
+                row.innerHTML = `
+                    <td>${escapeHtml(item.name || '-')}</td>
+                    <td>${formatCurrency(item.unit_price || 0)}</td>
+                    <td>${(item.quantity || 0)}명</td>
+                    <td>${formatCurrency(itemTotal)}</td>
+                `;
+                itemsTbody.appendChild(row);
+            });
+        } else {
+            // 기존 형식 호환성 (항공료, 선호좌석)
+            if (data.airfare_unit_price !== undefined) {
+                const airfareTotal = (data.airfare_unit_price || 0) * (data.airfare_quantity || 0);
+                total += airfareTotal;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>항공료</td>
+                    <td>${formatCurrency(data.airfare_unit_price || 0)}</td>
+                    <td>${(data.airfare_quantity || 0)}명</td>
+                    <td>${formatCurrency(airfareTotal)}</td>
+                `;
+                itemsTbody.appendChild(row);
+            }
+            if (data.seat_preference_unit_price !== undefined) {
+                const seatTotal = (data.seat_preference_unit_price || 0) * (data.seat_preference_quantity || 0);
+                total += seatTotal;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>선호좌석</td>
+                    <td>${formatCurrency(data.seat_preference_unit_price || 0)}</td>
+                    <td>${(data.seat_preference_quantity || 0)}명</td>
+                    <td>${formatCurrency(seatTotal)}</td>
+                `;
+                itemsTbody.appendChild(row);
+            }
+        }
+
+        document.getElementById('preview-total').textContent = formatCurrency(total);
+
+        // 은행 정보
+        if (data.bank_account) {
+            document.getElementById('bank-info-section').style.display = 'block';
+            document.getElementById('preview-bank-name').textContent = data.bank_account.bank_name || '-';
+            document.getElementById('preview-account-number').textContent = data.bank_account.account_number || '-';
+            document.getElementById('preview-account-holder').textContent = data.bank_account.account_holder || '-';
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('ko-KR', {
+                style: 'currency',
+                currency: 'KRW'
+            }).format(amount);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}년 ${month}월 ${day}일`;
+        }
+
+        // 파일명 생성 (수신자 + 날짜 기반)
+        function generateFileName() {
+            const recipient = data.recipient || '인보이스';
+            const dateStr = data.invoice_date || new Date().toISOString().split('T')[0];
+            // 파일명에 사용할 수 없는 문자 제거
+            const safeName = recipient.replace(/[/\\?%*:|"<>]/g, '_');
+            return `인보이스_${safeName}_${dateStr}`;
+        }
+
+        // PDF 다운로드 함수
+        async function downloadPDF() {
+            const btn = document.getElementById('pdf-btn');
+            const originalText = btn.innerHTML;
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ 생성 중...';
+
+                const element = document.getElementById('invoice-capture-area');
+
+                // html2canvas로 캡처
+                const canvas = await html2canvas(element, {
+                    scale: 2, // 고해상도
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
+
+                // jsPDF로 PDF 생성
+                const { jsPDF } = window.jspdf;
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+                // A4 사이즈 설정
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+
+                // 이미지 비율 유지하며 크기 계산
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+                const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+                const newWidth = imgWidth * ratio;
+                const newHeight = imgHeight * ratio;
+
+                // 중앙 정렬
+                const x = (pdfWidth - newWidth) / 2;
+                const y = 10; // 상단 여백
+
+                pdf.addImage(imgData, 'JPEG', x, y, newWidth, newHeight);
+
+                // 다운로드
+                const fileName = generateFileName() + '.pdf';
+                pdf.save(fileName);
+
+                btn.innerHTML = '✅ 완료!';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+
+            } catch (error) {
+                console.error('PDF 생성 오류:', error);
+                showToast('PDF 생성 중 오류가 발생했습니다: ' + error.message, 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // 이미지 저장 함수
+        async function downloadImage() {
+            const btn = document.getElementById('image-btn');
+            const originalText = btn.innerHTML;
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ 생성 중...';
+
+                const element = document.getElementById('invoice-capture-area');
+
+                // html2canvas로 캡처
+                const canvas = await html2canvas(element, {
+                    scale: 2, // 고해상도
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
+
+                // 이미지 다운로드
+                const link = document.createElement('a');
+                link.download = generateFileName() + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                btn.innerHTML = '✅ 완료!';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+
+            } catch (error) {
+                console.error('이미지 저장 오류:', error);
+                showToast('이미지 저장 중 오류가 발생했습니다: ' + error.message, 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>

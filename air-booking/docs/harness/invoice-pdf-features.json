@@ -1,0 +1,52 @@
+{
+  "features": [
+    {
+      "id": "F01",
+      "name": "인보이스 PDF HTML 엔드포인트",
+      "priority": "P0",
+      "user_story": "사용자가 GET /api/invoices/:id/pdf로 인보이스를 인쇄용 HTML로 조회할 수 있다",
+      "acceptance_criteria": [
+        "GET /api/invoices/:id/pdf → 200 + text/html",
+        "존재하지 않는 ID → 404",
+        "인보이스 기본 정보 (번호, 수신인, 날짜) 표시",
+        "항공운임 내역 테이블 (단가, 인원, 합계)",
+        "총 금액 강조 표시",
+        "회사 정보 + 직인 이미지",
+        "인쇄 버튼 (window.print)"
+      ]
+    },
+    {
+      "id": "F02",
+      "name": "항공편 스케줄 섹션",
+      "priority": "P1",
+      "user_story": "flight_info가 있으면 항공편 스케줄을 표시한다",
+      "acceptance_criteria": [
+        "flight_info JSON 파싱 후 편별 표시",
+        "편명, 날짜, 출발지→도착지 포맷"
+      ]
+    },
+    {
+      "id": "F03",
+      "name": "탑승자/추가항목/계좌 표시",
+      "priority": "P1",
+      "user_story": "passenger_info, additional_items, 계좌정보를 조건부 표시한다",
+      "acceptance_criteria": [
+        "passenger_info 있으면 탑승자 테이블",
+        "additional_items 있으면 추가 항목 테이블",
+        "deposit/balance_due 있으면 예치금/잔금 표시",
+        "bank_name 있으면 입금계좌 정보 표시"
+      ]
+    },
+    {
+      "id": "F04",
+      "name": "인쇄 최적화",
+      "priority": "P2",
+      "user_story": "A4 인쇄 시 완벽하게 렌더링된다",
+      "acceptance_criteria": [
+        "@page A4 설정",
+        "@media print 스타일",
+        "직인 인쇄 제외 토글"
+      ]
+    }
+  ]
+}

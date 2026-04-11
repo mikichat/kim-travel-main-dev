@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}일정표 - {{ group.name }}{% endblock %}
+{% block document_title %}여행 일정표{% endblock %}
+
+{% block extra_css %}
+.day-card {
+    margin-bottom: 20px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    overflow: hidden;
+    page-break-inside: avoid;
+}
+
+.day-header {
+    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.day-number {
+    font-size: 16pt;
+    font-weight: bold;
+}
+
+.day-date {
+    font-size: 11pt;
+}
+
+.day-content {
+    padding: 20px;
+    background-color: #FAFAFA;
+}
+
+.detail-row {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.detail-label {
+    font-weight: bold;
+    color: #2563EB;
+    min-width: 80px;
+    margin-right: 10px;
+}
+
+.detail-value {
+    flex: 1;
+    line-height: 1.6;
+}
+
+.timeline-item {
+    margin-bottom: 15px;
+    padding-left: 15px;
+    border-left: 2px solid #2563EB;
+}
+{% endblock %}
+
+{% block content %}
+<div class="section">
+    <h2 class="section-title">여행 개요</h2>
+    <div class="info-grid">
+        <div class="info-item">
+            <span class="info-label">단체명:</span>
+            <span class="info-value">{{ group.name }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">여행 기간:</span>
+            <span class="info-value">{{ group.nights }}박 {{ group.days }}일</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">출발일:</span>
+            <span class="info-value">{{ group.start_date|format_date }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">도착일:</span>
+            <span class="info-value">{{ group.end_date|format_date }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">인원:</span>
+            <span class="info-value">{{ group.pax }}명</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">총 일수:</span>
+            <span class="info-value">{{ itineraries|length }}일</span>
+        </div>
+    </div>
+</div>
+
+{% if itineraries %}
+<div class="section">
+    <h2 class="section-title">상세 일정</h2>
+
+    {% for itinerary in itineraries %}
+    <div class="day-card">
+        <div class="day-header">
+            <div class="day-number">{{ itinerary.day_no }}일차</div>
+            <div class="day-date">{{ itinerary.itinerary_date|format_date('%Y년 %m월 %d일 (%A)') }}</div>
+        </div>
+
+        <div class="day-content">
+            {% if itinerary.location %}
+            <div class="detail-row">
+                <div class="detail-label">📍 장소:</div>
+                <div class="detail-value"><strong>{{ itinerary.location }}</strong></div>
+            </div>
+            {% endif %}
+
+            {% if itinerary.transport %}
+            <div class="detail-row">
+                <div class="detail-label">🚌 교통:</div>
+                <div class="detail-value">{{ itinerary.transport }}</div>
+            </div>
+            {% endif %}
+
+            {% if itinerary.time %}
+            <div class="detail-row">
+                <div class="detail-label">🕐 시간:</div>
+                <div class="detail-value">{{ itinerary.time }}</div>
+            </div>
+            {% endif %}
+
+            {% if itinerary.schedule %}
+            <div class="detail-row">
+                <div class="detail-label">📋 일정:</div>
+                <div class="detail-value">
+                    <div class="timeline-item">{{ itinerary.schedule|replace('\n', '<br>')|safe }}</div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if itinerary.meals %}
+            <div class="detail-row">
+                <div class="detail-label">🍽️ 식사:</div>
+                <div class="detail-value">{{ itinerary.meals }}</div>
+            </div>
+            {% endif %}
+
+            {% if itinerary.accommodation %}
+            <div class="detail-row">
+                <div class="detail-label">🏨 숙박:</div>
+                <div class="detail-value">{{ itinerary.accommodation }}</div>
+            </div>
+            {% endif %}
+
+            {% if not itinerary.location and not itinerary.transport and not itinerary.time and not itinerary.schedule and not itinerary.meals and not itinerary.accommodation %}
+            <div style="text-align: center; color: #9CA3AF; padding: 20px;">
+                상세 일정이 아직 등록되지 않았습니다.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="section">
+    <div style="text-align: center; padding: 40px; color: #9CA3AF;">
+        <p style="font-size: 14pt;">📅</p>
+        <p>아직 등록된 일정이 없습니다.</p>
+    </div>
+</div>
+{% endif %}
+
+<div class="section" style="margin-top: 30px;">
+    <h2 class="section-title">여행 안내 사항</h2>
+    <div style="line-height: 1.8; font-size: 10pt; padding: 15px; background-color: #F9FAFB; border-radius: 6px;">
+        <p><strong>✓ 준비물</strong></p>
+        <ul style="margin: 5px 0 15px 25px;">
+            <li>여권 (유효기간 6개월 이상 남은 것)</li>
+            <li>개인 상비약 및 세면도구</li>
+            <li>편한 복장 및 신발</li>
+            <li>카메라, 충전기 등 개인 물품</li>
+        </ul>
+
+        <p><strong>✓ 주의 사항</strong></p>
+        <ul style="margin: 5px 0 15px 25px;">
+            <li>출발 2시간 전까지 공항 집결</li>
+            <li>귀중품은 개인이 보관 (분실 시 여행사 책임 없음)</li>
+            <li>단체 일정에 협조해 주시기 바랍니다</li>
+            <li>현지 법규 및 문화를 존중해 주세요</li>
+        </ul>
+
+        <p><strong>✓ 긴급 연락처</strong></p>
+        <p style="margin: 5px 0 0 25px;">
+            인솔자: _______________________<br>
+            여행사: _______________________
+        </p>
+    </div>
+</div>
+
+<div class="section" style="margin-top: 30px; padding: 15px; background-color: #EFF6FF; border-left: 3px solid #2563EB;">
+    <p style="margin: 0; font-size: 10pt; color: #1E40AF;">
+        <strong>※ 일정 변경 안내</strong><br>
+        현지 사정, 기상 조건, 항공 스케줄 등에 따라 일정이 변경될 수 있습니다.<br>
+        변경 시 인솔자가 안내해 드립니다.
+    </p>
+</div>
+{% endblock %}

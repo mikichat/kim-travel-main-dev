@@ -1,0 +1,95 @@
+version: "2.0"
+
+screen:
+  name: 대시보드
+  route: /dashboard
+  layout: sidebar-main
+  auth: true
+
+data_requirements:
+  - resource: bookings
+    needs: [id, pnr, name_kr, nmtl_date, tl_date, departure_date, status, airline, flight_number]
+    filters:
+      date_range: "today ~ today+6"
+      status: "pending,confirmed"
+
+  - resource: bsp_dates
+    needs: [payment_date, description, is_notified]
+    filters:
+      date_range: "today ~ today+6"
+
+components:
+  - id: weekly_calendar_strip
+    type: navigation
+    position: main
+    function: 7일 롤링 달력 (오늘 포함 7일, 색상 구분)
+    data_source:
+      resource: bookings
+    events:
+      - on: click:date
+        do: 해당 날짜의 할 일 목록 필터링
+
+  - id: todo_list
+    type: list
+    position: main
+    function: 오늘 마감 항목 (긴급도 정렬 - 빨강>노랑>초록)
+    data_source:
+      resource: bookings
+    events:
+      - on: click:item
+        do: /bookings로 이동, 해당 예약 하이라이트
+
+  - id: status_badge
+    type: card
+    position: main
+    function: 상태 뱃지 (빨강-긴급/노랑-임박/초록-완료)
+
+  - id: quick_actions
+    type: button
+    position: main
+    function: 바로가기 버튼 (새 예약, 달력, 정산)
+    events:
+      - on: click:new_booking
+        do: /bookings로 이동 (PNR 입력 포커스)
+      - on: click:calendar
+        do: /calendar로 이동
+
+connections:
+  navigations:
+    - from: todo_list
+      to: /bookings
+    - from: quick_actions
+      to: /bookings
+    - from: quick_actions
+      to: /calendar
+    - from: quick_actions
+      to: /settlements
+
+  shared_components:
+    - sidebar
+    - header
+    - toast
+
+tests:
+  - name: 초기 로드
+    when: 로그인 후 대시보드 접속
+    then:
+      - 7일 롤링 달력 표시 (오늘 하이라이트)
+      - 오늘 마감 항목 목록 표시 (긴급도 순 정렬)
+
+  - name: 할 일 항목 클릭
+    when: NMTL 마감 항목 클릭
+    then:
+      - /bookings로 이동
+      - 해당 예약 건 하이라이트
+
+  - name: 색상 구분 확인
+    when: NMTL 마감 D-0인 항목 존재
+    then:
+      - 빨간색 뱃지 표시
+      - 목록 최상단 배치
+
+  - name: 빈 상태
+    when: 오늘 마감 항목 없음
+    then:
+      - "오늘 할 일이 없습니다" 메시지 표시

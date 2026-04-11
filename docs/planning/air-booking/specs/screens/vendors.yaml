@@ -1,0 +1,71 @@
+version: "2.0"
+
+screen:
+  name: 거래처 관리
+  route: /vendors
+  layout: sidebar-main
+  auth: true
+
+data_requirements:
+  - resource: vendors
+    needs: [id, name, type, contact_name, phone, email, remarks]
+    filters:
+      type: "?type"
+      search: "?q"
+
+components:
+  - id: vendor_type_filter
+    type: filter-form
+    position: main
+    function: 거래처 유형 필터 (여행사/항공사/전체)
+    events:
+      - on: click:filter
+        do: 선택 유형으로 테이블 필터링
+
+  - id: vendor_table
+    type: table
+    position: main
+    function: 거래처 목록 테이블
+    data_source:
+      resource: vendors
+    events:
+      - on: click:row
+        do: 거래처 상세 정보 표시
+      - on: click:add
+        do: 거래처 추가 폼 표시
+      - on: click:edit
+        do: 거래처 편집 폼 표시
+
+  - id: vendor_form
+    type: form
+    position: overlay
+    function: 거래처 정보 입력/편집 모달
+    data_source:
+      resource: vendors
+    events:
+      - on: submit
+        do: 거래처 정보 저장 (신규/수정)
+
+connections:
+  shared_components:
+    - sidebar
+    - header
+    - toast
+    - modal
+
+tests:
+  - name: 거래처 목록 로드
+    when: 거래처 관리 페이지 접속
+    then:
+      - 거래처 목록 테이블 표시
+
+  - name: 유형 필터링
+    when: 여행사 필터 클릭
+    then:
+      - 여행사 유형 거래처만 표시
+
+  - name: 거래처 추가
+    when: 거래처 추가 버튼 클릭 후 폼 작성
+    then:
+      - 거래처 정보 저장
+      - 테이블에 추가

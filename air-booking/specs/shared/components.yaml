@@ -1,0 +1,272 @@
+# 공통 컴포넌트 명세
+# 모든 화면에서 사용되는 재사용 가능한 컴포넌트
+
+version: "2.0"
+category: shared-components
+
+components:
+  AirportNameConverter:
+    id: airport-name
+    description: "공항 3코드 → 도시명 변환"
+    function: getAirportName(code: string) => string
+
+    examples:
+      - input: "ICN"
+        output: "서울"
+      - input: "LHR"
+        output: "런던"
+      - input: "JFK"
+        output: "뉴욕"
+      - input: "NRT"
+        output: "도쿄"
+      - input: "CDG"
+        output: "파리"
+
+    fallback: "3코드 그대로 표시 (미등록 공항)"
+
+    usage:
+      - "{{ route_from | getAirportName }} → {{ route_to | getAirportName }}"
+      - "converter, booking-list, reservation-card"
+
+    data_source: airport-codes.json
+    maintainer: backend
+
+  DeadlineIndicator:
+    id: deadline-color
+    description: "마감일 색상 강조 (NMTL/TL)"
+
+    display:
+      - nmtl_date:
+          color: "#ff6b6b"
+          label: "NMTL"
+          meaning: "Non-Mandatory Ticket Lifting"
+      - tl_date:
+          color: "#ffa940"
+          label: "TL"
+          meaning: "Ticket Lifting"
+
+    logic:
+      - "오늘부터 N일 이내 → 더 진한 색"
+      - "D-7: 밝은 빨강"
+      - "D-3: 진한 빨강"
+      - "D-0: 검은색 배경 + 흰색 텍스트"
+
+    usage:
+      - booking-list (테이블 행)
+      - reservation-card (미리보기)
+
+    component_file: shared/DeadlineIndicator.tsx
+
+  PnrDuplicateWarning:
+    id: pnr-warning
+    description: "PNR 중복 감지 경고"
+
+    triggers:
+      - "새 PNR 등록 시 기존 PNR과 중복"
+      - "다른 소스(air-booking vs portal)에서 같은 PNR"
+
+    display:
+      - warning_level: "warning | error"
+      - message: "PNR {{ pnr }}는 이미 등록되었습니다."
+      - existing_booking:
+          - airline: "기존 항공사"
+          - flight_number: "기존 항공편"
+          - departure_date: "기존 출발일"
+          - source: "air-booking | portal"
+
+    options:
+      - "기존 예약 보기"
+      - "UPDATE (기존 항공편 갱신)"
+      - "새 항공편 등록"
+      - "취소"
+
+    usage:
+      - "booking-list (PNR 등록 모달)"
+      - "converter (저장 시)"
+      - "flight-schedule (저장 시)"
+
+    component_file: shared/PnrDuplicateWarning.tsx
+
+  ImageCopyButton:
+    id: copy-image
+    description: "html2canvas 이미지 클립보드 복사 (HTTPS 폴백)"
+
+    features:
+      - tool: html2canvas
+      - target: "지정된 DOM 요소"
+      - format: PNG
+      - fallback: "HTTPS 실패 시 새 탭 이미지 표시"
+
+    options:
+      useCORS: true
+      allowTaint: false
+      logging: false
+
+    error_handling:
+      - case: "HTTPS 실패"
+        action: "새 탭 열고 이미지 표시"
+        note: "사용자가 수동으로 저장 가능"
+      - case: "클립보드 접근 실패"
+        action: "에러 토스트 + 새 탭 폴백"
+
+    usage:
+      - converter (모바일카드 복사)
+      - converter-saved (항공편 카드 복사)
+      - reservation-card (카드 복사)
+
+    component_file: shared/ImageCopyButton.tsx
+
+  StatusBadge:
+    id: status-badge
+    description: "예약 상태 배지 (pending/confirmed/ticketed/cancelled)"
+
+    statuses:
+      - pending:
+          color: "#1890ff"
+          label: "대기"
+          icon: hourglass
+      - confirmed:
+          color: "#faad14"
+          label: "확정"
+          icon: check-circle
+      - ticketed:
+          color: "#52c41a"
+          label: "발권완료"
+          icon: check-double
+      - cancelled:
+          color: "#f5222d"
+          label: "취소"
+          icon: x-circle
+
+    usage:
+      - "booking-list (상태 열)"
+      - "reservation-card (상태 배지)"
+
+    component_file: common/StatusBadge.tsx
+
+  LoadingSpinner:
+    id: loading-spinner
+    description: "데이터 로딩 스피너"
+
+    variants:
+      - inline: "작은 스피너 (인라인)"
+      - fullscreen: "화면 전체 (모달)"
+
+    usage:
+      - "API 로딩 중"
+      - "모달 처리 중"
+
+    component_file: common/LoadingSpinner.tsx
+
+  Modal:
+    id: modal-base
+    description: "재사용 가능한 모달 컴포넌트"
+
+    features:
+      - title: "모달 제목"
+      - size: "small | medium | large"
+      - actions: "submit, cancel, delete 등"
+      - overlay_close: "배경 클릭 시 닫기"
+
+    usage:
+      - "모든 화면의 모달"
+
+    component_file: common/Modal.tsx
+
+  Toast:
+    id: toast-notification
+    description: "토스트 메시지 (success/warning/error)"
+
+    types:
+      - success: "초록색 (작업 완료)"
+      - warning: "주황색 (주의)"
+      - error: "빨강색 (오류)"
+      - info: "파랑색 (정보)"
+
+    features:
+      - auto_dismiss: "3-5초 후 자동 닫기"
+      - manual_close: "X 버튼"
+
+    usage:
+      - "API 응답"
+      - "사용자 작업 피드백"
+
+    component_file: common/Toast.tsx
+
+  MobileCard:
+    id: mobile-card
+    description: "모바일 친화적 예약 정보 카드"
+
+    content:
+      - header: "PNR / 항공사"
+      - flight_details: "항공편 정보"
+      - passengers: "탑승객 목록"
+      - remarks: "특별 지시사항"
+
+    usage:
+      - converter (변환기 탭)
+      - converter-saved (미리보기)
+      - reservation-card (전체)
+
+    component_file: pnr-converter/MobileCard.tsx
+
+  KeyboardShortcutsHelp:
+    id: keyboard-help
+    description: "키보드 단축키 안내 (? 키)"
+
+    shortcuts:
+      - "ctrl+k / /": "검색창 포커스"
+      - "ctrl+shift+n": "PNR 등록 모달"
+      - "ctrl+s": "저장"
+      - "?": "단축키 도움말"
+
+    usage:
+      - booking-list
+      - converter
+      - estimate-editor
+
+    component_file: common/KeyboardShortcutsHelp.tsx
+
+  TicketList:
+    id: ticket-list
+    description: "발권 관리 리스트 (Panel)"
+
+    features:
+      - ticket_display: "발권 정보"
+      - issue_button: "발권 수동 입력"
+      - delete_button: "발권 삭제"
+
+    usage:
+      - "booking-list (티켓 탭)"
+
+    component_file: tickets/TicketList.tsx
+
+  BookingDetailCard:
+    id: booking-detail
+    description: "예약 상세 정보 카드"
+
+    display:
+      - segments: "항공편 구간"
+      - passengers: "탑승객"
+      - remarks: "비고"
+      - timeline: "변경 히스토리"
+
+    usage:
+      - "booking-list (행 확장)"
+
+    component_file: bookings/BookingDetailCard.tsx
+
+  InvoiceModal:
+    id: invoice-modal
+    description: "인보이스 생성/미리보기 모달"
+
+    features:
+      - single_invoice: "단일 예약 인보이스"
+      - bulk_invoice: "다중 예약 통합 인보이스"
+      - pdf_download: "PDF 다운로드"
+      - email_send: "이메일 전송"
+
+    usage:
+      - "booking-list (인보이스 생성)"
+
+    component_file: invoice/InvoiceModal.tsx

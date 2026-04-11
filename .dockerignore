@@ -1,0 +1,86 @@
+# ===========================================
+# @TASK T6.3 - Docker Ignore
+# ===========================================
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Git
+.git/
+.gitignore
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+docs/
+
+# Test files
+__tests__/
+coverage/
+test-results/
+e2e/
+*.test.js
+*.spec.js
+jest.config.*
+
+# Build artifacts
+*.log
+npm-debug.log*
+
+# Environment files (secrets)
+.env
+.env.local
+.env.production
+
+# Docker files (avoid recursive)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Backup archives
+*.tar.gz
+*.zip
+*.bak
+
+# Dev directories not needed in production
+samples/
+scripts/
+specs/
+123/
+
+# Claude/AI config
+.claude/
+
+# Other project directories (not part of legacy app)
+deploy/
+dev-air/
+dev-landing/
+frontend/
+gateway/
+server/
+client/
+database/
+proposal-agent-github/
+tourworld1/
+tourworld-deploy/
+auto-1/
+auto-2/
+main-phase*/
+
+# Worktree directories
+worktree/
+
+# JSON data files (build artifacts)
+bulk_result.json
+img_*.json

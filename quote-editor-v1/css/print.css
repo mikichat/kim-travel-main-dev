@@ -1,0 +1,226 @@
+/* ==================================================================
+   여행 견적서 스타일 - Print CSS
+   PDF/인쇄 출력용 스타일
+   ================================================================== */
+
+@media print {
+    /* ==================================================================
+       Page Setup
+       ================================================================== */
+    @page {
+        size: A4;
+        margin: 0;
+    }
+
+    /* ==================================================================
+       색상 보존 (중요!)
+       ================================================================== */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    /* ==================================================================
+       Body
+       ================================================================== */
+    body {
+        margin: 0;
+        padding: 0;
+        background: white !important;
+    }
+
+    /* ==================================================================
+       Page Container
+       ================================================================== */
+    .page-container {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0;
+        padding: 0;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        page-break-after: always;
+    }
+
+    /* ==================================================================
+       Top Border
+       ================================================================== */
+    .page-border-top {
+        background-color: #f09641 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* ==================================================================
+       Content Wrapper
+       ================================================================== */
+    .content-wrapper {
+        padding: 40px 48px 56px;
+    }
+
+    /* ==================================================================
+       Title
+       ================================================================== */
+    .document-title {
+        font-size: 36px;
+        font-weight: 800;
+        color: #1f2937 !important;
+    }
+
+    .title-underline {
+        background-color: #f09641 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* ==================================================================
+       Tables
+       ================================================================== */
+    .info-table,
+    .conditions-table {
+        border: 1px solid #d9d3cc !important;
+        border-collapse: collapse;
+    }
+
+    .table-row,
+    .condition-row {
+        border-bottom: 1px solid #e3ddd6 !important;
+    }
+
+    .table-header,
+    .condition-header {
+        background-color: #f7f3ee !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .condition-header {
+        background-color: #fdfaf6 !important;
+    }
+
+    .conditions-header {
+        background-color: #f3ebe1 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* ==================================================================
+       1인 여행요금 Grid
+       ================================================================== */
+    .price-box {
+        border: 1px solid #e8e2db !important;
+    }
+
+    .price-grid {
+        grid-template-columns: 100px 1fr 80px 140px;
+        background-color: #fdfaf6 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .price-cell {
+        border-right: 1px solid #e8e2db !important;
+        padding: 8px 10px;
+    }
+
+    .price-airline {
+        font-size: 13px;
+        justify-content: center;
+        padding: 8px 6px;
+    }
+
+    .price-schedule {
+        padding: 8px 12px;
+        line-height: 1.5;
+    }
+
+    .price-schedule p {
+        font-size: 13px;
+    }
+
+    .price-option {
+        font-size: 14px;
+        justify-content: center;
+        padding: 8px 6px;
+        color: #c2682c !important;
+    }
+
+    .price-amount {
+        background-color: #ffffff !important;
+        font-size: 18px;
+        font-weight: 900;
+        justify-content: flex-start;
+        padding-left: 12px;
+    }
+
+    .price-note {
+        border-top: 1px solid #e8e2db !important;
+    }
+
+    /* ==================================================================
+       Condition Note Colors
+       ================================================================== */
+    .condition-note-red {
+        color: #c84f3c !important;
+    }
+
+    /* ==================================================================
+       Footer
+       ================================================================== */
+    .footer {
+        background-color: #fdfaf6 !important;
+        border-top: 1px solid #d9d3cc !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .footer-logo-image {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* ==================================================================
+       Page Break Rules
+       ================================================================== */
+    .header,
+    .title-section,
+    .main-info-section,
+    .conditions-section {
+        page-break-inside: avoid;
+    }
+
+    .conditions-header {
+        page-break-after: avoid;
+    }
+
+    .table-row,
+    .condition-row {
+        page-break-inside: avoid;
+    }
+
+    /* ==================================================================
+       Text Adjustments
+       ================================================================== */
+    .document-title {
+        font-size: 36px;
+    }
+
+    .conditions-title {
+        font-size: 18px;
+    }
+
+    .signature-company {
+        font-size: 18px;
+    }
+
+    /* ==================================================================
+       Image Handling
+       ================================================================== */
+    .logo-image,
+    .footer-logo-image {
+        max-width: 100%;
+        height: auto;
+    }
+}

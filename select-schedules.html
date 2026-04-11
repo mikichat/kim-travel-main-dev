@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일정 선택 - 여행사</title>
+    <script src="js/tailwind.min.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/fetch-utils.js"></script>
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Page-specific overrides for select-schedules */
+        .main-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 2rem;
+        }
+
+        .header-card h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 1rem;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-bar input,
+        .filter-bar select {
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .filter-bar input:focus,
+        .filter-bar select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .schedule-table-container {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 2rem;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .schedule-table thead {
+            background: #f7fafc;
+        }
+
+        .schedule-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #2d3748;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 0.95rem;
+        }
+
+        .schedule-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            color: #4a5568;
+        }
+
+        .schedule-table tbody tr:hover {
+            background: #f7fafc;
+        }
+
+        .schedule-table tbody tr.selected {
+            background: #edf2f7;
+        }
+
+        .checkbox-cell {
+            width: 40px;
+            text-align: center;
+        }
+
+        .checkbox-cell input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .action-bar {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: sticky;
+            bottom: 2rem;
+        }
+
+        .selected-count {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #dd6b20;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .badge-blue {
+            background: #ebf8ff;
+            color: #2b6cb0;
+        }
+
+        .badge-green {
+            background: #f0fff4;
+            color: #276749;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: white;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .filter-bar {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .filter-bar input,
+            .filter-bar select {
+                width: 100%;
+            }
+
+            .action-bar {
+                flex-direction: column;
+            }
+
+            .schedule-table {
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 사이드바 -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-plane-departure"></i>
+            <h1>여행세상</h1>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>홈</span>
+            </a>
+            <a href="index.html?page=group-roster" class="nav-item">
+                <i class="fas fa-clipboard-list"></i>
+                <span>단체명단</span>
+            </a>
+            <a href="index.html?page=customers" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>고객 관리</span>
+            </a>
+            <a href="index.html?page=products" class="nav-item">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>단체 상품</span>
+            </a>
+            <div class="nav-item-parent" onclick="toggleSubmenu(this)">
+                <div class="nav-item-content">
+                    <i class="fas fa-plane"></i>
+                    <span>항공 스케줄</span>
+                </div>
+                <i class="fas fa-chevron-down nav-dropdown-arrow"></i>
+            </div>
+            <div class="nav-submenu">
+                <a href="flight-schedule.html" class="nav-subitem">
+                    <i class="fas fa-list"></i>
+                    <span>항공편 관리</span>
+                </a>
+                <a href="air1/index.html" class="nav-subitem">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>항공편 변환기</span>
+                </a>
+            </div>
+            <div class="nav-item-parent" onclick="toggleSubmenu(this)">
+                <div class="nav-item-content">
+                    <i class="fas fa-file-alt"></i>
+                    <span>일정표</span>
+                </div>
+                <i class="fas fa-chevron-down nav-dropdown-arrow"></i>
+            </div>
+            <div class="nav-submenu">
+                <a href="hanatour/travel-advanced.html" class="nav-subitem">
+                    <i class="fas fa-list-alt"></i>
+                    <span>상세일정</span>
+                </a>
+                <a href="hanatour/travel-simple.html" class="nav-subitem">
+                    <i class="fas fa-list"></i>
+                    <span>간략일정</span>
+                </a>
+                <a href="hanatour/travel-simple-copy.html" class="nav-subitem">
+                    <i class="fas fa-golf-ball"></i>
+                    <span>골프일정</span>
+                </a>
+                <a href="hanatour/travel-free.html" class="nav-subitem">
+                    <i class="fas fa-suitcase"></i>
+                    <span>자유여행 예약</span>
+                </a>
+            </div>
+            <a href="cost-calculator.html" class="nav-item">
+                <i class="fas fa-calculator"></i>
+                <span>원가 계산서</span>
+            </a>
+            <div class="nav-item-parent" onclick="toggleSubmenu(this)">
+                <div class="nav-item-content">
+                    <i class="fas fa-file-invoice"></i>
+                    <span>인보이스</span>
+                </div>
+                <i class="fas fa-chevron-down nav-dropdown-arrow"></i>
+            </div>
+            <div class="nav-submenu">
+                <a href="in/invoice-list.html" class="nav-subitem">
+                    <i class="fas fa-list"></i>
+                    <span>인보이스 목록</span>
+                </a>
+                <a href="in/invoice-editor.html" class="nav-subitem">
+                    <i class="fas fa-plus"></i>
+                    <span>새 인보이스</span>
+                </a>
+            </div>
+            <a href="index.html?page=bookings" class="nav-item">
+                <i class="fas fa-calendar-check"></i>
+                <span>예약 관리</span>
+            </a>
+            <a href="index.html?page=notifications" class="nav-item">
+                <i class="fas fa-bell"></i>
+                <span>알림 관리</span>
+            </a>
+            <a href="backup-manager.html" class="nav-item">
+                <i class="fas fa-shield-alt"></i>
+                <span>백업 관리</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="main-content">
+        <div class="container">
+            <!-- 헤더 -->
+            <div class="header-card">
+                <h1><i class="fas fa-check-square"></i> 일정 선택 및 관리</h1>
+
+                <div class="filter-bar">
+                <input type="text" id="searchInput" placeholder="검색... (그룹명, 지역, 일정)" style="flex: 1; min-width: 250px;" aria-label="일정 검색">
+
+                <select id="groupFilter" aria-label="그룹 필터">
+                    <option value="">전체 그룹</option>
+                </select>
+
+                <select id="dateFilter" aria-label="날짜 필터">
+                    <option value="">전체 날짜</option>
+                </select>
+
+                <button type="button" class="btn btn-warning" onclick="selectAll()">
+                    <i class="fas fa-check-double"></i> 전체 선택
+                </button>
+
+                <button type="button" class="btn btn-secondary" onclick="deselectAll()">
+                    <i class="fas fa-times"></i> 선택 해제
+                </button>
+            </div>
+        </div>
+
+        <!-- 로딩 -->
+        <div id="loading" class="loading" role="status" aria-live="polite">
+            <div class="spinner"></div>
+            <p>일정을 불러오는 중...</p>
+        </div>
+
+        <!-- 일정 테이블 -->
+        <div id="scheduleTableContainer" class="schedule-table-container" style="display: none;">
+            <div style="overflow-x: auto;">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th class="checkbox-cell">
+                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)" aria-label="전체 선택">
+                            </th>
+                            <th>그룹명</th>
+                            <th>일자</th>
+                            <th>지역</th>
+                            <th>교통편</th>
+                            <th>시간</th>
+                            <th>세부일정</th>
+                            <th>식사</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleTableBody">
+                        <!-- 동적으로 추가됩니다 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 액션 바 -->
+        <div id="actionBar" class="action-bar" style="display: none;">
+            <div>
+                <span class="selected-count" id="selectedCount">0개 선택됨</span>
+            </div>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-success" onclick="exportSelected()">
+                    <i class="fas fa-file-export"></i> 선택 항목 내보내기
+                </button>
+                <button type="button" class="btn btn-danger" onclick="deleteSelected()">
+                    <i class="fas fa-trash"></i> 선택 항목 삭제
+                </button>
+                <button type="button" class="btn btn-primary" onclick="createGroupFromSelected()">
+                    <i class="fas fa-plus"></i> 선택 항목으로 새 그룹 만들기
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='/select-group.html'">
+                    <i class="fas fa-arrow-left"></i> 그룹 선택으로 돌아가기
+                </button>
+            </div>
+        </div>
+        </div>
+    </main>
+
+    <script>
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+        }
+
+        // 사이드바 서브메뉴 토글
+        function toggleSubmenu(element) {
+            element.classList.toggle('open');
+            const submenu = element.nextElementSibling;
+            if (submenu && submenu.classList.contains('nav-submenu')) {
+                submenu.classList.toggle('open');
+            }
+        }
+
+        let allSchedules = [];
+        let filteredSchedules = [];
+
+        // 페이지 로드 시
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSchedules();
+
+            // 검색 이벤트
+            document.getElementById('searchInput').addEventListener('input', filterSchedules);
+            document.getElementById('groupFilter').addEventListener('change', filterSchedules);
+            document.getElementById('dateFilter').addEventListener('change', filterSchedules);
+        });
+
+        async function loadSchedules() {
+            try {
+                allSchedules = await fetchJSON('/api/schedules');
+                filteredSchedules = [...allSchedules];
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('scheduleTableContainer').style.display = 'block';
+                document.getElementById('actionBar').style.display = 'flex';
+
+                populateFilters();
+                renderSchedules(filteredSchedules);
+
+            } catch (error) {
+                console.error('일정 로드 오류:', error);
+                document.getElementById('loading').innerHTML = `
+                    <i class="fas fa-exclamation-triangle fa-2x mb-3" style="color: #fc8181;"></i>
+                    <p style="color: #fc8181;">일정을 불러오는 중 오류가 발생했습니다.</p>
+                    <p class="text-sm mt-2">${escapeHtml(error.message)}</p>
+                `;
+            }
+        }
+
+        function populateFilters() {
+            // 그룹 필터
+            const groups = [...new Set(allSchedules.map(s => s.group_name).filter(Boolean))];
+            const groupFilter = document.getElementById('groupFilter');
+            groups.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group;
+                option.textContent = group;
+                groupFilter.appendChild(option);
+            });
+
+            // 날짜 필터
+            const dates = [...new Set(allSchedules.map(s => s.event_date).filter(Boolean))].sort();
+            const dateFilter = document.getElementById('dateFilter');
+            dates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = formatDate(date);
+                dateFilter.appendChild(option);
+            });
+        }
+
+        function filterSchedules() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const groupFilter = document.getElementById('groupFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+
+            filteredSchedules = allSchedules.filter(schedule => {
+                const matchesSearch = !searchTerm ||
+                    (schedule.group_name && schedule.group_name.toLowerCase().includes(searchTerm)) ||
+                    (schedule.location && schedule.location.toLowerCase().includes(searchTerm)) ||
+                    (schedule.schedule && schedule.schedule.toLowerCase().includes(searchTerm)) ||
+                    (schedule.itinerary && schedule.itinerary.toLowerCase().includes(searchTerm));
+
+                const matchesGroup = !groupFilter || schedule.group_name === groupFilter;
+                const matchesDate = !dateFilter || schedule.event_date === dateFilter;
+
+                return matchesSearch && matchesGroup && matchesDate;
+            });
+
+            renderSchedules(filteredSchedules);
+            updateSelectedCount();
+        }
+
+        function renderSchedules(schedules) {
+            const tbody = document.getElementById('scheduleTableBody');
+            tbody.innerHTML = '';
+
+            if (schedules.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 3rem; color: #a0aec0;">
+                            <i class="fas fa-inbox fa-3x mb-3" style="display: block;"></i>
+                            검색 결과가 없습니다.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            schedules.forEach(schedule => {
+                const row = document.createElement('tr');
+                row.dataset.scheduleId = schedule.id;
+
+                row.innerHTML = `
+                    <td class="checkbox-cell">
+                        <input type="checkbox" onchange="updateSelectedCount(); toggleRowHighlight(this)" aria-label="${escapeHtml(schedule.group_name || '일정')} ${escapeHtml(formatDate(schedule.event_date))} 선택">
+                    </td>
+                    <td><span class="badge badge-blue">${escapeHtml(schedule.group_name || '-')}</span></td>
+                    <td>${escapeHtml(formatDate(schedule.event_date))}</td>
+                    <td>${escapeHtml(schedule.location || '-')}</td>
+                    <td>${escapeHtml(schedule.transport || schedule.transportation || '-')}</td>
+                    <td>${escapeHtml(schedule.time || '-')}</td>
+                    <td>${escapeHtml(schedule.schedule || schedule.itinerary || '-')}</td>
+                    <td>${escapeHtml(schedule.meals || schedule.meal || '-')}</td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        function toggleRowHighlight(checkbox) {
+            const row = checkbox.closest('tr');
+            if (checkbox.checked) {
+                row.classList.add('selected');
+            } else {
+                row.classList.remove('selected');
+            }
+        }
+
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('#scheduleTableBody input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                cb.checked = true;
+                toggleRowHighlight(cb);
+            });
+            document.getElementById('selectAllCheckbox').checked = true;
+            updateSelectedCount();
+        }
+
+        function deselectAll() {
+            const checkboxes = document.querySelectorAll('#scheduleTableBody input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                cb.checked = false;
+                toggleRowHighlight(cb);
+            });
+            document.getElementById('selectAllCheckbox').checked = false;
+            updateSelectedCount();
+        }
+
+        function toggleSelectAll(checked) {
+            if (checked) {
+                selectAll();
+            } else {
+                deselectAll();
+            }
+        }
+
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('#scheduleTableBody input[type="checkbox"]:checked');
+            document.getElementById('selectedCount').textContent = `${checkboxes.length}개 선택됨`;
+        }
+
+        function getSelectedSchedules() {
+            const checkboxes = document.querySelectorAll('#scheduleTableBody input[type="checkbox"]:checked');
+            const selectedIds = [];
+
+            checkboxes.forEach(cb => {
+                const row = cb.closest('tr');
+                const scheduleId = parseInt(row.dataset.scheduleId);
+                selectedIds.push(scheduleId);
+            });
+
+            return allSchedules.filter(s => selectedIds.includes(s.id));
+        }
+
+        async function deleteSelected() {
+            const selected = getSelectedSchedules();
+
+            if (selected.length === 0) {
+                showToast('삭제할 일정을 선택해주세요.', 'warning');
+                return;
+            }
+
+            if (!await showConfirmModal('일정 삭제', `선택한 ${selected.length}개의 일정을 삭제하시겠습니까?`, { danger: true })) {
+                return;
+            }
+
+            try {
+                const promises = selected.map(schedule =>
+                    fetch(`/api/schedules/${schedule.id}`, {
+                        method: 'DELETE'
+                    })
+                );
+
+                await Promise.all(promises);
+
+                showToast('선택한 일정이 삭제되었습니다!', 'success');
+                loadSchedules();
+
+            } catch (error) {
+                console.error('삭제 오류:', error);
+                showToast('삭제 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        function exportSelected() {
+            const selected = getSelectedSchedules();
+
+            if (selected.length === 0) {
+                showToast('내보낼 일정을 선택해주세요.', 'warning');
+                return;
+            }
+
+            // CSV 생성
+            const headers = ['그룹명', '일자', '지역', '교통편', '시간', '세부일정', '식사'];
+            const csvContent = [
+                headers.join(','),
+                ...selected.map(s => [
+                    s.group_name || '',
+                    s.event_date || '',
+                    s.location || '',
+                    s.transport || s.transportation || '',
+                    s.time || '',
+                    (s.schedule || s.itinerary || '').replace(/,/g, ';'),
+                    s.meals || s.meal || ''
+                ].join(','))
+            ].join('\n');
+
+            // 다운로드
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `일정_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        async function createGroupFromSelected() {
+            const selected = getSelectedSchedules();
+
+            if (selected.length === 0) {
+                showToast('그룹으로 만들 일정을 선택해주세요.', 'warning');
+                return;
+            }
+
+            const groupName = await showPromptModal('그룹 생성', '', '새 그룹의 이름을 입력하세요:');
+
+            if (!groupName || !groupName.trim()) {
+                showToast('그룹명을 입력해주세요.', 'warning');
+                return;
+            }
+
+            if (!await showConfirmModal('그룹 생성', `선택한 ${selected.length}개의 일정을 '${groupName}' 그룹으로 이동하시겠습니까?`)) {
+                return;
+            }
+
+            // 그룹명 업데이트
+            const promises = selected.map(schedule =>
+                fetch(`/api/schedules/${schedule.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ...schedule,
+                        group_name: groupName.trim()
+                    })
+                })
+            );
+
+            Promise.all(promises).then(() => {
+                showToast(`'${groupName}' 그룹이 생성되었습니다!`, 'success');
+                loadSchedules();
+            }).catch(error => {
+                console.error('그룹 생성 오류:', error);
+                showToast('그룹 생성 중 오류가 발생했습니다.', 'error');
+            });
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+    </script>
+</body>
+</html>
