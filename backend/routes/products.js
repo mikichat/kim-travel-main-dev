@@ -36,7 +36,7 @@ function createProductRoutes(db) {
         const { destination } = req.query;
 
         try {
-            if (!destination) {
+            if (typeof destination !== 'string' || destination.trim() === '') {
                 return res.status(400).json({ error: '목적지가 필요합니다.' });
             }
 
