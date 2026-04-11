@@ -121,13 +121,18 @@ tourworld-root/
 - (선택) Docker Desktop
 
 ### 2단계: 환경 변수 설정
-최상위 폴더, `backend/`, `server/`, `client/` 경로에 각각 제공된 `.env.example`을 복사하여 `.env`를 만듭니다.
+`server/` 경로에 `.env.example`을 복사하여 `.env`를 만듭니다.
 ```env
-# backend/.env 예시
-PORT=5000
-GEMINI_API_KEY=your_google_api_key_here
-SESSION_SECRET=secure_session_secret_for_auth
-DATABASE_PATH=data/database.sqlite
+# server/.env 예시
+NODE_ENV=development
+PORT=3001
+DATABASE_URL="file:./dev.db"
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+JWT_EXPIRES_IN=7d
+CORS_ORIGIN=http://localhost:3000
+ADMIN_EMAIL=admin@tourworld.com
+ADMIN_PASSWORD=change-this-password
+ADMIN_NAME=관리자
 ```
 
 ### 3단계: 시스템 실행 방식 선택
@@ -149,7 +154,7 @@ npm install
 
 # 또는 직접 실행
 npm run db:push      # Prisma 스키마 DB 반영 (SQLite)
-npm run dev          # Next.js(3000) + Express(3000) 동시 실행
+npm run dev          # Next.js(3000) + Express(3001) 동시 실행
 ```
 
 **시작 스크립트 명령어:**
