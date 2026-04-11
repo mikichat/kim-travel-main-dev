@@ -140,11 +140,24 @@ DATABASE_PATH=data/database.sqlite
 5. 웹진입 방법: 브라우저에서 `frontend/pages/index.html` 파일을 직접 열거나, 간단한 웹서버로 서빙.
 
 **옵션 B: 차세대 모노레포 실행 (Next-Gen React / Express)**
-루트 경로에서 한 번의 명령어로 통합 환경을 시작합니다.
 ```bash
-npm install          # 전체 의존성 설치
+# 의존성 설치 (이미 설치되어 있으면 생략)
+npm install
+
+# 시작 스크립트 사용 (권장)
+./start-next-gen.sh start
+
+# 또는 직접 실행
 npm run db:push      # Prisma 스키마 DB 반영 (SQLite)
 npm run dev          # Next.js(3000) + Express(3000) 동시 실행
+```
+
+**시작 스크립트 명령어:**
+```bash
+./start-next-gen.sh start   # 서버 시작
+./start-next-gen.sh stop    # 서버 중지
+./start-next-gen.sh status  # 상태 확인
+./start-next-gen.sh logs    # 로그 확인
 ```
 
 **옵션 C: Docker 기반 단일 컨테이너 환경**
@@ -157,7 +170,7 @@ docker-compose up -d --build
 
 ## 🔧 주요 시스템 참고 사항 
 - **DB 백업**: 로컬 SQLite 활용 시 `backend/data` 폴더가 자동 저장됩니다. UI의 [백업 관리] 메뉴에서 IndexedDB와 백엔드 DB의 Snapshot 관리가 가능합니다.
-- **Swagger Docs**: 백엔드를 실행하고 `http://localhost:5000/api-docs` 로 접속 시 전체 RESTful API를 조회하고 테스트 해볼 수 있습니다.
+- **Swagger Docs**: 백엔드를 실행하고 `http://localhost:3000/api-docs` 로 접속 시 전체 RESTful API를 조회하고 테스트 해볼 수 있습니다.
 - **테스트 명령어**: 통합 CI 환경에서는 다음과 같은 테스트 명령어가 활용 가능합니다:
   - 프론트엔드 테스트: `npm run test:frontend`
   - E2E 테스트: `npm run test:e2e`
