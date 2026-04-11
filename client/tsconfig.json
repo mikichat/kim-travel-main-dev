@@ -19,7 +19,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
+      "@/*": ["./app/*"],
       "@tourworld/shared": ["../shared/src"]
     }
   },
