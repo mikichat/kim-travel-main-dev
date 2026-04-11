@@ -32,6 +32,11 @@ start_monorepo() {
 
   cd "$(dirname "$0")"
 
+  # 기존 프로세스 정리
+  log_info "기존 프로세스 정리 중..."
+  pkill -9 -f "next\|ts-node\|concurrently" 2>/dev/null
+  sleep 2
+
   # 포트 확인
   if lsof -i ":3000" -P 2>/dev/null | grep -q LISTEN; then
     log_warn "포트 3000이 이미 사용 중입니다."
@@ -39,10 +44,13 @@ start_monorepo() {
     return 1
   fi
 
-  # 의존성 설치 확인
+  # 의존성 설치 확인 및 설치
   if [ ! -d "node_modules" ]; then
     log_info "의존성 설치 중..."
     npm install
+  else
+    log_info "의존성 확인 중..."
+    npm install --silent 2>/dev/null
   fi
 
   # DB 푸시
