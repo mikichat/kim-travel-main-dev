@@ -74,7 +74,8 @@ start_monorepo() {
     echo ""
     log_info "PID: $pid"
   else
-    log_error "서버 시작에 실패했습니다."
+    log_error "서버 시작에 실패했습니다. 프로세스를 정리합니다..."
+    pkill -9 -f "next\|ts-node\|concurrently" 2>/dev/null
     log_info "로그 확인: tail -f $LOG_DIR/monorepo.log"
     return 1
   fi
