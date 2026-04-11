@@ -38,13 +38,13 @@ start_monorepo() {
   sleep 2
 
   # 포트 확인
-  if lsof -i ":3000" -P 2>/dev/null | grep -q LISTEN; then
+  if ss -tlnp 2>/dev/null | grep -q ":3000"; then
     log_warn "포트 3000이 이미 사용 중입니다."
     log_info "기존 프로세스를 중지하려면 './start-next-gen.sh stop' 을 실행하세요."
     return 1
   fi
 
-  if lsof -i ":3001" -P 2>/dev/null | grep -q LISTEN; then
+  if ss -tlnp 2>/dev/null | grep -q ":3001"; then
     log_warn "포트 3001이 이미 사용 중입니다."
     log_info "기존 프로세스를 중지하려면 './start-next-gen.sh stop' 을 실행하세요."
     return 1
@@ -70,12 +70,12 @@ start_monorepo() {
   sleep 5
 
   # 상태 확인
-  if lsof -i ":3000" -P 2>/dev/null | grep -q LISTEN && lsof -i ":3001" -P 2>/dev/null | grep -q LISTEN; then
+  if ss -tlnp 2>/dev/null | grep -q ":3000" && ss -tlnp 2>/dev/null | grep -q ":3001"; then
     echo ""
     log_success "TourWorld Next-Gen 모노레포 시작 완료!"
     echo ""
     echo -e "  ${CYAN}📱 Next.js Frontend:${NC} http://localhost:3000"
-    echo -e "  ${CYAN}🔧 Express Backend:${NC}  http://localhost:3000/api"
+    echo -e "  ${CYAN}🔧 Express Backend:${NC}  http://localhost:3001/api"
     echo -e "  ${CYAN}📋 로그 파일:${NC}          $LOG_DIR/monorepo.log"
     echo ""
     log_info "PID: $pid"
@@ -98,13 +98,13 @@ stop_monorepo() {
 
   sleep 1
 
-  if lsof -i ":3000" -P 2>/dev/null | grep -q LISTEN; then
-    local pid=$(lsof -i ":3000" -P 2>/dev/null | grep LISTEN | awk '{print $2}' | head -1)
+  if ss -tlnp 2>/dev/null | grep -q ":3000"; then
+    local pid=$(ss -tlnp 2>/dev/null | grep ":3000" | grep -oP 'pid=\K[0-9]+' | head -1)
     [ -n "$pid" ] && kill "$pid" 2>/dev/null
   fi
 
-  if lsof -i ":3001" -P 2>/dev/null | grep -q LISTEN; then
-    local pid=$(lsof -i ":3001" -P 2>/dev/null | grep LISTEN | awk '{print $2}' | head -1)
+  if ss -tlnp 2>/dev/null | grep -q ":3001"; then
+    local pid=$(ss -tlnp 2>/dev/null | grep ":3001" | grep -oP 'pid=\K[0-9]+' | head -1)
     [ -n "$pid" ] && kill "$pid" 2>/dev/null
   fi
 
@@ -117,18 +117,18 @@ check_status() {
   echo -e "${CYAN}📊 TourWorld Next-Gen 모노레포 상태${NC}"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-  if lsof -i ":3000" -P 2>/dev/null | grep -q LISTEN && lsof -i ":3001" -P 2>/dev/null | grep -q LISTEN; then
+  if ss -tlnp 2>/dev/null | grep -q ":3000" && ss -tlnp 2>/dev/null | grep -q ":3001"; then
     log_success "Next.js Frontend (:3000) — Online"
     log_success "Express Backend (:3001) — Online"
     echo ""
     log_info "Next.js:  http://localhost:3000"
     log_info "Express:  http://localhost:3001"
-  elif lsof -i ":3000" -P 2>/dev/null | grep -q LISTEN; then
+  elif ss -tlnp 2>/dev/null | grep -q ":3000"; then
     log_success "Next.js Frontend (:3000) — Online"
     log_error "Express Backend (:3001) — Offline"
     echo ""
     log_info "Express 서버가 실행되지 않았습니다."
-  elif lsof -i ":3001" -P 2>/dev/null | grep -q LISTEN; then
+  elif ss -tlnp 2>/dev/null | grep -q ":3001"; then
     log_error "Next.js Frontend (:3000) — Offline"
     log_success "Express Backend (:3001) — Online"
     echo ""
