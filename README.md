@@ -46,8 +46,8 @@
 
 ```text
 tourworld-root/
-├── client/                # 🚀 [Next-Gen] 신규 Frontend (React 18 + Vite + Zustand + TS)
-├── server/                # 🚀 [Next-Gen] 신규 Backend (Express + Prisma + TS)
+├── client/                # 🚀 [Next-Gen] 신규 Frontend (React 18 + Next.js 14 + Zustand + TS)
+├── server/                # 🚀 [Next-Gen] 신규 Backend (Express + Prisma + SQLite)
 ├── shared/                # 🔗 [Next-Gen] 공통 타입/유틸 라이브러리 (Monorepo Workspace)
 ├── backend/               # 🛡️ [Current] Production Backend (Node.js + Express + SQLite)
 │   ├── routes/            # 분리된 도메인별 라우터 (auth, schedules, upload, sync 등)
@@ -105,8 +105,8 @@ tourworld-root/
 
 기존의 안정적인 바닐라 스택을 넘어, 대규모 확장성과 유지보수성을 극대화하기 위해 설계된 차세대 아키텍처입니다.
 
-- **Frontend (React 18 + Vite)**: 선언적 컴포넌트 기반의 UI 설계와 **Zustand**를 이용한 효율적인 상태 관리를 제공합니다. **Tailwind CSS**를 통해 디자인 시스템의 일관성을 유지합니다.
-- **Backend (Express + Prisma)**: **Prisma ORM**을 도입하여 강력한 타입 안정성이 보장되는 데이터베이스 핸들링과 스키마 마이그레이션 체계를 갖추었습니다.
+- **Frontend (React 18 + Next.js 14)**: App Router 기반의 SSR/CSR 혼합架构와 **Zustand**를 이용한 효율적인 상태 관리를 제공합니다. **Tailwind CSS**를 통해 디자인 시스템의 일관성을 유지합니다.
+- **Backend (Express + Prisma + SQLite)**: **Prisma ORM**과 **SQLite**를 통해 파일 기반의轻型 데이터베이스로 간단한 배포와 높은 이식성을 제공합니다.
 - **Shared Workspace**: `shared` 폴더를 통해 클라이언트와 서버가 동일한 **TypeScript 타입 정의(DTO)**와 비즈니스 로직 유틸리티를 공유함으로써, API 규격 변경에 따른 휴먼 에러를 원천 차단합니다.
 - **Full TypeScript**: 전 계층에 걸쳐 엄격한 타입을 적용하여 개발 단계에서 오류를 탐지하고 코드 자가 문서화를 실현합니다.
 
@@ -143,8 +143,8 @@ DATABASE_PATH=data/database.sqlite
 루트 경로에서 한 번의 명령어로 통합 환경을 시작합니다.
 ```bash
 npm install          # 전체 의존성 설치
-npm run db:push      # Prisma 스키마 DB 반영 (server)
-npm run dev          # React(5173 ⟷ Node(3000) 동시 실행
+npm run db:push      # Prisma 스키마 DB 반영 (SQLite)
+npm run dev          # Next.js(3000) + Express(3000) 동시 실행
 ```
 
 **옵션 C: Docker 기반 단일 컨테이너 환경**
@@ -168,7 +168,7 @@ docker-compose up -d --build
 
 시스템은 총 4단계 Phase로 구성되어 지속 개발되고 있습니다 (세부사항 `ROADMAP.md` 및 `TASKS.md` 참조).
 - ✅ **Phase 1~2 완료**: 기본 기능(견적서, 예약) 완료 및 파일럿 테스트용 Vanilla 프레임워크 완성, 백엔드 테스트/ESM/CI 체계 도입 완수.
-- 🔄 **Phase 3 (Next-Gen 전환)**: Next.js + React 기반의 차세대 모노레포 구축과 클라우드 DB 연동.
+- 🔄 **Phase 3 (Next-Gen 전환)**: Next.js + React 기반의 차세대 모노레포 구축 및 SQLite 기반 로컬 DB 연동 완료.
 - 🔲 **Phase 4**: 심화 AI (자동 수요 예측, 인기 여행지 고급 분석).
 
 ---
