@@ -70,7 +70,14 @@
       "Bash(cd /c/Users/kgj12/Root/main/backend && npx jest __tests__/routes/upload.test.js --no-coverage 2>&1)",
       "Bash(cd /c/Users/kgj12/Root/main && npx jest --config jest.config.cjs --coverage 2>&1)",
       "Bash(echo === JS files with tests but NOT in coverage config ===:*)",
-      "WebFetch(domain:www.canva.com)"
+      "WebFetch(domain:www.canva.com)",
+      "Bash(Out-File -FilePath 'c:\\\\Users\\\\cmy\\\\kim-travel-main-dev\\\\start-next-gen.bat' -Encoding ASCII)",
+      "Bash(cmd.exe /c \"start-next-gen.bat status\")",
+      "Bash(cmd.exe //c \"call start-next-gen.bat status\")",
+      "Bash(cmd.exe /c \"c:\\\\Users\\\\cmy\\\\kim-travel-main-dev\\\\start-next-gen.bat status\")",
+      "Bash(cmd.exe /c \"cd /d c:\\\\Users\\\\cmy\\\\kim-travel-main-dev && start-next-gen.bat status\")",
+      "Bash(powershell.exe -Command \"& 'C:\\\\Users\\\\cmy\\\\kim-travel-main-dev\\\\start-next-gen.bat' status\")",
+      "Bash(powershell.exe -Command \"netstat -ano | Select-String ':3000.*LISTENING'\")"
     ],
     "deny": [],
     "ask": []

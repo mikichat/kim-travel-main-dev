@@ -59,3 +59,4 @@ group-roster/node_modules/
 # Local environment overrides
 *.local
 .env.*.local
+client/.next/
