@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -37,25 +37,17 @@ model Itinerary {
   userId      String          @map("user_id")
   title       String
   description String?
-  startDate   DateTime?       @map("start_date") @db.Date
-  endDate     DateTime?       @map("end_date") @db.Date
-  status      ItineraryStatus @default(DRAFT)
-  metadata    Json?           // 템플릿 정보, 브랜딩 설정 등
+  startDate   String?        @map("start_date")
+  endDate     String?        @map("end_date")
+  status      String          @default("DRAFT")
+  metadata    String?
   createdAt   DateTime        @default(now()) @map("created_at")
   updatedAt   DateTime        @updatedAt @map("updated_at")
 
   user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   items ItineraryItem[]
 
-  @@index([userId])
-  @@index([status])
   @@map("itineraries")
-}
-
-enum ItineraryStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
 }
 
 // ==========================================
@@ -65,14 +57,14 @@ model ItineraryItem {
   id          String    @id @default(uuid())
   itineraryId String    @map("itinerary_id")
   hotelId     String?   @map("hotel_id")
-  dayNumber   Int       @map("day_number") // 1일차, 2일차...
-  startTime   DateTime? @map("start_time") @db.Time
-  endTime     DateTime? @map("end_time") @db.Time
+  dayNumber   Int       @map("day_number")
+  startTime   String?  @map("start_time")
+  endTime     String?  @map("end_time")
   title       String
   description String?
   location    String?
-  coordinates Json?     // {"lat": 51.5074, "lng": -0.1278}
-  sortOrder   Int       @default(0) @map("sort_order") // 드래그앤드롭 순서
+  coordinates String?
+  sortOrder   Int      @default(0) @map("sort_order")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
@@ -80,8 +72,6 @@ model ItineraryItem {
   hotel     Hotel?                 @relation(fields: [hotelId], references: [id], onDelete: SetNull)
   images    ItineraryItemImage[]
 
-  @@index([itineraryId])
-  @@index([itineraryId, dayNumber])
   @@map("itinerary_items")
 }
 
@@ -95,12 +85,12 @@ model Hotel {
   address         String?
   country         String?
   city            String?
-  starRating      Int?     @map("star_rating") @db.SmallInt
+  starRating      Int?     @map("star_rating")
   phone           String?
   url             String?
-  locationRemarks String?  @map("location_remarks") // 위치 설명 (도보거리 등)
-  coordinates     Json?    // {"lat": 51.5074, "lng": -0.1278}
-  amenities       Json?    // ["wifi", "parking", "breakfast"]
+  locationRemarks String?  @map("location_remarks")
+  coordinates     String?
+  amenities       String?
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
@@ -108,8 +98,6 @@ model Hotel {
   itineraryItems ItineraryItem[]
   images         Image[]
 
-  @@index([userId])
-  @@index([name])
   @@map("hotels")
 }
 
@@ -122,11 +110,11 @@ model Image {
   categoryId  String?  @map("category_id")
   hotelId     String?  @map("hotel_id")
   filename    String
-  storagePath String?  @map("storage_path") // 로컬 저장 경로
-  cloudUrl    String?  @map("cloud_url") // 클라우드 URL
+  storagePath String?  @map("storage_path")
+  cloudUrl    String?  @map("cloud_url")
   fileSize    Int?     @map("file_size")
   mimeType    String?  @map("mime_type")
-  metadata    Json?    // 이미지 메타데이터
+  metadata    String?
   createdAt   DateTime @default(now()) @map("created_at")
 
   user           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -134,9 +122,6 @@ model Image {
   hotel          Hotel?                 @relation(fields: [hotelId], references: [id], onDelete: SetNull)
   itineraryItems ItineraryItemImage[]
 
-  @@index([userId])
-  @@index([categoryId])
-  @@index([hotelId])
   @@map("images")
 }
 
@@ -145,7 +130,7 @@ model Image {
 // ==========================================
 model ImageCategory {
   id          String   @id @default(uuid())
-  userId      String?  @map("user_id") // null이면 시스템 기본 카테고리
+  userId      String?  @map("user_id")
   name        String
   description String?
   sortOrder   Int      @default(0) @map("sort_order")
@@ -154,7 +139,6 @@ model ImageCategory {
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   images Image[]
 
-  @@index([userId])
   @@map("image_categories")
 }
 

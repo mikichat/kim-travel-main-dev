@@ -2,7 +2,6 @@
   "name": "tourworld-monorepo",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
   "workspaces": [
     "client",
     "server",
@@ -33,18 +32,11 @@
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
-    "docker:logs:db": "docker compose logs -f db",
     "docker:restart": "docker compose restart",
-    "docker:rebuild": "docker compose up -d --build",
-    "docker:dev": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d",
-    "docker:dev:tools": "docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile tools up -d",
-    "docker:clean": "docker compose down -v --remove-orphans",
     "clean": "rimraf node_modules client/node_modules server/node_modules shared/node_modules",
-    "prepare": "husky",
+    "prepare": "husky install",
     "test:frontend": "jest --config jest.config.cjs",
-    "test:frontend:coverage": "jest --config jest.config.cjs --coverage",
-    "test:e2e": "playwright test --config playwright.config.cjs",
-    "docker:build:backend": "docker build -t travel-backend ./backend"
+    "test:e2e": "playwright test --config playwright.config.cjs"
   },
   "lint-staged": {
     "client/**/*.{ts,tsx}": [
@@ -71,8 +63,6 @@
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.0.1",
     "husky": "^9.1.7",
     "jest": "^30.2.0",
     "lint-staged": "^16.2.7",
@@ -84,8 +74,5 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "packageManager": "npm@10.0.0",
-  "dependencies": {
-    "winston": "^3.19.0"
-  }
+  "packageManager": "npm@10.0.0"
 }

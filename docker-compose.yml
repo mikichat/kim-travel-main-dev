@@ -1,39 +1,22 @@
 version: "3.9"
 
+# SQLite 사용으로 DB 컨테이너 불필요 - 파일 기반으로 동작
 services:
-  db:
-    image: pgvector/pgvector:pg16
-    container_name: tourworld_postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-tourworld}
-      PGDATA: /var/lib/postgresql/data/pgdata
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init-pgvector.sql:/docker-entrypoint-initdb.d/01-init-pgvector.sql:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-tourworld}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      - ./server/prisma:/app/prisma
+    restart: unless-stopped
     networks:
       - tourworld-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
 networks:
   tourworld-network:
     driver: bridge
     name: tourworld-network
-
-volumes:
-  postgres_data:
-    name: tourworld_postgres_data
