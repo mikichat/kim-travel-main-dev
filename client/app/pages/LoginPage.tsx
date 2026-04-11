@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState, FormEvent, ChangeEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { login, getErrorMessage } from '../api/auth';
 import { useAuthStore } from '../stores/authStore';
 
@@ -14,7 +16,7 @@ interface FormErrors {
 }
 
 const LoginPage: React.FC = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { setAuth, setLoading, setError, isLoading, error, clearError } =
     useAuthStore();
 
@@ -53,12 +55,10 @@ const LoginPage: React.FC = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Clear field error when user starts typing
     if (formErrors[name as keyof FormErrors]) {
       setFormErrors((prev) => ({ ...prev, [name]: undefined }));
     }
 
-    // Clear API error when user modifies form
     if (error) {
       clearError();
     }
@@ -78,7 +78,7 @@ const LoginPage: React.FC = () => {
       const response = await login(formData);
       setAuth(response.user, response.token);
       setLoading(false);
-      navigate('/dashboard');
+      router.push('/dashboard');
     } catch (err) {
       setError(getErrorMessage(err));
       setLoading(false);
