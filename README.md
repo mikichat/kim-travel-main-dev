@@ -46,18 +46,41 @@
 
 ```text
 tourworld-root/
-├── backend/               # 🛡️ [Current] Production Backend (Node.js + Express + SQLite)
-│   ├── routes/            # 분리된 도메인별 라우터 (auth, schedules, upload, sync 등)
-│   ├── services/          # 외부 연동(알림톡, 메일) 및 Gemini 연동 레이어
-│   ├── __tests__/         # 99% 달성 API Integration 테스트 
-│   ├── database.js        # SQLite 인메모리 관리 및 인덱스 최적화
-│   └── server.js          # Graceful Shutdown 및 보안 체계가 적용된 앱 엔트리
-├── *.html, css/, js/      # 💻 [Current] Production Frontend (Vanilla JS + HTML5 + CSS3)
-│   └── js/modules/        # ESM (ES Modules) 패턴이 적용된 프론트엔드 유틸리티
-│
 ├── client/                # 🚀 [Next-Gen] 신규 Frontend (React 18 + Vite + Zustand + TS)
 ├── server/                # 🚀 [Next-Gen] 신규 Backend (Express + Prisma + TS)
 ├── shared/                # 🔗 [Next-Gen] 공통 타입/유틸 라이브러리 (Monorepo Workspace)
+├── backend/               # 🛡️ [Current] Production Backend (Node.js + Express + SQLite)
+│   ├── routes/            # 분리된 도메인별 라우터 (auth, schedules, upload, sync 등)
+│   ├── services/          # 외부 연동(알림톡, 메일) 및 Gemini 연동 레이어
+│   ├── __tests__/         # 99% 달성 API Integration 테스트
+│   ├── database.js        # SQLite 인메모리 관리 및 인덱스 최적화
+│   └── server.js          # Graceful Shutdown 및 보안 체계가 적용된 앱 엔트리
+│
+├── frontend/              # 💻 [Current] Production Frontend (Vanilla JS + HTML5 + CSS3)
+│   ├── pages/             # 주요 HTML 페이지 (index, login, cost-calculator 등)
+│   ├── flights/           # 항공편/스케줄 관리 (기존 air1/)
+│   ├── invoices/          # 인보이스/청구서 (기존 in/)
+│   ├── itineraries/       # 일정표 생성 (기존 hanatour/)
+│   ├── quotes/            # 견적서 편집기 (기존 quote-editor-v1/)
+│   ├── templates/         # 문서 인쇄 템플릿 (기존 doc-template-1/)
+│   ├── js/                # 공통 JavaScript 유틸리티
+│   ├── css/               # 공통 스타일시트
+│   └── components/        # 재사용 가능한 UI 컴포넌트
+│
+├── tools/                 # ⚙️ 보조 도구 및 스크립트
+│   ├── data-converter/     # 데이터 변환 유틸리티
+│   ├── scripts/           # 배포/백업 스크립트
+│   └── util/              # 유틸리티 CLI 도구
+│
+├── docs/                  # 📚 프로젝트 문서
+│   ├── history/           # 버그 픽스 및 세션 로그
+│   ├── testing/           # 테스트 결과 리포트
+│   ├── references/        # 샘플 파일, Airport 데이터 등
+│   └── assets/            # 문서용 이미지
+│
+├── e2e/                   # 🧪 E2E 테스트 스펙 (Playwright)
+├── tests/                 # 🧪 통합 테스트
+├── __tests__/            # 🧪 유닛 테스트
 │
 ├── Dockerfile, *.yml      # 🐳 Docker 배포 파이프라인
 └── .github/workflows/     # 🤖 GitHub Actions CI 연동 (Test, Lint, Format)
@@ -113,8 +136,8 @@ DATABASE_PATH=data/database.sqlite
 1. `npm install` (루트 구동을 위해 npm workspaces 패키지 설치)
 2. `cd backend && npm install`
 3. 개발(Watch 모드): `npm run dev` (포트 5000에서 실행됨)
-4. 테스트 실행: `npm test` 및 커버리지 조회 `npm run test:coverage` 
-5. 웹진입 방법: 브라우저에서 최상위의 `index.html` 파일을 직접 열거나, 간단한 웹서버로 서빙.
+4. 테스트 실행: `npm test` 및 커버리지 조회 `npm run test:coverage`
+5. 웹진입 방법: 브라우저에서 `frontend/pages/index.html` 파일을 직접 열거나, 간단한 웹서버로 서빙.
 
 **옵션 B: 차세대 모노레포 실행 (Next-Gen React / Express)**
 루트 경로에서 한 번의 명령어로 통합 환경을 시작합니다.
