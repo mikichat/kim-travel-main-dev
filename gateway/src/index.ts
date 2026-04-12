@@ -42,8 +42,25 @@ app.use('/api/air', requireAuth, requirePermission('air'), proxy('http://localho
 app.use('/api/doc', requireAuth, requirePermission('landing'), proxy('http://localhost:5505'));
 
 // Next-Gen Monorepo proxy
-// /api/nextgen/* → localhost:3001 (server/ - Express + Prisma)
-app.use('/api/nextgen', requireAuth, requirePermission('main'), proxy('http://localhost:3001'));
+// /api/nextgen/* → localhost:3000 (server/ - Express + Prisma)
+// Note: Next-Gen uses JWT auth, not session - so we skip session auth
+app.use('/api/nextgen', express.json(), (req, res, next) => {
+  const target = 'http://localhost:3000';
+  const proxy = createProxyMiddleware({
+    target,
+    changeOrigin: true,
+    pathRewrite: (path) => path.replace(/^\/api\/nextgen/, ''),
+    on: {
+      proxyReq: (proxyReq, req) => {
+        // Forward Authorization header if present
+        if (req.headers.authorization) {
+          proxyReq.setHeader('Authorization', req.headers.authorization);
+        }
+      }
+    }
+  });
+  proxy(req, res, next);
+});
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\nGateway running on http://localhost:${PORT}`);
