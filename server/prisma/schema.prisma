@@ -157,3 +157,276 @@ model ItineraryItemImage {
   @@id([itineraryItemId, imageId])
   @@map("itinerary_item_images")
 }
+
+// ==========================================
+// Invoice (인보이스 - Current Stable 마이그레이션)
+// ==========================================
+model Invoice {
+  id               String   @id @default(uuid())
+  invoiceNumber    String   @unique @map("invoice_number")
+  recipient        String?
+  invoiceDate      String?  @map("invoice_date")
+  description      String?
+  totalAmount      Float    @default(0) @map("total_amount")
+
+  // Simple mode fields
+  airfareUnitPrice       Float?  @map("airfare_unit_price")
+  airfareQuantity         Int?    @map("airfare_quantity")
+  airfareTotal            Float?  @map("airfare_total")
+  seatPreferenceUnitPrice Float?  @map("seat_preference_unit_price")
+  seatPreferenceQuantity  Int?    @map("seat_preference_quantity")
+  seatPreferenceTotal     Float?  @map("seat_preference_total")
+
+  // Advanced mode fields
+  calculationMode      String?  @map("calculation_mode")
+  basePricePerPerson    Float?   @map("base_price_per_person")
+  totalParticipants     Int?     @map("total_participants")
+  totalTravelCost       Float?   @map("total_travel_cost")
+  depositAmount         Float?   @map("deposit_amount")
+  depositDescription    String?  @map("deposit_description")
+  additionalItems       String?  @map("additional_items") // JSON
+  balanceDue            Float?   @map("balance_due")
+
+  // Files
+  logoPath    String? @map("logo_path")
+  sealPath    String? @map("seal_path")
+  pdfFilePath String? @map("pdf_file_path")
+
+  // Relations
+  flightScheduleId String?  @map("flight_schedule_id")
+  bankAccountId    String?  @map("bank_account_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  flightSchedule FlightSchedule? @relation(fields: [flightScheduleId], references: [id], onDelete: SetNull)
+  bankAccount    BankAccount?   @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+
+  @@map("invoices")
+}
+
+// ==========================================
+// FlightSchedule (항공 스케줄 - Current Stable 마이그레이션)
+// ==========================================
+model FlightSchedule {
+  id              String   @id @default(uuid())
+  groupId         String?  @map("group_id")
+  groupName      String?  @map("group_name")
+  airline        String?
+  flightNumber    String?  @map("flight_number")
+  departureDate   String?  @map("departure_date")
+  departureAirport String? @map("departure_airport")
+  departureTime   String?  @map("departure_time")
+  arrivalDate     String?  @map("arrival_date")
+  arrivalAirport  String?  @map("arrival_airport")
+  arrivalTime     String?  @map("arrival_time")
+  passengers      Int?     @default(0)
+  pnr             String?
+  source          String?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  invoices Invoice[]
+
+  @@map("flight_schedules")
+}
+
+// ==========================================
+// BankAccount (은행 계좌 - Current Stable 마이그레이션)
+// ==========================================
+model BankAccount {
+  id            String   @id @default(uuid())
+  bankName      String   @map("bank_name")
+  accountNumber String   @map("account_number")
+  accountHolder String   @map("account_holder")
+  isDefault     Boolean  @default(false) @map("is_default")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  invoices Invoice[]
+
+  @@map("bank_accounts")
+}
+
+// ==========================================
+// Group (단체 - Current Stable 마이그레이션)
+// ==========================================
+model Group {
+  id            String    @id @default(uuid())
+  name          String
+  destination   String?
+  departureDate String?   @map("departure_date")
+  returnDate    String?   @map("return_date")
+  members      String?   // JSON array
+  rosterId      String?   @map("roster_id")
+  lastSyncAt    String?   @map("last_sync_at")
+  syncStatus    String?   @map("sync_status")
+  isArchived    Boolean   @default(false) @map("is_archived")
+  archivedAt    String?   @map("archived_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("groups")
+}
+
+// ==========================================
+// GroupRoster (단체 명단 - Current Stable 마이그레이션)
+// ==========================================
+model GroupRoster {
+  id        String   @id @default(uuid())
+  name      String
+  data      String?   // JSON - members array
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("group_rosters")
+}
+
+// ==========================================
+// CostCalculation (원가 계산 - Current Stable 마이그레이션)
+// ==========================================
+model CostCalculation {
+  id           String @id @default(uuid())
+  code         String @unique
+  name         String
+  destination  String?
+  departureDate String? @map("departure_date")
+  arrivalDate  String? @map("arrival_date")
+  nights       Int?
+  days         Int?
+  adults       Int     @default(0)
+  children     Int     @default(0)
+  infants      Int     @default(0)
+  tc           Float?  @default(0)
+
+  // Vehicle
+  domesticVehicleType  String? @map("domestic_vehicle_type")
+  domesticVehicleTotal  Float?   @map("domestic_vehicle_total")
+
+  // JSON fields
+  flightData   String? @map("flight_data")   // JSON
+  etcCosts     String? @map("etc_costs")       // JSON
+  landCost1    String? @map("land_cost_1")    // JSON
+  landCost2    String? @map("land_cost_2")     // JSON
+
+  // Margins
+  marginAmount1 Float? @map("margin_amount_1")
+  marginAmount2 Float? @map("margin_amount_2")
+  notes1        String? @map("notes_1")
+  notes2        String? @map("notes_2")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("cost_calculations")
+}
+
+// ==========================================
+// Schedule (일정 - Current Stable 마이그레이션)
+// ==========================================
+model Schedule {
+  id         String   @id @default(uuid())
+  groupName  String   @map("group_name")
+  eventDate  String   @map("event_date")
+  location   String?
+  transport  String?
+  time       String?
+  schedule   String?
+  meals      String?
+  color      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("schedules")
+}
+
+// ==========================================
+// Product (상품 - Current Stable 마이그레이션)
+// ==========================================
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  destination String?
+  duration    Int?
+  price       Float    @default(0)
+  status      String   @default("active")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Extended fields
+  hotelName    String? @map("hotel_name")
+  hotelCheckin String? @map("hotel_checkin")
+  hotelCheckout String? @map("hotel_checkout")
+  hotelRoomType String? @map("hotel_room_type")
+  hotelRooms   Int?    @map("hotel_rooms")
+  hotelNote    String? @map("hotel_note")
+
+  vehicleType    String? @map("vehicle_type")
+  vehicleCount   Int?    @map("vehicle_count")
+  vehicleCompany String? @map("vehicle_company")
+  vehicleNote    String? @map("vehicle_note")
+
+  guideName    String? @map("guide_name")
+  guidePhone   String? @map("guide_phone")
+  guideLanguage String? @map("guide_language")
+  guideNote    String? @map("guide_note")
+
+  flightId         String? @map("flight_id")
+  outboundFlight  String? @map("outbound_flight")
+  returnFlight    String? @map("return_flight")
+  flightNote      String? @map("flight_note")
+
+  procurementFlight   String? @map("procurement_flight")
+  procurementHotel    String? @map("procurement_hotel")
+  procurementVehicle  String? @map("procurement_vehicle")
+  procurementGuide    String? @map("procurement_guide")
+  procurementVisa     String? @map("procurement_visa")
+  procurementInsurance String? @map("procurement_insurance")
+  procurementStatus   String? @map("procurement_status")
+  procurementNote     String? @map("procurement_note")
+
+  @@map("products")
+}
+
+// ==========================================
+// Customer (고객 - Current Stable 마이그레이션)
+// ==========================================
+model Customer {
+  id              String   @id @default(uuid())
+  nameKor         String?  @map("name_kor")
+  nameEng         String?  @map("name_eng")
+  passportNumber  String   @unique @map("passport_number")
+  birthDate       String?  @map("birth_date")
+  passportExpiry  String?  @map("passport_expiry")
+  phone           String?
+  email           String?
+  address         String?
+  travelHistory   String?  @map("travel_history")
+  notes           String?
+  passportFileName String? @map("passport_file_name")
+  passportFileData String? @map("passport_file_data")
+  groupName       String?  @map("group_name")
+  lastModified    String?  @map("last_modified")
+  departureDate    String? @map("departure_date")
+  travelRegion    String? @map("travel_region")
+  syncSource      String? @map("sync_source")
+  syncGroupId     String? @map("sync_group_id")
+  isActive        Boolean  @default(true) @map("is_active")
+  gender          String?
+  returnDate       String? @map("return_date")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("customers")
+}
+
+// ==========================================
+// Todo (할일 - Current Stable 마이그레이션)
+// ==========================================
+model Todo {
+  id          String   @id @default(uuid())
+  title       String
+  dueDate     String?  @map("due_date")
+  priority    String?
+  description String?
+  isCompleted Boolean  @default(false) @map("is_completed")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("todos")
+}
