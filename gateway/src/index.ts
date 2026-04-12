@@ -28,10 +28,16 @@ app.use('/api/auth', express.json(), authRouter);
 // Next-Gen Monorepo proxy
 // /* → localhost:3001/api/*
 app.use('/', (req, res, next) => {
+  console.log('Proxy received:', req.method, req.path);
   const proxy = createProxyMiddleware({
     target: 'http://localhost:3001',
     changeOrigin: true,
-    pathRewrite: (path: string) => path,
+    pathRewrite: (path: string) => {
+      console.log('pathRewrite before:', path);
+      const result = path;
+      console.log('pathRewrite after:', result);
+      return result;
+    },
     on: {
       proxyReq: (proxyReq, req: any) => {
         if (req.headers.authorization) {
