@@ -147,7 +147,7 @@ check_status() {
     echo -e "  ${CYAN}🔧 Server:${NC}    http://localhost:3001"
     echo -e "  ${CYAN}📋 Server API:${NC} http://localhost:3001/api/health"
     echo ""
-    log_info "API 테스트: curl http://localhost:8080/api/nextgen/health"
+    log_info "API 테스트: curl http://localhost:8080/api/health"
   else
     log_warn "일부 서버가 실행되지 않았습니다."
     log_info "로그 확인: ./start-next-gen.sh logs"
