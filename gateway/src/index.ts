@@ -26,12 +26,11 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', express.json(), authRouter);
 
 // Next-Gen Monorepo proxy
-// /api/nextgen/* → localhost:3001/api/* (nextgen prefix 제거)
+// /api/* → localhost:3001/api/*
 app.use('/api', (req, res, next) => {
   const proxy = createProxyMiddleware({
     target: 'http://localhost:3001',
     changeOrigin: true,
-    pathRewrite: (path: string) => path.replace(/\/nextgen/, '/api'),
     on: {
       proxyReq: (proxyReq, req: any) => {
         if (req.headers.authorization) {
@@ -46,6 +45,6 @@ app.use('/api', (req, res, next) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\nGateway running on http://localhost:${PORT}`);
   console.log('  /api/auth/*   → Gateway 내장 인증');
-  console.log('  /api/nextgen/* → localhost:3001/api/* (nextgen prefix 제거)');
+  console.log('  /api/*        → localhost:3001/api/*');
   console.log(`\n  Admin: admin@tourworld.com / admin1234\n`);
 });
