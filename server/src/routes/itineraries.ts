@@ -19,9 +19,9 @@ const router = express.Router();
  * GET /api/itineraries
  * Get all itineraries
  */
-router.get('/', (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
-    const itineraries = getAllItineraries();
+    const itineraries = await getAllItineraries();
     const response: ItineraryListResponse = {
       success: true,
       message: 'Itineraries retrieved successfully',
@@ -42,10 +42,10 @@ router.get('/', (req: Request, res: Response) => {
  * GET /api/itineraries/:id
  * Get itinerary by ID
  */
-router.get('/:id', (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const itinerary = getItineraryById(id);
+    const itinerary = await getItineraryById(id);
 
     if (!itinerary) {
       const response: ItineraryResponse = {
@@ -75,10 +75,10 @@ router.get('/:id', (req: Request, res: Response) => {
  * POST /api/itineraries
  * Create a new itinerary
  */
-router.post('/', (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response): Promise<void> => {
   try {
     const data: CreateItineraryRequest = req.body;
-    const itinerary = createItinerary(data);
+    const itinerary = await createItinerary(data);
 
     const response: ItineraryResponse = {
       success: true,
@@ -100,11 +100,11 @@ router.post('/', (req: Request, res: Response) => {
  * PUT /api/itineraries/:id
  * Update an itinerary
  */
-router.put('/:id', (req: Request, res: Response) => {
+router.put('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     const data: UpdateItineraryRequest = req.body;
-    const itinerary = updateItinerary(id, data);
+    const itinerary = await updateItinerary(id, data);
 
     const response: ItineraryResponse = {
       success: true,
@@ -134,10 +134,10 @@ router.put('/:id', (req: Request, res: Response) => {
  * DELETE /api/itineraries/:id
  * Delete an itinerary
  */
-router.delete('/:id', (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    deleteItinerary(id);
+    await deleteItinerary(id);
 
     const response: ItineraryResponse = {
       success: true,

@@ -1,24 +1,13 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
+import { prisma } from '../config/database';
 import {
   UserInfo,
   TokenPayload,
   RegisterRequest,
   LoginRequest,
 } from '../../shared/types/auth';
-
-// In-memory user store (for testing/development)
-// In production, replace with database
-interface StoredUser {
-  id: string;
-  email: string;
-  password: string;
-  name: string;
-  createdAt: Date;
-}
-
-export const userStore = new Map<string, StoredUser>();
 
 // JWT Configuration
 const JWT_SECRET =
@@ -95,10 +84,10 @@ export async function registerUser(data: RegisterRequest): Promise<{
   accessToken: string;
   refreshToken: string;
 }> {
-  // Check if user already exists
-  const existingUser = Array.from(userStore.values()).find(
-    (u) => u.email === data.email
-  );
+  // Check if user already exists in database
+  const existingUser = await prisma.user.findUnique({
+    where: { email: data.email },
+  });
   if (existingUser) {
     throw new Error('User with this email already exists');
   }
@@ -111,31 +100,26 @@ export async function registerUser(data: RegisterRequest): Promise<{
   // Hash password
   const hashedPassword = await hashPassword(data.password);
 
-  // Create user
-  const id = uuidv4();
-  const createdAt = new Date();
-  const user: StoredUser = {
-    id,
-    email: data.email,
-    password: hashedPassword,
-    name: data.name,
-    createdAt,
-  };
-
-  // Store user
-  userStore.set(id, user);
+  // Create user in database
+  const user = await prisma.user.create({
+    data: {
+      email: data.email,
+      passwordHash: hashedPassword,
+      name: data.name,
+    },
+  });
 
   // Generate tokens
-  const tokenPayload: TokenPayload = { userId: id, email: data.email };
+  const tokenPayload: TokenPayload = { userId: user.id, email: user.email };
   const accessToken = generateAccessToken(tokenPayload);
   const refreshToken = generateRefreshToken(tokenPayload);
 
   // Return user info (without password)
   const userInfo: UserInfo = {
-    id,
-    email: data.email,
-    name: data.name,
-    createdAt,
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    createdAt: user.createdAt,
   };
 
   return { user: userInfo, accessToken, refreshToken };
@@ -149,16 +133,16 @@ export async function loginUser(data: LoginRequest): Promise<{
   accessToken: string;
   refreshToken: string;
 }> {
-  // Find user by email
-  const user = Array.from(userStore.values()).find(
-    (u) => u.email === data.email
-  );
+  // Find user by email in database
+  const user = await prisma.user.findUnique({
+    where: { email: data.email },
+  });
   if (!user) {
     throw new Error('Invalid email or password');
   }
 
   // Verify password
-  const isValidPassword = await comparePassword(data.password, user.password);
+  const isValidPassword = await comparePassword(data.password, user.passwordHash);
   if (!isValidPassword) {
     throw new Error('Invalid email or password');
   }
@@ -182,8 +166,10 @@ export async function loginUser(data: LoginRequest): Promise<{
 /**
  * Get user by ID
  */
-export function getUserById(id: string): UserInfo | null {
-  const user = userStore.get(id);
+export async function getUserById(id: string): Promise<UserInfo | null> {
+  const user = await prisma.user.findUnique({
+    where: { id },
+  });
   if (!user) {
     return null;
   }
@@ -206,12 +192,6 @@ export function refreshTokens(refreshToken: string): {
   // Verify refresh token
   const payload = verifyRefreshToken(refreshToken);
 
-  // Check if user exists
-  const user = userStore.get(payload.userId);
-  if (!user) {
-    throw new Error('User not found');
-  }
-
   // Generate new tokens
   const tokenPayload: TokenPayload = {
     userId: payload.userId,
@@ -232,10 +212,10 @@ export async function initializeAdminUser(): Promise<void> {
   const adminPassword = process.env.ADMIN_PASSWORD || 'admin123!';
   const adminName = process.env.ADMIN_NAME || '관리자';
 
-  // Check if admin user already exists
-  const existingAdmin = Array.from(userStore.values()).find(
-    (u) => u.email === adminEmail
-  );
+  // Check if admin user already exists in database
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: adminEmail },
+  });
   if (existingAdmin) {
     console.log(`Admin user already exists: ${adminEmail}`);
     return;
@@ -244,18 +224,13 @@ export async function initializeAdminUser(): Promise<void> {
   // Hash password
   const hashedPassword = await hashPassword(adminPassword);
 
-  // Create admin user
-  const id = uuidv4();
-  const createdAt = new Date();
-  const admin: StoredUser = {
-    id,
-    email: adminEmail,
-    password: hashedPassword,
-    name: adminName,
-    createdAt,
-  };
-
-  // Store admin user
-  userStore.set(id, admin);
+  // Create admin user in database
+  await prisma.user.create({
+    data: {
+      email: adminEmail,
+      passwordHash: hashedPassword,
+      name: adminName,
+    },
+  });
   console.log(`Admin user created: ${adminEmail}`);
 }

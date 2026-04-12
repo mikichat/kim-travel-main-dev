@@ -1,14 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
+import { prisma } from '../config/database';
 import {
   Itinerary,
   CreateItineraryRequest,
   UpdateItineraryRequest,
   ItineraryStatus,
 } from '../../../shared/types/itinerary';
-
-// In-memory itinerary store (for testing/development)
-// In production, replace with database
-export const itineraryStore = new Map<string, Itinerary>();
 
 /**
  * Validate date string
@@ -28,21 +25,27 @@ function isValidDateRange(startDate: Date, endDate: Date): boolean {
 /**
  * Get all itineraries
  */
-export function getAllItineraries(): Itinerary[] {
-  return Array.from(itineraryStore.values());
+export async function getAllItineraries(): Promise<Itinerary[]> {
+  const itineraries = await prisma.itinerary.findMany({
+    orderBy: { createdAt: 'desc' },
+  });
+  return itineraries;
 }
 
 /**
  * Get itinerary by ID
  */
-export function getItineraryById(id: string): Itinerary | null {
-  return itineraryStore.get(id) || null;
+export async function getItineraryById(id: string): Promise<Itinerary | null> {
+  const itinerary = await prisma.itinerary.findUnique({
+    where: { id },
+  });
+  return itinerary;
 }
 
 /**
  * Create a new itinerary
  */
-export function createItinerary(data: CreateItineraryRequest): Itinerary {
+export async function createItinerary(data: CreateItineraryRequest): Promise<Itinerary> {
   // Validate required fields
   if (!data.title || !data.destination || !data.startDate || !data.endDate) {
     throw new Error('Missing required fields: title, destination, startDate, endDate');
@@ -65,25 +68,19 @@ export function createItinerary(data: CreateItineraryRequest): Itinerary {
     throw new Error('End date must be on or after start date');
   }
 
-  // Create itinerary
-  const id = uuidv4();
-  const now = new Date();
-  const status: ItineraryStatus = data.status || 'draft';
-
-  const itinerary: Itinerary = {
-    id,
-    title: data.title,
-    description: data.description,
-    destination: data.destination,
-    startDate,
-    endDate,
-    status,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  // Store itinerary
-  itineraryStore.set(id, itinerary);
+  // Create itinerary in database
+  const itinerary = await prisma.itinerary.create({
+    data: {
+      id: uuidv4(),
+      title: data.title,
+      description: data.description,
+      destination: data.destination,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      status: data.status || 'draft',
+      userId: 'mock-user-id', // TODO: get from auth context
+    },
+  });
 
   return itinerary;
 }
@@ -91,12 +88,14 @@ export function createItinerary(data: CreateItineraryRequest): Itinerary {
 /**
  * Update an itinerary
  */
-export function updateItinerary(
+export async function updateItinerary(
   id: string,
   data: UpdateItineraryRequest
-): Itinerary {
+): Promise<Itinerary> {
   // Get existing itinerary
-  const existing = itineraryStore.get(id);
+  const existing = await prisma.itinerary.findUnique({
+    where: { id },
+  });
   if (!existing) {
     throw new Error('Itinerary not found');
   }
@@ -109,35 +108,33 @@ export function updateItinerary(
     if (!isValidDate(data.startDate)) {
       throw new Error('Invalid start date format');
     }
-    startDate = new Date(data.startDate);
+    startDate = data.startDate;
   }
 
   if (data.endDate) {
     if (!isValidDate(data.endDate)) {
       throw new Error('Invalid end date format');
     }
-    endDate = new Date(data.endDate);
+    endDate = data.endDate;
   }
 
   // Validate date range
-  if (!isValidDateRange(startDate, endDate)) {
+  if (!isValidDateRange(new Date(startDate), new Date(endDate))) {
     throw new Error('End date must be on or after start date');
   }
 
-  // Update itinerary
-  const updated: Itinerary = {
-    ...existing,
-    title: data.title ?? existing.title,
-    description: data.description !== undefined ? data.description : existing.description,
-    destination: data.destination ?? existing.destination,
-    startDate,
-    endDate,
-    status: data.status ?? existing.status,
-    updatedAt: new Date(),
-  };
-
-  // Store updated itinerary
-  itineraryStore.set(id, updated);
+  // Update itinerary in database
+  const updated = await prisma.itinerary.update({
+    where: { id },
+    data: {
+      title: data.title,
+      description: data.description,
+      destination: data.destination,
+      startDate,
+      endDate,
+      status: data.status,
+    },
+  });
 
   return updated;
 }
@@ -145,11 +142,15 @@ export function updateItinerary(
 /**
  * Delete an itinerary
  */
-export function deleteItinerary(id: string): void {
-  const existing = itineraryStore.get(id);
+export async function deleteItinerary(id: string): Promise<void> {
+  const existing = await prisma.itinerary.findUnique({
+    where: { id },
+  });
   if (!existing) {
     throw new Error('Itinerary not found');
   }
 
-  itineraryStore.delete(id);
+  await prisma.itinerary.delete({
+    where: { id },
+  });
 }

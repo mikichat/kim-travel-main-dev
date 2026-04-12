@@ -1,14 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
+import { prisma } from '../config/database';
 import {
   Hotel,
   CreateHotelRequest,
   UpdateHotelRequest,
   Coordinates,
 } from '../../../shared/types/hotel';
-
-// In-memory hotel store (for testing/development)
-// In production, replace with database
-export const hotelStore = new Map<string, Hotel>();
 
 // Mock userId for development
 const MOCK_USER_ID = 'mock-user-id';
@@ -38,37 +35,61 @@ function isValidCoordinates(coords: Coordinates): boolean {
 /**
  * Get all hotels with optional pagination
  */
-export function getAllHotels(
+export async function getAllHotels(
   page?: number,
   limit?: number
-): { hotels: Hotel[]; total: number } {
-  const allHotels = Array.from(hotelStore.values());
-  const total = allHotels.length;
+): Promise<{ hotels: Hotel[]; total: number }> {
+  // Get total count
+  const total = await prisma.hotel.count();
 
   // If pagination is not requested, return all
   if (page === undefined || limit === undefined) {
-    return { hotels: allHotels, total };
+    const hotels = await prisma.hotel.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    // Parse coordinates for each hotel
+    const parsedHotels = hotels.map(h => ({
+      ...h,
+      coordinates: h.coordinates && typeof h.coordinates === 'string'
+        ? JSON.parse(h.coordinates)
+        : h.coordinates,
+    }));
+    return { hotels: parsedHotels, total };
   }
 
   // Calculate pagination
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
-  const hotels = allHotels.slice(startIndex, endIndex);
+  const skip = (page - 1) * limit;
+  const hotels = await prisma.hotel.findMany({
+    skip,
+    take: limit,
+    orderBy: { createdAt: 'desc' },
+  });
 
-  return { hotels, total };
+  // Parse coordinates for each hotel
+  const parsedHotels = hotels.map(h => ({
+    ...h,
+    coordinates: h.coordinates && typeof h.coordinates === 'string'
+      ? JSON.parse(h.coordinates)
+      : h.coordinates,
+  }));
+
+  return { hotels: parsedHotels, total };
 }
 
 /**
  * Get hotel by ID
  */
-export function getHotelById(id: string): Hotel | null {
-  return hotelStore.get(id) || null;
+export async function getHotelById(id: string): Promise<Hotel | null> {
+  const hotel = await prisma.hotel.findUnique({
+    where: { id },
+  });
+  return hotel;
 }
 
 /**
  * Create a new hotel
  */
-export function createHotel(data: CreateHotelRequest): Hotel {
+export async function createHotel(data: CreateHotelRequest): Promise<Hotel> {
   // Validate required fields
   if (!data.name || data.name.trim() === '') {
     throw new Error('Hotel name is required');
@@ -86,29 +107,28 @@ export function createHotel(data: CreateHotelRequest): Hotel {
     );
   }
 
-  // Create hotel
-  const id = uuidv4();
-  const now = new Date();
+  // Create hotel in database
+  const hotel = await prisma.hotel.create({
+    data: {
+      id: uuidv4(),
+      userId: MOCK_USER_ID,
+      name: data.name.trim(),
+      address: data.address,
+      country: data.country,
+      city: data.city,
+      starRating: data.starRating,
+      phone: data.phone,
+      url: data.url,
+      locationRemarks: data.locationRemarks,
+      coordinates: data.coordinates ? JSON.stringify(data.coordinates) : null,
+      amenities: data.amenities,
+    },
+  });
 
-  const hotel: Hotel = {
-    id,
-    userId: MOCK_USER_ID,
-    name: data.name.trim(),
-    address: data.address,
-    country: data.country,
-    city: data.city,
-    starRating: data.starRating,
-    phone: data.phone,
-    url: data.url,
-    locationRemarks: data.locationRemarks,
-    coordinates: data.coordinates,
-    amenities: data.amenities,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  // Store hotel
-  hotelStore.set(id, hotel);
+  // Parse coordinates back to object if stored as string
+  if (hotel.coordinates && typeof hotel.coordinates === 'string') {
+    hotel.coordinates = JSON.parse(hotel.coordinates);
+  }
 
   return hotel;
 }
@@ -116,9 +136,11 @@ export function createHotel(data: CreateHotelRequest): Hotel {
 /**
  * Update a hotel
  */
-export function updateHotel(id: string, data: UpdateHotelRequest): Hotel {
+export async function updateHotel(id: string, data: UpdateHotelRequest): Promise<Hotel> {
   // Get existing hotel
-  const existing = hotelStore.get(id);
+  const existing = await prisma.hotel.findUnique({
+    where: { id },
+  });
   if (!existing) {
     throw new Error('Hotel not found');
   }
@@ -140,30 +162,27 @@ export function updateHotel(id: string, data: UpdateHotelRequest): Hotel {
     );
   }
 
-  // Update hotel
-  const updated: Hotel = {
-    ...existing,
-    name: data.name !== undefined ? data.name.trim() : existing.name,
-    address: data.address !== undefined ? data.address : existing.address,
-    country: data.country !== undefined ? data.country : existing.country,
-    city: data.city !== undefined ? data.city : existing.city,
-    starRating:
-      data.starRating !== undefined ? data.starRating : existing.starRating,
-    phone: data.phone !== undefined ? data.phone : existing.phone,
-    url: data.url !== undefined ? data.url : existing.url,
-    locationRemarks:
-      data.locationRemarks !== undefined
-        ? data.locationRemarks
-        : existing.locationRemarks,
-    coordinates:
-      data.coordinates !== undefined ? data.coordinates : existing.coordinates,
-    amenities:
-      data.amenities !== undefined ? data.amenities : existing.amenities,
-    updatedAt: new Date(),
-  };
+  // Update hotel in database
+  const updated = await prisma.hotel.update({
+    where: { id },
+    data: {
+      name: data.name !== undefined ? data.name.trim() : undefined,
+      address: data.address,
+      country: data.country,
+      city: data.city,
+      starRating: data.starRating,
+      phone: data.phone,
+      url: data.url,
+      locationRemarks: data.locationRemarks,
+      coordinates: data.coordinates ? JSON.stringify(data.coordinates) : undefined,
+      amenities: data.amenities,
+    },
+  });
 
-  // Store updated hotel
-  hotelStore.set(id, updated);
+  // Parse coordinates back to object if stored as string
+  if (updated.coordinates && typeof updated.coordinates === 'string') {
+    updated.coordinates = JSON.parse(updated.coordinates);
+  }
 
   return updated;
 }
@@ -171,11 +190,15 @@ export function updateHotel(id: string, data: UpdateHotelRequest): Hotel {
 /**
  * Delete a hotel
  */
-export function deleteHotel(id: string): void {
-  const existing = hotelStore.get(id);
+export async function deleteHotel(id: string): Promise<void> {
+  const existing = await prisma.hotel.findUnique({
+    where: { id },
+  });
   if (!existing) {
     throw new Error('Hotel not found');
   }
 
-  hotelStore.delete(id);
+  await prisma.hotel.delete({
+    where: { id },
+  });
 }

@@ -19,7 +19,7 @@ const router = express.Router();
  * GET /api/hotels
  * Get all hotels with optional pagination
  */
-router.get('/', (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
     const page = req.query.page
       ? parseInt(req.query.page as string, 10)
@@ -28,7 +28,7 @@ router.get('/', (req: Request, res: Response) => {
       ? parseInt(req.query.limit as string, 10)
       : undefined;
 
-    const { hotels, total } = getAllHotels(page, limit);
+    const { hotels, total } = await getAllHotels(page, limit);
 
     const response: HotelListResponse = {
       success: true,
@@ -60,10 +60,10 @@ router.get('/', (req: Request, res: Response) => {
  * GET /api/hotels/:id
  * Get hotel by ID
  */
-router.get('/:id', (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const hotel = getHotelById(id);
+    const hotel = await getHotelById(id);
 
     if (!hotel) {
       const response: HotelResponse = {
@@ -92,10 +92,10 @@ router.get('/:id', (req: Request, res: Response) => {
  * POST /api/hotels
  * Create a new hotel
  */
-router.post('/', (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response): Promise<void> => {
   try {
     const data: CreateHotelRequest = req.body;
-    const hotel = createHotel(data);
+    const hotel = await createHotel(data);
 
     const response: HotelResponse = {
       success: true,
@@ -117,11 +117,11 @@ router.post('/', (req: Request, res: Response) => {
  * PUT /api/hotels/:id
  * Update a hotel
  */
-router.put('/:id', (req: Request, res: Response) => {
+router.put('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     const data: UpdateHotelRequest = req.body;
-    const hotel = updateHotel(id, data);
+    const hotel = await updateHotel(id, data);
 
     const response: HotelResponse = {
       success: true,
@@ -151,10 +151,10 @@ router.put('/:id', (req: Request, res: Response) => {
  * DELETE /api/hotels/:id
  * Delete a hotel
  */
-router.delete('/:id', (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    deleteHotel(id);
+    await deleteHotel(id);
 
     const response: HotelResponse = {
       success: true,
