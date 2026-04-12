@@ -3,8 +3,8 @@ import type { ApiResponse } from '@tourworld/shared';
 import type { ImageAsset, ImageCategory } from '../mocks/data/images';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
-  ? `${process.env.NEXT_PUBLIC_API_URL}/nextgen`
-  : 'http://localhost:8080/nextgen';
+  ? process.env.NEXT_PUBLIC_API_URL
+  : 'http://localhost:8080/api';
 
 // Create axios instance with defaults
 const api = axios.create({
