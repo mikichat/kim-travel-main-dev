@@ -31,7 +31,7 @@ app.use('/', (req, res, next) => {
   const proxy = createProxyMiddleware({
     target: 'http://localhost:3001',
     changeOrigin: true,
-    pathRewrite: { '^/api': '/api' },  // /api/hotels -> /api/hotels (그대로 전달)
+    pathRewrite: (path: string) => path,
     on: {
       proxyReq: (proxyReq, req: any) => {
         if (req.headers.authorization) {
