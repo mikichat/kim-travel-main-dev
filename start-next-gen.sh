@@ -176,17 +176,16 @@ case "${1:-start}" in
     start_gateway
 
     # Server 설치 및 시작
-    if [ ! -d "server/node_modules" ]; then
-      log_info "Server 의존성 설치 중..."
-      (cd "$PROJECT_ROOT/server" && npm install --silent 2>/dev/null)
-    fi
+    log_info "Server 의존성 설치 중..."
+    (cd "$PROJECT_ROOT/server" && npm install --silent --legacy-peer-deps 2>/dev/null)
+    npx prisma generate --cwd "$PROJECT_ROOT/server" 2>/dev/null
     start_server_backend
 
     # Client 설치 및 시작
-    if [ ! -d "client/node_modules" ]; then
-      log_info "Client 의존성 설치 중..."
-      (cd "$PROJECT_ROOT/client" && npm install --silent 2>/dev/null)
-    fi
+    log_info "Client 의존성 설치 중..."
+    (cd "$PROJECT_ROOT/client" && npm install --silent --legacy-peer-deps 2>/dev/null)
+    # next symlink 복구 (workspaces에서 사라지는 문제 해결)
+    (cd "$PROJECT_ROOT/client" && mkdir -p node_modules && [ ! -e node_modules/next ] && ln -sf ../../node_modules/next node_modules/next || true)
     start_client
 
     echo ""
