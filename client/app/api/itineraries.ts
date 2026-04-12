@@ -2,8 +2,8 @@ import axios from 'axios';
 import type { ApiResponse, Tour } from '@tourworld/shared';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
-  ? `${process.env.NEXT_PUBLIC_API_URL}/nextgen`
-  : 'http://localhost:8080/nextgen';
+  ? process.env.NEXT_PUBLIC_API_URL
+  : 'http://localhost:8080/api';
 
 // Create axios instance with defaults
 const api = axios.create({
