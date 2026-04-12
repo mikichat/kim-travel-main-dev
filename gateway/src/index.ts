@@ -22,15 +22,16 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'gateway' });
 });
 
-// Auth routes
+// Auth routes (must be before proxy to catch /api/auth/*)
 app.use('/api/auth', express.json(), authRouter);
 
 // Next-Gen Monorepo proxy
-// /api/* → localhost:3001/api/*
-app.use('/api', (req, res, next) => {
+// /* → localhost:3001/api/*
+app.use('/', (req, res, next) => {
   const proxy = createProxyMiddleware({
     target: 'http://localhost:3001',
     changeOrigin: true,
+    pathRewrite: { '^/api': '/api' },  // /api/hotels -> /api/hotels (그대로 전달)
     on: {
       proxyReq: (proxyReq, req: any) => {
         if (req.headers.authorization) {
