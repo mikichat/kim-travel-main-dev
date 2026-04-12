@@ -5,7 +5,10 @@ import {
   createImage,
   updateImage,
   deleteImage,
+  getAllImageTags,
+  bulkDeleteImages,
 } from '../services/imageService';
+import { getAllCategories } from '../services/categoryService';
 import {
   CreateImageRequest,
   UpdateImageRequest,
@@ -183,6 +186,123 @@ router.delete('/:id', (req: Request, res: Response) => {
         error instanceof Error ? error.message : 'Failed to delete image',
     };
     res.status(500).json(response);
+  }
+});
+
+/**
+ * GET /api/images/categories
+ * Get all image categories with counts
+ */
+router.get('/categories', (req: Request, res: Response) => {
+  try {
+    const categories = getAllCategories();
+    const { images } = getAllImages();
+
+    const result = categories.map((cat) => ({
+      category: cat,
+      count: images.filter((img) => img.categoryId === cat.id).length,
+    }));
+
+    res.json({
+      success: true,
+      message: 'Image categories retrieved successfully',
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to get categories',
+    });
+  }
+});
+
+/**
+ * GET /api/images/tags
+ * Get all unique tags from images
+ */
+router.get('/tags', (req: Request, res: Response) => {
+  try {
+    const tags = getAllImageTags();
+    res.json({
+      success: true,
+      message: 'Tags retrieved successfully',
+      data: tags,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to get tags',
+    });
+  }
+});
+
+/**
+ * POST /api/images/upload
+ * Upload a new image (simplified - accepts metadata, actual file upload not implemented)
+ */
+router.post('/upload', (req: Request, res: Response) => {
+  try {
+    const { filename, storagePath, cloudUrl, fileSize, mimeType, categoryId, hotelId, metadata } = req.body;
+
+    if (!filename) {
+      res.status(400).json({
+        success: false,
+        message: 'Filename is required',
+      });
+      return;
+    }
+
+    const image = createImage({
+      filename,
+      storagePath,
+      cloudUrl,
+      fileSize: fileSize ? parseInt(fileSize, 10) : undefined,
+      mimeType,
+      categoryId,
+      hotelId,
+      metadata: metadata ? (typeof metadata === 'string' ? JSON.parse(metadata) : metadata) : undefined,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Image uploaded successfully',
+      data: image,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to upload image',
+    });
+  }
+});
+
+/**
+ * POST /api/images/bulk-delete
+ * Delete multiple images
+ */
+router.post('/bulk-delete', (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body;
+
+    if (!Array.isArray(ids)) {
+      res.status(400).json({
+        success: false,
+        message: 'ids array is required',
+      });
+      return;
+    }
+
+    const result = bulkDeleteImages(ids);
+    res.json({
+      success: true,
+      message: `Deleted ${result.deleted.length} images`,
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to bulk delete images',
+    });
   }
 });
 

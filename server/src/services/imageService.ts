@@ -139,3 +139,41 @@ export function deleteImage(id: string): void {
 
   imageStore.delete(id);
 }
+
+/**
+ * Get all unique tags from images
+ */
+export function getAllImageTags(): string[] {
+  const allImages = Array.from(imageStore.values());
+  const tagSet = new Set<string>();
+
+  allImages.forEach((img) => {
+    if (img.metadata?.tags && Array.isArray(img.metadata.tags)) {
+      img.metadata.tags.forEach((tag: string) => tagSet.add(tag));
+    }
+  });
+
+  return Array.from(tagSet).sort();
+}
+
+/**
+ * Delete multiple images
+ */
+export function bulkDeleteImages(ids: string[]): {
+  deleted: string[];
+  notFound: string[];
+} {
+  const deleted: string[] = [];
+  const notFound: string[] = [];
+
+  ids.forEach((id) => {
+    if (imageStore.has(id)) {
+      imageStore.delete(id);
+      deleted.push(id);
+    } else {
+      notFound.push(id);
+    }
+  });
+
+  return { deleted, notFound };
+}
