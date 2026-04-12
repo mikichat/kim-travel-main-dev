@@ -70,7 +70,7 @@ start_server() {
   cd "$dir"
   nohup $cmd > "$log_file" 2>&1 &
   local pid=$!
-  sleep 3
+  sleep 5
 
   # 시작 확인
   if is_port_in_use "$port"; then
