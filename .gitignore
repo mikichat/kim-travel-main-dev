@@ -1,7 +1,5 @@
 air1/code_sandbox_light_70958ee4_1762915877.zip
 node_modules/
-backend/node_modules
-backend/logs/
 
 # Environment variables
 **/.env
@@ -11,13 +9,8 @@ backend/logs/
 *.sqlite
 *.sqlite3
 
-# Uploaded files
-backend/uploads/
-
 # Log files
 *.log
-backend/hwp_debug.txt
-backend/hwp_result.json
 
 # OS generated files
 .DS_Store
@@ -40,15 +33,12 @@ nul
 
 # Claude Code settings (contains API keys)
 .claude/
-.bkit/
-client/.next/
 
 # Monorepo package dependencies
-air-booking/node_modules/
-frontend/node_modules/
 server/node_modules/
 gateway/node_modules/
-group-roster/node_modules/
+client/node_modules/
+shared/node_modules/
 
 # Build caches
 *.tsbuildinfo

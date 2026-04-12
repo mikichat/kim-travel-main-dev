@@ -18,17 +18,10 @@ export default [
       '**/build/**',
       '**/coverage/**',
       '**/.husky/**',
-      '**/backend/**',
-      '**/frontend/**',
       '**/*.html',
       '**/*.md',
-      // 서브모듈 (자체 ESLint config 보유)
-      'tourworld1/**',
-      // 별도 프로젝트
-      '123/**',
       // 일회성 유틸/스크립트
       'util/**',
-      'contract/**',
     ],
   },
 
@@ -185,12 +178,10 @@ export default [
     },
   },
 
-  // CJS/브라우저 혼합 스크립트 (doc-template, shared types)
+  // CJS/브라우저 혼합 스크립트 (shared types)
   {
     files: [
-      'doc-template-1/**/*.js',
       'shared/**/*.js',
-      'server/shared/**/*.js',
     ],
     languageOptions: {
       ecmaVersion: 'latest',
@@ -214,82 +205,7 @@ export default [
     },
   },
 
-  // 프론트엔드 Vanilla JS 파일 설정
-  {
-    files: [
-      'js/**/*.js',
-      'air1/js/**/*.js',
-      'hanatour/js/**/*.js',
-      'in/js/**/*.js',
-      'quote-editor-v1/js/**/*.js',
-    ],
-    languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-      globals: {
-        ...globals.browser,
-      },
-    },
-    rules: {
-      'no-undef': 'off', // script 태그 로드 순서에 의존하는 전역 변수 다수
-      'no-unused-vars': [
-        'warn',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
-        },
-      ],
-      'no-console': ['warn', { allow: ['error', 'warn'] }],
-      'no-debugger': 'error',
-      eqeqeq: ['error', 'always'],
-      'no-var': 'warn',
-      'prefer-const': 'warn',
-    },
-  },
-
-  // 서버 테스트 파일 설정
-  {
-    files: ['server/tests/**/*.ts'],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-      },
-      globals: {
-        console: 'readonly',
-        process: 'readonly',
-        __dirname: 'readonly',
-        __filename: 'readonly',
-        module: 'readonly',
-        require: 'readonly',
-        exports: 'readonly',
-        Buffer: 'readonly',
-        setTimeout: 'readonly',
-        clearTimeout: 'readonly',
-        setInterval: 'readonly',
-        clearInterval: 'readonly',
-      },
-    },
-    plugins: {
-      '@typescript-eslint': tsPlugin,
-    },
-    rules: {
-      ...tsPlugin.configs.recommended.rules,
-      'no-undef': 'off',
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
-      '@typescript-eslint/no-explicit-any': 'off',
-      'no-console': 'off',
-    },
-  },
-
-  // 프론트엔드 테스트 파일 설정
-  {
-    files: ['__tests__/**/*.js'],
+  // Prettier 충돌 방지 (마지막에 적용)
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
