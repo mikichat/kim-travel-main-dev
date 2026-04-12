@@ -46,10 +46,14 @@
 
 ```text
 tourworld-root/
-├── client/                # 🚀 [Next-Gen] 신규 Frontend (React 18 + Next.js 14 + Zustand + TS)
-├── server/                # 🚀 [Next-Gen] 신규 Backend (Express + Prisma + SQLite)
-├── shared/                # 🔗 [Next-Gen] 공통 타입/유틸 라이브러리 (Monorepo Workspace)
-├── backend/               # 🛡️ [Current] Production Backend (Node.js + Express + SQLite)
+├── gateway/              # 🚪 [Gateway] 통합 진입점 (포트 8080)
+│   └── src/index.ts      # 세션/JWT 인증 + 프록시 라우팅
+│
+├── client/                # 🚀 [Next-Gen] Frontend (Next.js 16 + React 18 + Zustand)
+├── server/                # 🚀 [Next-Gen] Backend (Express + Prisma + SQLite,포트 3001)
+├── shared/                # 🔗 [Next-Gen] 공통 타입/유틸 라이브러리
+│
+├── backend/               # 🛡️ [Legacy] Production Backend (Node.js + Express + SQLite)
 │   ├── routes/            # 분리된 도메인별 라우터 (auth, schedules, upload, sync 등)
 │   ├── services/          # 외부 연동(알림톡, 메일) 및 Gemini 연동 레이어
 │   ├── __tests__/         # 99% 달성 API Integration 테스트
@@ -105,10 +109,18 @@ tourworld-root/
 
 기존의 안정적인 바닐라 스택을 넘어, 대규모 확장성과 유지보수성을 극대화하기 위해 설계된 차세대 아키텍처입니다.
 
-- **Frontend (React 18 + Next.js 14)**: App Router 기반의 SSR/CSR 혼합架构와 **Zustand**를 이용한 효율적인 상태 관리를 제공합니다. **Tailwind CSS**를 통해 디자인 시스템의 일관성을 유지합니다.
+- **Gateway (포트 8080)**: 통합 진입점. 세션/JWT 인증 및 서비스별 프록시 라우팅
+  - `/api/sales/*` → Current Stable (포트 5000)
+  - `/api/nextgen/*` → Next-Gen Server (포트 3001)
+- **Frontend (Next.js 16 + React 18)**: App Router 기반의 SSR/CSR 혼합架构와 **Zustand** 상태 관리. **Tailwind CSS** 디자인 시스템.
 - **Backend (Express + Prisma + SQLite)**: **Prisma ORM**과 **SQLite**를 통해 파일 기반의轻型 데이터베이스로 간단한 배포와 높은 이식성을 제공합니다.
 - **Shared Workspace**: `shared` 폴더를 통해 클라이언트와 서버가 동일한 **TypeScript 타입 정의(DTO)**와 비즈니스 로직 유틸리티를 공유함으로써, API 규격 변경에 따른 휴먼 에러를 원천 차단합니다.
 - **Full TypeScript**: 전 계층에 걸쳐 엄격한 타입을 적용하여 개발 단계에서 오류를 탐지하고 코드 자가 문서화를 실현합니다.
+
+**최종 요청 흐름:**
+```
+Client (3000) → Gateway (8080) → /api/nextgen/* → Next-Gen Server (3001)
+```
 
 ---
 
@@ -135,6 +147,12 @@ ADMIN_PASSWORD=change-this-password
 ADMIN_NAME=관리자
 ```
 
+**Gateway 설정 (gateway/.env):**
+```env
+PORT=8080
+SESSION_SECRET=your-session-secret
+```
+
 ### 3단계: 시스템 실행 방식 선택
 
 **옵션 A: 현재 시스템 실행 (Current Stable Vanilla / Node.js)**
@@ -146,15 +164,30 @@ ADMIN_NAME=관리자
 
 **옵션 B: 차세대 모노레포 실행 (Next-Gen React / Express)**
 ```bash
-# 의존성 설치 (이미 설치되어 있으면 생략)
-npm install
+# Gateway 실행 (포트 8080)
+cd gateway && npm run dev
 
-# 시작 스크립트 사용 (권장)
-./start-next-gen.sh start
+# Next-Gen Server 실행 (포트 3001) - 별도 터미널
+cd server && npm run dev
 
-# 또는 직접 실행
-npm run db:push      # Prisma 스키마 DB 반영 (SQLite)
-npm run dev          # Next.js(3000) + Express(3001) 동시 실행
+# Next-Gen Client 실행 (포트 3000) - 별도 터미널
+cd client && npm run dev
+```
+
+**실행 확인:**
+- Gateway: http://localhost:8080/api/health
+- Next-Gen Server: http://localhost:3001/api/health
+- Next-Gen Client: http://localhost:3000
+
+**API 테스트 (Gateway 경유):**
+```bash
+# Login
+curl -X POST http://localhost:8080/api/nextgen/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@tourworld.com","password":"change-this-password"}'
+
+# Hotels
+curl http://localhost:8080/api/nextgen/hotels
 ```
 
 **시작 스크립트 명령어:**
