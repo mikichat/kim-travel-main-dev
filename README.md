@@ -22,21 +22,25 @@
 ## ✨ 핵심 기능
 
 ### 1. 📋 일정 및 여행 상품 관리
+
 - **Itinerary**: 여행 일정 생성 및 관리
 - **Hotel**: 호텔 정보 등록 및 관리
 - **Tour/Product**: 여행 상품 등록 및 관리
 
 ### 2. 👥 고객 및 단체 관리
+
 - **Customer**: 고객 정보 관리 (여권번호 기반)
 - **Group**: 단체 여행 정보 관리
 - **Schedule**: 일정별 세부 계획 관리
 
 ### 3. 💰 인보이스 및 원가 계산
+
 - **Invoice**: 청구서 생성 및 관리
 - **FlightSchedule**: 항공 스케줄 관리
 - **CostCalculation**: 원가 계산 및 관리
 
 ### 4. 🔐 인증 및 보안
+
 - **JWT 인증**: Next-Gen Server API 보안
 - **Rate Limiting**: DDoS/브루트포스 방지
 - **Helmet**: HTTP 보안 헤더
@@ -74,15 +78,16 @@ tourworld-root/
 
 - **Gateway (포트 8080)**: 통합 진입점. 세션/JWT 인증 및 서비스별 프록시 라우팅
   - `/api/sales/*` → Current Stable (포트 5000)
-  - `/api/nextgen/*` → Next-Gen Server (포트 3001)
+  - `/api/*` → Next-Gen Server (포트 3001)
 - **Frontend (Next.js 16 + React 18)**: App Router 기반의 SSR/CSR 혼합架构와 **Zustand** 상태 관리. **Tailwind CSS** 디자인 시스템.
 - **Backend (Express + Prisma + SQLite)**: **Prisma ORM**과 **SQLite**를 통해 파일 기반의轻型 데이터베이스로 간단한 배포와 높은 이식성을 제공합니다.
 - **Shared Workspace**: `shared` 폴더를 통해 클라이언트와 서버가 동일한 **TypeScript 타입 정의(DTO)**와 비즈니스 로직 유틸리티를 공유함으로써, API 규격 변경에 따른 휴먼 에러를 원천 차단합니다.
 - **Full TypeScript**: 전 계층에 걸쳐 엄격한 타입을 적용하여 개발 단계에서 오류를 탐지하고 코드 자가 문서화를 실현합니다.
 
 **최종 요청 흐름:**
+
 ```
-Client (3000) → Gateway (8080) → /api/nextgen/* → Next-Gen Server (3001)
+Client (3000) → Gateway (8080) → /api/* → Next-Gen Server (3001)
 ```
 
 ---
@@ -90,11 +95,14 @@ Client (3000) → Gateway (8080) → /api/nextgen/* → Next-Gen Server (3001)
 ## 🚀 설치 및 실행 방법
 
 ### 1단계: 필수 환경 전제조건
+
 - Node.js v18.x 이상
 - npm v10.x 이상
 
 ### 2단계: 환경 변수 설정
+
 `server/` 경로에 `.env.example`을 복사하여 `.env`를 만듭니다.
+
 ```env
 # server/.env
 NODE_ENV=development
@@ -109,6 +117,7 @@ ADMIN_NAME=관리자
 ```
 
 `gateway/` 경로에 `.env`를 만듭니다.
+
 ```env
 # gateway/.env
 PORT=8080
@@ -129,19 +138,21 @@ cd client && npm install && npm run dev
 ```
 
 **실행 확인:**
+
 - Gateway: http://localhost:8080/api/health
 - Next-Gen Server: http://localhost:3001/api/health
 - Next-Gen Client: http://localhost:3000
 
 **API 테스트 (Gateway 경유):**
+
 ```bash
 # Login
-curl -X POST http://localhost:8080/api/nextgen/auth/login \
+curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@tourworld.com","password":"change-this-password"}'
 
 # Hotels
-curl http://localhost:8080/api/nextgen/hotels
+curl http://localhost:8080/api/hotels
 ```
 
 ---
@@ -168,6 +179,7 @@ curl http://localhost:8080/api/nextgen/hotels
 - **Development Team**: 🤖 Gemini AI / Agentic System Architecture
 
 ---
+
 <div align="center">
   <p><b>⭐ 본 프로젝트는 여행업의 디지털 전환을 선도하며 지속적인 품질 향상을 달성하고 있습니다. ⭐</b></p>
   <p>Made with ❤️ for TourWorld</p>
