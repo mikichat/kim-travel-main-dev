@@ -31,7 +31,7 @@ app.use('/api', (req, res, next) => {
   const proxy = createProxyMiddleware({
     target: 'http://localhost:3001',
     changeOrigin: true,
-    pathRewrite: (path: string) => path.replace(/\/nextgen/, ''),
+    pathRewrite: (path: string) => path.replace(/\/nextgen/, '/api'),
     on: {
       proxyReq: (proxyReq, req: any) => {
         if (req.headers.authorization) {
