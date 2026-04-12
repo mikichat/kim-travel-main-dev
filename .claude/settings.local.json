@@ -82,7 +82,10 @@
       "Bash(gh issue:*)",
       "Bash(gh notification:*)",
       "Bash(gh pr:*)",
-      "Bash(npm audit:*)"
+      "Bash(npm audit:*)",
+      "mcp__plugin_bkit_bkit-pdca__bkit_design_read",
+      "mcp__plugin_bkit_bkit-pdca__bkit_plan_read",
+      "mcp__plugin_bkit_bkit-pdca__bkit_feature_detail"
     ],
     "deny": [],
     "ask": []

@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="../css/style.css">
     <script src="../js/flight-sync-manager.js"></script>
     <script src="../js/toast.js"></script>
+    <script src="../js/freetravel-api.js"></script>
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -1115,6 +1116,7 @@
             <input type="text" id="saveNameInput" class="form-input mb-4"
                 placeholder="예) 이귀운님 제주여행 2025"
                 onkeydown="if(event.key==='Enter') confirmSave()">
+            <input type="hidden" id="saveIdField" value="">
             <div class="flex gap-3">
                 <button type="button" onclick="confirmSave()"
                     class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg font-bold transition">
@@ -2320,80 +2322,105 @@
             return;
         }
         var data = serializeForm();
-        var saves = getSaves();
-        saves.push({
-            id: Date.now(),
-            name: name,
-            data: data,
-            createdAt: new Date().toISOString()
-        });
-        try {
-            localStorage.setItem('freetravel_saves_v1', JSON.stringify(saves));
-        } catch (e) {
-            showToast('저장 용량이 초과되었습니다. 이전 저장 내역을 삭제해 주세요.', 'error');
-            return;
-        }
-        closeSaveModal();
-        showToast('저장되었습니다.', 'success');
-    }
+        var travelPeriod = {
+            start: document.getElementById('travelStart').value,
+            end: document.getElementById('travelEnd').value
+        };
 
-    function getSaves() {
-        try {
-            return JSON.parse(localStorage.getItem('freetravel_saves_v1') || '[]');
-        } catch (e) {
-            return [];
-        }
+        var payload = {
+            name: name,
+            recipient: document.getElementById('recipient').value,
+            sender: document.getElementById('sender').value,
+            travel_period: travelPeriod,
+            destination: document.getElementById('destination').value,
+            data: JSON.stringify(data),
+            sections: JSON.stringify({
+                flights: data.flightsInclude,
+                hotels: data.hotelsInclude,
+                rentcar: data.rentcarInclude,
+                golf: data.golfInclude,
+                custom: data.customInclude,
+                payment: data.paymentInclude,
+                company: data.companyInclude
+            })
+        };
+
+        var saveId = document.getElementById('saveIdField').value;
+        var apiCall = saveId
+            ? FreeTravelAPI.updateBooking(saveId, payload)
+            : FreeTravelAPI.saveBooking(payload);
+
+        apiCall.then(function(result) {
+            if (!saveId && result.id) {
+                document.getElementById('saveIdField').value = result.id;
+            }
+            closeSaveModal();
+            showToast('저장되었습니다.', 'success');
+        }).catch(function(e) {
+            showToast('저장 실패: ' + e.message, 'error');
+        });
     }
 
     // ============================================================
-    //  불러오기 모달
+    //  불러오기 모달 (API 기반)
     // ============================================================
     function showLoadModal() {
-        var saves = getSaves();
-        var container = document.getElementById('saveListContainer');
-        if (saves.length === 0) {
-            container.innerHTML = '<p class="text-gray-500 text-sm text-center py-4">저장된 내역이 없습니다.</p>';
-        } else {
-            container.innerHTML = saves.slice().reverse().map(function (s) {
-                var date = new Date(s.createdAt).toLocaleDateString('ko-KR');
-                return [
-                    '<div class="save-item" onclick="loadData(' + s.id + ')">',
-                    '  <div>',
-                    '    <div class="font-semibold text-gray-800">' + escapeHtml(s.name) + '</div>',
-                    '    <div class="text-xs text-gray-400">' + date + '</div>',
-                    '  </div>',
-                    '  <div class="flex items-center gap-2">',
-                    '    <button type="button" onclick="event.stopPropagation();deleteData(' + s.id + ')"',
-                    '      class="text-xs text-red-500 hover:text-red-700 px-2 py-1 border border-red-200 rounded">',
-                    '      <i class="fas fa-trash"></i>',
-                    '    </button>',
-                    '    <i class="fas fa-chevron-right text-gray-300"></i>',
-                    '  </div>',
-                    '</div>'
-                ].join('');
-            }).join('');
-        }
-        document.getElementById('loadModal').classList.remove('hidden');
+        FreeTravelAPI.getBookings().then(function(bookings) {
+            var container = document.getElementById('saveListContainer');
+            if (bookings.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm text-center py-4">저장된 내역이 없습니다.</p>';
+            } else {
+                container.innerHTML = bookings.map(function(b) {
+                    var date = b.created_at ? new Date(b.created_at).toLocaleDateString('ko-KR') : '';
+                    return [
+                        '<div class="save-item" onclick="loadBooking(\'' + b.id + '\')">',
+                        '  <div>',
+                        '    <div class="font-semibold text-gray-800">' + escapeHtml(b.name) + '</div>',
+                        '    <div class="text-xs text-gray-400">' + (b.recipient || '') + ' | ' + (b.destination || '') + '</div>',
+                        '    <div class="text-xs text-gray-400">' + date + '</div>',
+                        '  </div>',
+                        '  <div class="flex items-center gap-2">',
+                        '    <button type="button" onclick="event.stopPropagation();deleteBooking(\'' + b.id + '\')"',
+                        '      class="text-xs text-red-500 hover:text-red-700 px-2 py-1 border border-red-200 rounded">',
+                        '      <i class="fas fa-trash"></i>',
+                        '    </button>',
+                        '    <i class="fas fa-chevron-right text-gray-300"></i>',
+                        '  </div>',
+                        '</div>'
+                    ].join('');
+                }).join('');
+            }
+            document.getElementById('loadModal').classList.remove('hidden');
+        }).catch(function(e) {
+            showToast('목록 조회 실패: ' + e.message, 'error');
+        });
     }
 
     function closeLoadModal() {
         document.getElementById('loadModal').classList.add('hidden');
     }
 
-    function loadData(id) {
-        var saves = getSaves();
-        var save = saves.find(function (s) { return s.id === id; });
-        if (!save) return;
-        deserializeForm(save.data);
-        closeLoadModal();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    function loadBooking(id) {
+        FreeTravelAPI.getBooking(id).then(function(booking) {
+            var data = JSON.parse(booking.data);
+            deserializeForm(data);
+            document.getElementById('saveIdField').value = id;
+            document.getElementById('saveNameInput').value = booking.name;
+            closeLoadModal();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }).catch(function(e) {
+            showToast('불러오기 실패: ' + e.message, 'error');
+        });
     }
 
-    async function deleteData(id) {
+    async function deleteBooking(id) {
         if (!await showConfirmModal('삭제', '이 항목을 삭제하시겠습니까?', { danger: true })) return;
-        var saves = getSaves().filter(function (s) { return s.id !== id; });
-        localStorage.setItem('freetravel_saves_v1', JSON.stringify(saves));
-        showLoadModal();
+        FreeTravelAPI.deleteBooking(id).then(function() {
+            showToast('삭제되었습니다.', 'success');
+            showLoadModal();
+        }).catch(function(e) {
+            showToast('삭제 실패: ' + e.message, 'error');
+        });
     }
 
     // ============================================================

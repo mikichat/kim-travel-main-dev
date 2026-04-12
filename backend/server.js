@@ -249,6 +249,12 @@ initializeDatabase().then(async (db) => {
     const createTravelSaveRoutes = require('./routes/travel-saves');
     app.use('/api/travel-saves', createTravelSaveRoutes(db));
 
+    // === 자유여행 예약내역 API ===
+    const { initFreeTravelTables } = require('./db/freetravel-init');
+    await initFreeTravelTables(db);
+    const createFreeTravelRoutes = require('./routes/freetravel');
+    app.use('/api/freetravel', createFreeTravelRoutes(db));
+
     // === 항공편 저장 API (FlightSyncManager DB 전환) ===
     const createFlightSaveRoutes = require('./routes/flight-saves');
     app.use('/api/flight-saves', createFlightSaveRoutes(db));
