@@ -7,8 +7,8 @@ import {
   Coordinates,
 } from '../../../shared/types/hotel';
 
-// Mock userId for development
-const MOCK_USER_ID = 'mock-user-id';
+// Mock userId for development (fallback)
+const DEFAULT_USER_ID = 'default-user-id';
 
 /**
  * Validate star rating (1-5)
@@ -89,7 +89,7 @@ export async function getHotelById(id: string): Promise<Hotel | null> {
 /**
  * Create a new hotel
  */
-export async function createHotel(data: CreateHotelRequest): Promise<Hotel> {
+export async function createHotel(data: CreateHotelRequest, userId?: string): Promise<Hotel> {
   // Validate required fields
   if (!data.name || data.name.trim() === '') {
     throw new Error('Hotel name is required');
@@ -107,11 +107,22 @@ export async function createHotel(data: CreateHotelRequest): Promise<Hotel> {
     );
   }
 
+  // Use provided userId or find/create default user
+  let resolvedUserId = userId;
+  if (!resolvedUserId) {
+    const defaultUser = await prisma.user.findFirst();
+    if (defaultUser) {
+      resolvedUserId = defaultUser.id;
+    } else {
+      resolvedUserId = DEFAULT_USER_ID;
+    }
+  }
+
   // Create hotel in database
   const hotel = await prisma.hotel.create({
     data: {
       id: uuidv4(),
-      userId: MOCK_USER_ID,
+      userId: resolvedUserId,
       name: data.name.trim(),
       address: data.address,
       country: data.country,

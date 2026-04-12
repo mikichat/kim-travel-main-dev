@@ -37,6 +37,7 @@ model Itinerary {
   userId      String          @map("user_id")
   title       String
   description String?
+  destination String?          @map("destination")
   startDate   String?        @map("start_date")
   endDate     String?        @map("end_date")
   status      String          @default("DRAFT")

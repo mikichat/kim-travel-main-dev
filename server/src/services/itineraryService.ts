@@ -45,7 +45,7 @@ export async function getItineraryById(id: string): Promise<Itinerary | null> {
 /**
  * Create a new itinerary
  */
-export async function createItinerary(data: CreateItineraryRequest): Promise<Itinerary> {
+export async function createItinerary(data: CreateItineraryRequest, userId?: string): Promise<Itinerary> {
   // Validate required fields
   if (!data.title || !data.destination || !data.startDate || !data.endDate) {
     throw new Error('Missing required fields: title, destination, startDate, endDate');
@@ -68,6 +68,17 @@ export async function createItinerary(data: CreateItineraryRequest): Promise<Iti
     throw new Error('End date must be on or after start date');
   }
 
+  // Use provided userId or find/create default user
+  let resolvedUserId = userId;
+  if (!resolvedUserId) {
+    const defaultUser = await prisma.user.findFirst();
+    if (defaultUser) {
+      resolvedUserId = defaultUser.id;
+    } else {
+      throw new Error('No user found for itinerary creation');
+    }
+  }
+
   // Create itinerary in database
   const itinerary = await prisma.itinerary.create({
     data: {
@@ -78,7 +89,7 @@ export async function createItinerary(data: CreateItineraryRequest): Promise<Iti
       startDate: data.startDate,
       endDate: data.endDate,
       status: data.status || 'draft',
-      userId: 'mock-user-id', // TODO: get from auth context
+      userId: resolvedUserId,
     },
   });
 
