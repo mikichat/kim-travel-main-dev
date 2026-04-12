@@ -1,7 +1,9 @@
 import axios, { AxiosError } from 'axios';
 import { useAuthStore, User } from '../stores/authStore';
 
-const API_BASE_URL = '/api/auth';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
+  ? `${process.env.NEXT_PUBLIC_API_URL}/nextgen`
+  : 'http://localhost:8080/nextgen';
 
 // Create axios instance with defaults
 const api = axios.create({
