@@ -1,30 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { ApiResponse } from '@tourworld/shared';
-import type { Hotel } from '@/mocks/data/hotels';
-import { mockHotels, filterHotels, paginateHotels } from '@/mocks/data/hotels.data';
+import api from '@/services/api';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
+  try {
+    const { searchParams } = new URL(request.url);
 
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(searchParams.get('pageSize') || '12', 10);
-  const location = searchParams.get('location') || undefined;
-  const minRating = searchParams.get('minRating')
-    ? parseFloat(searchParams.get('minRating')!)
-    : undefined;
-  const maxPrice = searchParams.get('maxPrice')
-    ? parseFloat(searchParams.get('maxPrice')!)
-    : undefined;
-  const search = searchParams.get('search') || undefined;
+    // Pass through query params to backend
+    const params = new URLSearchParams();
+    const page = searchParams.get('page');
+    const limit = searchParams.get('limit');
 
-  const filtered = filterHotels(mockHotels, { location, minRating, maxPrice, search });
-  const result = paginateHotels(filtered, page, pageSize);
+    if (page) params.set('page', page);
+    if (limit) params.set('limit', limit);
 
-  const response: ApiResponse<Hotel[]> = {
-    success: true,
-    data: result.data,
-    meta: result.meta,
-  };
+    const response = await fetch(`${API_BASE_URL}/api/hotels?${params.toString()}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-  return NextResponse.json(response);
+    if (!response.ok) {
+      const error = await response.json();
+      return NextResponse.json(
+        { success: false, message: error.message || 'Failed to fetch hotels' },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Hotels API error:', error);
+    return NextResponse.json(
+      { success: false, message: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const response = await fetch(`${API_BASE_URL}/api/hotels`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      return NextResponse.json(
+        { success: false, message: error.message || 'Failed to create hotel' },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data, { status: 201 });
+  } catch (error) {
+    console.error('Hotels API error:', error);
+    return NextResponse.json(
+      { success: false, message: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 }
