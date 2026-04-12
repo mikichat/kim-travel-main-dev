@@ -12,6 +12,8 @@ import { hotelsRouter } from './routes/hotels';
 import { imagesRouter } from './routes/images';
 import { categoriesRouter } from './routes/categories';
 import { pdfRouter } from './routes/pdf';
+import invoicesRouter from './routes/invoices';
+import flightSchedulesRouter from './routes/flightSchedules';
 
 const app = express();
 
@@ -64,6 +66,8 @@ app.use('/api/hotels', hotelsRouter);
 app.use('/api/images', imagesRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/pdf', pdfRouter);
+app.use('/api/invoices', invoicesRouter);
+app.use('/api/flight-schedules', flightSchedulesRouter);
 
 // Error handling middleware
 app.use(errorHandler);
