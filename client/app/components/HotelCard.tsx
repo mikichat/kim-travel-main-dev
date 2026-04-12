@@ -80,16 +80,16 @@ const HotelCard: React.FC<HotelCardProps> = ({
                 <Star
                   key={i}
                   size={16}
-                  fill={i < Math.floor(hotel.rating) ? 'currentColor' : 'none'}
+                  fill={i < Math.floor(hotel.rating ?? 0) ? 'currentColor' : 'none'}
                   className={
-                    i < Math.floor(hotel.rating)
+                    i < Math.floor(hotel.rating ?? 0)
                       ? 'text-yellow-500'
                       : 'text-gray-300'
                   }
                 />
               ))}
               <span className="text-sm text-gray-600 ml-1">
-                {hotel.rating.toFixed(1)}
+                {(hotel.rating ?? 0).toFixed(1)}
               </span>
             </div>
           </div>
