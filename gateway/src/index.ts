@@ -42,8 +42,25 @@ app.use('/api/air', requireAuth, requirePermission('air'), proxy('http://localho
 app.use('/api/doc', requireAuth, requirePermission('landing'), proxy('http://localhost:5505'));
 
 // Next-Gen Monorepo proxy
-// /api/nextgen/hotels → /api/hotels → localhost:3000/api/hotels
-// Note: Next-Gen uses JWT auth, not session - so we skip session auth
+// Client uses: http://localhost:8080/nextgen/tours
+// Rewrites to: /api/tours → localhost:3001/api/tours
+app.use('/nextgen', (req, res, next) => {
+  const proxy = createProxyMiddleware({
+    target: 'http://localhost:3001',
+    changeOrigin: true,
+    pathRewrite: (path: string) => '/api' + path,
+    on: {
+      proxyReq: (proxyReq, req: any) => {
+        if (req.headers.authorization) {
+          proxyReq.setHeader('Authorization', req.headers.authorization);
+        }
+      }
+    }
+  });
+  proxy(req, res, next);
+});
+
+// Also support /api/nextgen for consistency
 app.use('/api/nextgen', (req, res, next) => {
   const proxy = createProxyMiddleware({
     target: 'http://localhost:3001',
@@ -65,7 +82,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log('  /api/sales/*   → localhost:5000/api/* (MAIN - Current Stable)');
   console.log('  /api/air/*     → localhost:5510/api/* (AIR-BOOKING)');
   console.log('  /api/doc/*     → localhost:5505/api/* (LANDING)');
-  console.log('  /api/nextgen/* → localhost:3000/api/* (NEXT-GEN MONOREPO)');
+  console.log('  /api/nextgen/* → localhost:3001/api/* (NEXT-GEN MONOREPO)');
   console.log('  /api/auth/*    → 통합 인증');
   console.log(`\n  Admin: admin@tourworld.com / admin1234\n`);
 });
