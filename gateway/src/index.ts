@@ -46,7 +46,7 @@ app.use('/api/doc', requireAuth, requirePermission('landing'), proxy('http://loc
 // Note: Next-Gen uses JWT auth, not session - so we skip session auth
 app.use('/api/nextgen', (req, res, next) => {
   const proxy = createProxyMiddleware({
-    target: 'http://localhost:3000',
+    target: 'http://localhost:3001',
     changeOrigin: true,
     pathRewrite: (path: string) => path.replace(/^\/api\/nextgen/, '/api'),
     on: {
