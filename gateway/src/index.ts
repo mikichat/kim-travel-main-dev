@@ -41,11 +41,16 @@ app.use('/api/sales', requireAuth, requirePermission('main'), proxy('http://loca
 app.use('/api/air', requireAuth, requirePermission('air'), proxy('http://localhost:5510'));
 app.use('/api/doc', requireAuth, requirePermission('landing'), proxy('http://localhost:5505'));
 
+// Next-Gen Monorepo proxy
+// /api/nextgen/* → localhost:3001 (server/ - Express + Prisma)
+app.use('/api/nextgen', requireAuth, requirePermission('main'), proxy('http://localhost:3001'));
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\nGateway running on http://localhost:${PORT}`);
-  console.log('  /api/sales/* → localhost:5000/api/* (MAIN)');
-  console.log('  /api/air/*   → localhost:5510/api/* (AIR-BOOKING)');
-  console.log('  /api/doc/*   → localhost:5505/api/* (LANDING)');
-  console.log('  /api/auth/*  → 통합 인증');
+  console.log('  /api/sales/*  → localhost:5000/api/* (MAIN - Current Stable)');
+  console.log('  /api/air/*    → localhost:5510/api/* (AIR-BOOKING)');
+  console.log('  /api/doc/*    → localhost:5505/api/* (LANDING)');
+  console.log('  /api/nextgen/* → localhost:3001/api/* (NEXT-GEN MONOREPO)');
+  console.log('  /api/auth/*   → 통합 인증');
   console.log(`\n  Admin: admin@tourworld.com / admin1234\n`);
 });
