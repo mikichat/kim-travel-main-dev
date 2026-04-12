@@ -185,7 +185,7 @@ case "${1:-start}" in
     log_info "Client 의존성 설치 중..."
     (cd "$PROJECT_ROOT/client" && npm install --silent --legacy-peer-deps 2>/dev/null)
     # next symlink 복구 (workspaces에서 사라지는 문제 해결)
-    (cd "$PROJECT_ROOT/client" && mkdir -p node_modules && [ ! -e node_modules/next ] && ln -sf ../../node_modules/next node_modules/next || true)
+    (cd "$PROJECT_ROOT/client" && mkdir -p node_modules && rm -rf node_modules/next && ln -sf ../../node_modules/next node_modules/next)
     start_client
 
     echo ""
