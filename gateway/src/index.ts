@@ -3,7 +3,6 @@ import cors from 'cors';
 import session from 'express-session';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { authRouter } from './routes/auth';
-import { requireAuth, requirePermission } from './middleware/auth';
 
 const app = express();
 const PORT = 8080;
@@ -26,24 +25,8 @@ app.get('/api/health', (req, res) => {
 // Auth routes
 app.use('/api/auth', express.json(), authRouter);
 
-// Proxy helper — Express가 마운트 경로를 제거하므로 /api를 앞에 붙여줌
-function proxy(target: string) {
-  return createProxyMiddleware({
-    target,
-    changeOrigin: true,
-    pathRewrite: (path) => '/api' + path,
-  });
-}
-
-// Proxy routes
-// /api/sales/bookings → Express strips /api/sales → /bookings → pathRewrite → /api/bookings
-app.use('/api/sales', requireAuth, requirePermission('main'), proxy('http://localhost:5000'));
-app.use('/api/air', requireAuth, requirePermission('air'), proxy('http://localhost:5510'));
-app.use('/api/doc', requireAuth, requirePermission('landing'), proxy('http://localhost:5505'));
-
 // Next-Gen Monorepo proxy
-// Client uses: http://localhost:8080/nextgen/tours
-// Rewrites to: /api/tours → localhost:3001/api/tours
+// /nextgen/tours → localhost:3001/api/tours
 app.use('/nextgen', (req, res, next) => {
   const proxy = createProxyMiddleware({
     target: 'http://localhost:3001',
@@ -60,29 +43,9 @@ app.use('/nextgen', (req, res, next) => {
   proxy(req, res, next);
 });
 
-// Also support /api/nextgen for consistency
-app.use('/api/nextgen', (req, res, next) => {
-  const proxy = createProxyMiddleware({
-    target: 'http://localhost:3001',
-    changeOrigin: true,
-    pathRewrite: (path: string) => path.replace(/^\/api\/nextgen/, '/api'),
-    on: {
-      proxyReq: (proxyReq, req: any) => {
-        if (req.headers.authorization) {
-          proxyReq.setHeader('Authorization', req.headers.authorization);
-        }
-      }
-    }
-  });
-  proxy(req, res, next);
-});
-
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\nGateway running on http://localhost:${PORT}`);
-  console.log('  /api/sales/*   → localhost:5000/api/* (MAIN - Current Stable)');
-  console.log('  /api/air/*     → localhost:5510/api/* (AIR-BOOKING)');
-  console.log('  /api/doc/*     → localhost:5505/api/* (LANDING)');
-  console.log('  /api/nextgen/* → localhost:3001/api/* (NEXT-GEN MONOREPO)');
-  console.log('  /api/auth/*    → 통합 인증');
+  console.log('  /api/auth/*   → Gateway 내장 인증');
+  console.log('  /nextgen/*    → localhost:3001/api/* (Next-Gen Server)');
   console.log(`\n  Admin: admin@tourworld.com / admin1234\n`);
 });
