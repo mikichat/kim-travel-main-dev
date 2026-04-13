@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { prisma } from '../config/database';
+import db from '../config/database';
 import {
   Hotel,
   CreateHotelRequest,
@@ -7,19 +7,12 @@ import {
   Coordinates,
 } from '../../../shared/types/hotel';
 
-// Mock userId for development (fallback)
 const DEFAULT_USER_ID = 'default-user-id';
 
-/**
- * Validate star rating (1-5)
- */
 function isValidStarRating(rating: number): boolean {
   return Number.isInteger(rating) && rating >= 1 && rating <= 5;
 }
 
-/**
- * Validate coordinates
- */
 function isValidCoordinates(coords: Coordinates): boolean {
   const { lat, lng } = coords;
   return (
@@ -32,184 +25,150 @@ function isValidCoordinates(coords: Coordinates): boolean {
   );
 }
 
-/**
- * Get all hotels with optional pagination
- */
-export async function getAllHotels(
-  page?: number,
-  limit?: number
-): Promise<{ hotels: Hotel[]; total: number }> {
-  // Get total count
-  const total = await prisma.hotel.count();
+export async function getAllHotels(page?: number, limit?: number): Promise<{ hotels: Hotel[]; total: number }> {
+  const total = db.prepare('SELECT COUNT(*) as count FROM hotels').get() as { count: number };
+  const totalCount = total.count;
 
-  // If pagination is not requested, return all
   if (page === undefined || limit === undefined) {
-    const hotels = await prisma.hotel.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-    // Parse coordinates for each hotel
-    const parsedHotels = hotels.map(h => ({
-      ...h,
-      coordinates: h.coordinates && typeof h.coordinates === 'string'
-        ? JSON.parse(h.coordinates)
-        : h.coordinates,
-    }));
-    return { hotels: parsedHotels, total };
+    const hotels = db.prepare('SELECT * FROM hotels ORDER BY created_at DESC').all() as any[];
+    const parsedHotels = hotels.map(h => parseHotel(h));
+    return { hotels: parsedHotels, total: totalCount };
   }
 
-  // Calculate pagination
   const skip = (page - 1) * limit;
-  const hotels = await prisma.hotel.findMany({
-    skip,
-    take: limit,
-    orderBy: { createdAt: 'desc' },
-  });
+  const hotels = db.prepare('SELECT * FROM hotels ORDER BY created_at DESC LIMIT ? OFFSET ?').all(limit, skip) as any[];
+  const parsedHotels = hotels.map(h => parseHotel(h));
 
-  // Parse coordinates for each hotel
-  const parsedHotels = hotels.map(h => ({
-    ...h,
-    coordinates: h.coordinates && typeof h.coordinates === 'string'
-      ? JSON.parse(h.coordinates)
-      : h.coordinates,
-  }));
-
-  return { hotels: parsedHotels, total };
+  return { hotels: parsedHotels, total: totalCount };
 }
 
-/**
- * Get hotel by ID
- */
 export async function getHotelById(id: string): Promise<Hotel | null> {
-  const hotel = await prisma.hotel.findUnique({
-    where: { id },
-  });
-  return hotel;
+  const hotel = db.prepare('SELECT * FROM hotels WHERE id = ?').get(id) as any;
+  return hotel ? parseHotel(hotel) : null;
 }
 
-/**
- * Create a new hotel
- */
 export async function createHotel(data: CreateHotelRequest, userId?: string): Promise<Hotel> {
-  // Validate required fields
   if (!data.name || data.name.trim() === '') {
     throw new Error('Hotel name is required');
   }
 
-  // Validate star rating if provided
   if (data.starRating !== undefined && !isValidStarRating(data.starRating)) {
     throw new Error('Star rating must be an integer between 1 and 5');
   }
 
-  // Validate coordinates if provided
   if (data.coordinates && !isValidCoordinates(data.coordinates)) {
-    throw new Error(
-      'Invalid coordinates: latitude must be between -90 and 90, longitude between -180 and 180'
-    );
+    throw new Error('Invalid coordinates');
   }
 
-  // Use provided userId or find/create default user
   let resolvedUserId = userId;
   if (!resolvedUserId) {
-    const defaultUser = await prisma.user.findFirst();
-    if (defaultUser) {
-      resolvedUserId = defaultUser.id;
-    } else {
-      resolvedUserId = DEFAULT_USER_ID;
-    }
+    const defaultUser = db.prepare('SELECT id FROM users LIMIT 1').get() as { id: string } | undefined;
+    resolvedUserId = defaultUser?.id || DEFAULT_USER_ID;
   }
 
-  // Create hotel in database
-  const hotel = await prisma.hotel.create({
-    data: {
-      id: uuidv4(),
-      userId: resolvedUserId,
-      name: data.name.trim(),
-      address: data.address,
-      country: data.country,
-      city: data.city,
-      starRating: data.starRating,
-      phone: data.phone,
-      url: data.url,
-      locationRemarks: data.locationRemarks,
-      coordinates: data.coordinates ? JSON.stringify(data.coordinates) : null,
-      amenities: data.amenities,
-    },
-  });
+  const id = uuidv4();
+  const now = new Date().toISOString();
+  const coordinates = data.coordinates ? JSON.stringify(data.coordinates) : null;
 
-  // Parse coordinates back to object if stored as string
-  if (hotel.coordinates && typeof hotel.coordinates === 'string') {
-    hotel.coordinates = JSON.parse(hotel.coordinates);
-  }
+  db.prepare(`
+    INSERT INTO hotels (id, user_id, name, address, country, city, star_rating, phone, url, location_remarks, coordinates, amenities, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    id,
+    resolvedUserId,
+    data.name.trim(),
+    data.address || null,
+    data.country || null,
+    data.city || null,
+    data.starRating || null,
+    data.phone || null,
+    data.url || null,
+    data.locationRemarks || null,
+    coordinates,
+    data.amenities || null,
+    now,
+    now
+  );
 
-  return hotel;
+  return getHotelById(id) as Promise<Hotel>;
 }
 
-/**
- * Update a hotel
- */
 export async function updateHotel(id: string, data: UpdateHotelRequest): Promise<Hotel> {
-  // Get existing hotel
-  const existing = await prisma.hotel.findUnique({
-    where: { id },
-  });
+  const existing = db.prepare('SELECT * FROM hotels WHERE id = ?').get(id);
   if (!existing) {
     throw new Error('Hotel not found');
   }
 
-  // Validate name if provided
   if (data.name !== undefined && data.name.trim() === '') {
     throw new Error('Hotel name cannot be empty');
   }
 
-  // Validate star rating if provided
   if (data.starRating !== undefined && !isValidStarRating(data.starRating)) {
     throw new Error('Star rating must be an integer between 1 and 5');
   }
 
-  // Validate coordinates if provided
   if (data.coordinates && !isValidCoordinates(data.coordinates)) {
-    throw new Error(
-      'Invalid coordinates: latitude must be between -90 and 90, longitude between -180 and 180'
-    );
+    throw new Error('Invalid coordinates');
   }
 
-  // Update hotel in database
-  const updated = await prisma.hotel.update({
-    where: { id },
-    data: {
-      name: data.name !== undefined ? data.name.trim() : undefined,
-      address: data.address,
-      country: data.country,
-      city: data.city,
-      starRating: data.starRating,
-      phone: data.phone,
-      url: data.url,
-      locationRemarks: data.locationRemarks,
-      coordinates: data.coordinates ? JSON.stringify(data.coordinates) : undefined,
-      amenities: data.amenities,
-    },
-  });
+  const coordinates = data.coordinates ? JSON.stringify(data.coordinates) : undefined;
+  const now = new Date().toISOString();
 
-  // Parse coordinates back to object if stored as string
-  if (updated.coordinates && typeof updated.coordinates === 'string') {
-    updated.coordinates = JSON.parse(updated.coordinates);
-  }
+  db.prepare(`
+    UPDATE hotels SET
+      name = COALESCE(?, name),
+      address = COALESCE(?, address),
+      country = COALESCE(?, country),
+      city = COALESCE(?, city),
+      star_rating = COALESCE(?, star_rating),
+      phone = COALESCE(?, phone),
+      url = COALESCE(?, url),
+      location_remarks = COALESCE(?, location_remarks),
+      coordinates = COALESCE(?, coordinates),
+      amenities = COALESCE(?, amenities),
+      updated_at = ?
+    WHERE id = ?
+  `).run(
+    data.name?.trim() || null,
+    data.address,
+    data.country,
+    data.city,
+    data.starRating,
+    data.phone,
+    data.url,
+    data.locationRemarks,
+    coordinates,
+    data.amenities,
+    now,
+    id
+  );
 
-  return updated;
+  return getHotelById(id) as Promise<Hotel>;
 }
 
-/**
- * Delete a hotel
- */
 export async function deleteHotel(id: string): Promise<void> {
-  const existing = await prisma.hotel.findUnique({
-    where: { id },
-  });
+  const existing = db.prepare('SELECT * FROM hotels WHERE id = ?').get(id);
   if (!existing) {
     throw new Error('Hotel not found');
   }
+  db.prepare('DELETE FROM hotels WHERE id = ?').run(id);
+}
 
-  await prisma.hotel.delete({
-    where: { id },
-  });
+function parseHotel(h: any): Hotel {
+  return {
+    id: h.id,
+    userId: h.user_id,
+    name: h.name,
+    address: h.address,
+    country: h.country,
+    city: h.city,
+    starRating: h.star_rating,
+    phone: h.phone,
+    url: h.url,
+    locationRemarks: h.location_remarks,
+    coordinates: h.coordinates && typeof h.coordinates === 'string' ? JSON.parse(h.coordinates) : h.coordinates,
+    amenities: h.amenities,
+    createdAt: h.created_at,
+    updatedAt: h.updated_at,
+  };
 }

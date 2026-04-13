@@ -7,6 +7,15 @@ const nextConfig = {
   turbopack: {
     root: path.resolve(__dirname, '..'), // kim-travel-main-dev
   },
+  // Proxy API requests to Express backend
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:3001/api/:path*',
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

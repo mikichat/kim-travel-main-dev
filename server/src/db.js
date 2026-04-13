@@ -1,17 +1,7 @@
-// Simple SQLite3 database connection using better-sqlite3
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const dbPath = process.env.DATABASE_PATH || path.join(__dirname, '..', '..', 'data', 'tourworld.db');
-
-// Ensure data directory exists
-const fs = require('fs');
-const dataDir = path.dirname(dbPath);
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
-
-// Create database connection
+const dbPath = path.join(__dirname, '..', 'data', 'tourworld.db');
 const db = new Database(dbPath);
 
 // Enable foreign keys
@@ -336,5 +326,63 @@ db.exec(`
   );
 `);
 
-// Export database instance
-module.exports = db;
+// Helper functions
+const generateId = () => require('crypto').randomUUID();
+
+module.exports = {
+  db,
+  generateId,
+  
+  // Generic CRUD helpers
+  findAll: (table, where = {}) => {
+    const keys = Object.keys(where);
+    if (keys.length === 0) {
+      return db.prepare(`SELECT * FROM ${table}`).all();
+    }
+    const conditions = keys.map(k => `${k} = ?`).join(' AND ');
+    const values = keys.map(k => where[k]);
+    return db.prepare(`SELECT * FROM ${table} WHERE ${conditions}`).all(...values);
+  },
+  
+  findOne: (table, where) => {
+    const keys = Object.keys(where);
+    const conditions = keys.map(k => `${k} = ?`).join(' AND ');
+    const values = keys.map(k => where[k]);
+    return db.prepare(`SELECT * FROM ${table} WHERE ${conditions}`).get(...values);
+  },
+  
+  create: (table, data) => {
+    const id = generateId();
+    const keys = Object.keys(data);
+    const values = Object.values(data);
+    const columns = ['id', ...keys].join(', ');
+    const placeholders = ['', ...keys.map(() => '?')].join(', ');
+    db.prepare(`INSERT INTO ${table} (${columns}) VALUES (${placeholders})`).run(id, ...values);
+    return { id, ...data };
+  },
+  
+  update: (table, id, data) => {
+    const keys = Object.keys(data);
+    const values = Object.values(data);
+    const sets = keys.map(k => `${k} = ?`).join(', ');
+    db.prepare(`UPDATE ${table} SET ${sets}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(...values, id);
+    return { id, ...data };
+  },
+  
+  delete: (table, id) => {
+    db.prepare(`DELETE FROM ${table} WHERE id = ?`).run(id);
+    return true;
+  },
+  
+  run: (sql, params = []) => {
+    return db.prepare(sql).run(...params);
+  },
+  
+  get: (sql, params = []) => {
+    return db.prepare(sql).get(...params);
+  },
+  
+  all: (sql, params = []) => {
+    return db.prepare(sql).all(...params);
+  }
+};

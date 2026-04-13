@@ -15,6 +15,8 @@ import { pdfRouter } from './routes/pdf';
 import invoicesRouter from './routes/invoices';
 import flightSchedulesRouter from './routes/flightSchedules';
 import migrationRouter from './routes/migration';
+import bookingsRouter from './routes/bookings';
+import bspDatesRouter from './routes/bspDates';
 
 const app = express();
 
@@ -69,6 +71,8 @@ app.use('/api/categories', categoriesRouter);
 app.use('/api/pdf', pdfRouter);
 app.use('/api/invoices', invoicesRouter);
 app.use('/api/flight-schedules', flightSchedulesRouter);
+app.use('/api/bookings', bookingsRouter);
+app.use('/api/bsp-dates', bspDatesRouter);
 app.use('/api', migrationRouter);
 
 // Error handling middleware

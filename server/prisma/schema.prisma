@@ -430,3 +430,46 @@ model Todo {
 
   @@map("todos")
 }
+
+// ==========================================
+// Booking (항공 예약 - Air Booking)
+// ==========================================
+model Booking {
+  id              String   @id @default(uuid())
+  userId          String?  @map("user_id")
+  customerId      String?  @map("customer_id")
+  pnr             String?
+  airline         String?
+  flight_number   String?  @map("flight_number")
+  route_from      String?  @map("route_from")
+  route_to        String?  @map("route_to")
+  name_kr         String?  @map("name_kr")
+  name_en         String?  @map("name_en")
+  passport_number String?  @map("passport_number")
+  seat_number     String?  @map("seat_number")
+  fare            Float?
+  nmtl_date       String?  @map("nmtl_date")
+  tl_date         String?  @map("tl_date")
+  departure_date  String?  @map("departure_date")
+  return_date     String?  @map("return_date")
+  status          String   @default("pending")
+  remarks         String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("bookings")
+}
+
+// ==========================================
+// BspDate (BSP 결제 일정)
+// ==========================================
+model BspDate {
+  id            String   @id @default(uuid())
+  payment_date  String   @map("payment_date")
+  description   String?
+  type          String   @default("payment")
+  is_notified   Int      @default(0) @map("is_notified")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("bsp_dates")
+}
