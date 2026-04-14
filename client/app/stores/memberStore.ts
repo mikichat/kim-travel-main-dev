@@ -80,7 +80,8 @@ export const useMemberStore = create<MemberStore>()(
         set({ loading: true, error: null });
         try {
           const response = await fetch('/tables/groups');
-          const groups = await response.json();
+          const json = await response.json();
+          const groups = json.success ? json.data.rows : [];
           set({ groups, loading: false });
         } catch (err) {
           set({ loading: false, error: err instanceof Error ? err.message : '로드 실패' });
@@ -91,11 +92,12 @@ export const useMemberStore = create<MemberStore>()(
         set({ loading: true, error: null });
         try {
           const response = await fetch(`/tables/groups/${id}`);
-          const group = await response.json();
+          const json = await response.json();
+          const groupData = json.success ? json.data : null;
           set({
             currentGroupId: id,
-            currentGroup: group,
-            members: group.data ?? [],
+            currentGroup: groupData,
+            members: [],
             loading: false,
           });
         } catch (err) {
@@ -188,9 +190,10 @@ export const useMemberStore = create<MemberStore>()(
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
           });
-          const newGroup = await response.json();
+          const json = await response.json();
+          const newGroup = json.success ? json.data : null;
           const { groups } = get();
-          set({ groups: [...groups, newGroup], loading: false });
+          set({ groups: [...groups, newGroup].filter(Boolean), loading: false });
         } catch (err) {
           set({ loading: false, error: err instanceof Error ? err.message : '그룹 생성 실패' });
         }
