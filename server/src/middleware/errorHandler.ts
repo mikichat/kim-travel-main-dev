@@ -1,57 +1,62 @@
 import { Request, Response, NextFunction } from 'express';
-import type { ApiError } from '../types/shared';
 
-export class AppError extends Error {
-  public statusCode: number;
-  public code: string;
-  public details?: Record<string, unknown>;
-
-  constructor(
-    message: string,
-    statusCode: number = 500,
-    code: string = 'INTERNAL_ERROR',
-    details?: Record<string, unknown>
-  ) {
-    super(message);
-    this.statusCode = statusCode;
-    this.code = code;
-    this.details = details;
-    Error.captureStackTrace(this, this.constructor);
-  }
+interface AppError extends Error {
+  statusCode?: number;
+  isOperational?: boolean;
 }
 
 export function errorHandler(
-  err: Error | AppError,
-  _req: Request,
+  err: AppError,
+  req: Request,
   res: Response,
   _next: NextFunction
 ): void {
-  console.error('[Error]', err);
+  // Log error with request ID
+  console.error(`[${req.id}] Error:`, {
+    path: req.path,
+    method: req.method,
+    error: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+  });
 
-  if (err instanceof AppError) {
-    const errorResponse: { success: false; error: ApiError } = {
-      success: false,
-      error: {
-        code: err.code,
-        message: err.message,
-        details: err.details,
-      },
-    };
-    res.status(err.statusCode).json(errorResponse);
-    return;
-  }
+  // Default error values
+  const statusCode = err.statusCode || 500;
+  const message = err.isOperational ? err.message : '서버 내부 오류가 발생했습니다.';
 
-  // Handle unexpected errors
-  const errorResponse: { success: false; error: ApiError } = {
+  // Security: Don't leak stack traces in production
+  const response: {
+    success: false;
+    message: string;
+    error?: string;
+    stack?: string;
+    requestId: string;
+  } = {
     success: false,
-    error: {
-      code: 'INTERNAL_ERROR',
-      message:
-        process.env.NODE_ENV === 'production'
-          ? 'An unexpected error occurred'
-          : err.message,
-    },
+    message,
+    requestId: req.id,
   };
 
-  res.status(500).json(errorResponse);
+  // Add error details only in development
+  if (process.env.NODE_ENV === 'development') {
+    response.error = err.message;
+    response.stack = err.stack;
+  }
+
+  res.status(statusCode).json(response);
+}
+
+// Operational error helper
+export function operationalError(message: string, statusCode = 400): AppError {
+  const error: AppError = new Error(message);
+  error.statusCode = statusCode;
+  error.isOperational = true;
+  return error;
+}
+
+// Not found error
+export function notFoundError(resource: string): AppError {
+  const error: AppError = new Error(`${resource}을(를) 찾을 수 없습니다.`);
+  error.statusCode = 404;
+  error.isOperational = true;
+  return error;
 }

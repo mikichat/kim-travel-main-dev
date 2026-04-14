@@ -1,5 +1,7 @@
 import express, { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import { createBookingSchema, updateBookingSchema, validateBody } from '../validators/schemas';
+import { operationalError } from '../middleware/errorHandler';
 
 const router = express.Router();
 const db = require('../config/database');
@@ -10,7 +12,7 @@ const db = require('../config/database');
  */
 router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
-    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 100;
+    const limit = Math.min(parseInt(req.query.limit as string) || 100, 100);
     const status = req.query.status as string | undefined;
     const search = req.query.q as string | undefined;
 
@@ -53,15 +55,27 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
  */
 router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(req.params.id)) {
+      throw operationalError('유효하지 않은 ID 형식입니다.', 400);
+    }
+
     const booking = db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id);
 
     if (!booking) {
-      res.status(404).json({ success: false, message: 'Booking not found' });
-      return;
+      throw operationalError('예약을 찾을 수 없습니다.', 404);
     }
 
     res.json({ success: true, data: booking });
   } catch (error) {
+    if (error instanceof Error && 'statusCode' in error) {
+      res.status((error as any).statusCode).json({
+        success: false,
+        message: error.message,
+      });
+      return;
+    }
     res.status(500).json({
       success: false,
       message: error instanceof Error ? error.message : 'Failed to get booking',
@@ -75,9 +89,15 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
  */
 router.post('/', async (req: Request, res: Response): Promise<void> => {
   try {
+    // Validate request body
+    const validation = validateBody(createBookingSchema, req.body);
+    if (!validation.success) {
+      throw operationalError(`입력 검증 실패: ${validation.error}`, 400);
+    }
+
     const id = uuidv4();
     const now = new Date().toISOString();
-    const data = req.body;
+    const data = validation.data;
 
     db.prepare(`
       INSERT INTO bookings (id, user_id, customer_id, pnr, airline, flight_number, route_from, route_to, name_kr, name_en, passport_number, seat_number, fare, nmtl_date, tl_date, departure_date, return_date, status, remarks, created_at, updated_at)
@@ -100,7 +120,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       data.tlDate || null,
       data.departureDate || null,
       data.returnDate || null,
-      data.status || 'pending',
+      data.status,
       data.remarks || null,
       now,
       now
@@ -109,6 +129,13 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     const booking = db.prepare('SELECT * FROM bookings WHERE id = ?').get(id);
     res.status(201).json({ success: true, data: booking });
   } catch (error) {
+    if (error instanceof Error && 'statusCode' in error) {
+      res.status((error as any).statusCode).json({
+        success: false,
+        message: error.message,
+      });
+      return;
+    }
     res.status(400).json({
       success: false,
       message: error instanceof Error ? error.message : 'Failed to create booking',
@@ -122,14 +149,25 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
  */
 router.put('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(req.params.id)) {
+      throw operationalError('유효하지 않은 ID 형식입니다.', 400);
+    }
+
+    // Validate request body
+    const validation = validateBody(updateBookingSchema, req.body);
+    if (!validation.success) {
+      throw operationalError(`입력 검증 실패: ${validation.error}`, 400);
+    }
+
     const existing = db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id);
     if (!existing) {
-      res.status(404).json({ success: false, message: 'Booking not found' });
-      return;
+      throw operationalError('예약을 찾을 수 없습니다.', 404);
     }
 
     const now = new Date().toISOString();
-    const data = req.body;
+    const data = validation.data;
 
     db.prepare(`
       UPDATE bookings SET
@@ -179,6 +217,13 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
     const booking = db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id);
     res.json({ success: true, data: booking });
   } catch (error) {
+    if (error instanceof Error && 'statusCode' in error) {
+      res.status((error as any).statusCode).json({
+        success: false,
+        message: error.message,
+      });
+      return;
+    }
     res.status(400).json({
       success: false,
       message: error instanceof Error ? error.message : 'Failed to update booking',
@@ -192,15 +237,27 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
  */
 router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(req.params.id)) {
+      throw operationalError('유효하지 않은 ID 형식입니다.', 400);
+    }
+
     const existing = db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id);
     if (!existing) {
-      res.status(404).json({ success: false, message: 'Booking not found' });
-      return;
+      throw operationalError('예약을 찾을 수 없습니다.', 404);
     }
 
     db.prepare('DELETE FROM bookings WHERE id = ?').run(req.params.id);
     res.json({ success: true, message: 'Booking deleted' });
   } catch (error) {
+    if (error instanceof Error && 'statusCode' in error) {
+      res.status((error as any).statusCode).json({
+        success: false,
+        message: error.message,
+      });
+      return;
+    }
     res.status(400).json({
       success: false,
       message: error instanceof Error ? error.message : 'Failed to delete booking',
