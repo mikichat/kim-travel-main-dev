@@ -51,6 +51,7 @@ const EMPTY_FORM: CreateForm = {
 
 export default function FlightSchedulesPage() {
   const router = useRouter();
+
   const [schedules, setSchedules] = useState<FlightSchedule[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -163,8 +164,6 @@ export default function FlightSchedulesPage() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  if (loading) return <LoadingSpinner />;
-
   const fetchRelatedBookings = useCallback(async () => {
     try {
       const params = new URLSearchParams();
@@ -183,6 +182,8 @@ export default function FlightSchedulesPage() {
   useEffect(() => {
     if (activeTab === 'bookings') fetchRelatedBookings();
   }, [activeTab, fetchRelatedBookings]);
+
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
