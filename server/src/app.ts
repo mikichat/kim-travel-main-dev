@@ -19,6 +19,7 @@ import bookingsRouter from './routes/bookings';
 import bspDatesRouter from './routes/bspDates';
 import vendorsRouter from './routes/vendors';
 import settlementsRouter from './routes/settlements';
+import tablesRouter from './routes/tables';
 
 const app = express();
 
@@ -77,6 +78,7 @@ app.use('/api/bookings', bookingsRouter);
 app.use('/api/bsp-dates', bspDatesRouter);
 app.use('/api/vendors', vendorsRouter);
 app.use('/api/settlements', settlementsRouter);
+app.use('/tables', tablesRouter);
 app.use('/api', migrationRouter);
 
 // Error handling middleware
