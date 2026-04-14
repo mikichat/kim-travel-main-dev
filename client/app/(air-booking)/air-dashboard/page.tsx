@@ -103,12 +103,13 @@ export default function AirBookingDashboard() {
       const dateStr = formatDate(date);
 
       const dayBookings = bookings.filter((b) => {
+        if (!b) return false;
         const nmtlMatch = b.nmtl_date === dateStr && isWithinDisplayRange(b.nmtl_date, 3);
         const tlMatch = b.tl_date === dateStr && isWithinDisplayRange(b.tl_date, 5);
         return nmtlMatch || tlMatch || b.departure_date === dateStr;
       });
 
-      const dayBsp = bspDates.filter((d) => d.payment_date === dateStr);
+      const dayBsp = bspDates.filter((d) => d && d.payment_date === dateStr);
 
       return {
         date,
@@ -123,7 +124,7 @@ export default function AirBookingDashboard() {
 
   const todayItems = useMemo(() => {
     const urgentBookings = bookings
-      .filter((b) => b.status !== 'cancelled')
+      .filter((b) => b && b.status !== 'cancelled')
       .map((b) => {
         const deadlines: { type: string; date: string; urgency: BadgeStatus }[] = [];
         if (b.nmtl_date && isWithinDisplayRange(b.nmtl_date, 3)) deadlines.push({ type: 'NMTL', date: b.nmtl_date, urgency: getUrgency(b.nmtl_date, 3) });
@@ -230,13 +231,13 @@ export default function AirBookingDashboard() {
                   <tr
                     key={i}
                     className="cursor-pointer hover:bg-gray-50"
-                    onClick={() => router.push(`/bookings?highlight=${item.booking.id}`)}
+                    onClick={() => item.booking?.id && router.push(`/bookings?highlight=${item.booking?.id}`)}
                   >
                     <td className="px-4 py-2"><StatusBadge status={item.urgency} /></td>
-                    <td className="px-4 py-2">{item.booking.name_kr || item.booking.pnr}</td>
+                    <td className="px-4 py-2">{item.booking?.name_kr || item.booking?.pnr || '-'}</td>
                     <td className="px-4 py-2"><span className={`px-2 py-1 text-xs rounded ${item.type === 'NMTL' ? 'bg-orange-100' : item.type === 'TL' ? 'bg-yellow-100' : 'bg-green-100'}`}>{item.type}</span></td>
                     <td className="px-4 py-2">{item.date}</td>
-                    <td className="px-4 py-2">{item.booking.airline} {item.booking.flight_number}</td>
+                    <td className="px-4 py-2">{item.booking?.airline || '-'} {item.booking?.flight_number || '-'}</td>
                   </tr>
                 ))}
               </tbody>
