@@ -147,6 +147,28 @@ db.exec(`
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   );
 
+  CREATE TABLE IF NOT EXISTS vendors (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    category TEXT,
+    phone TEXT,
+    email TEXT,
+    address TEXT,
+    bank_account TEXT,
+    bank_name TEXT,
+    remarks TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS settlements (
+    id TEXT PRIMARY KEY,
+    name TEXT,
+    amount REAL DEFAULT 0,
+    status TEXT DEFAULT 'pending',
+    description TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS invoices (
     id TEXT PRIMARY KEY,
     invoice_number TEXT UNIQUE NOT NULL,
