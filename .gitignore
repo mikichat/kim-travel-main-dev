@@ -49,3 +49,4 @@ shared/node_modules/
 *.local
 .env.*.local
 client/.next/
+.gstack/
