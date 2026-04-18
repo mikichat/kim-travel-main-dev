@@ -10,7 +10,7 @@ interface DashboardLayoutProps {
 export function GroupRosterLayout({ children }: DashboardLayoutProps) {
   return (
     <div data-testid="group-roster-layout" className="flex h-screen bg-gray-100">
-      <Sidebar className="flex-shrink-0" section="group-roster" />
+      <Sidebar className="flex-shrink-0" />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header />
         <main role="main" className="flex-1 overflow-auto p-6">

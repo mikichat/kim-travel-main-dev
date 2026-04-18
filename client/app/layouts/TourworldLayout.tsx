@@ -10,7 +10,7 @@ interface DashboardLayoutProps {
 export function TourworldLayout({ children }: DashboardLayoutProps) {
   return (
     <div data-testid="tourworld-layout" className="flex h-screen bg-gray-100">
-      <Sidebar className="flex-shrink-0" section="dashboard" />
+      <Sidebar className="flex-shrink-0" />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header />
         <main role="main" className="flex-1 overflow-auto p-6">

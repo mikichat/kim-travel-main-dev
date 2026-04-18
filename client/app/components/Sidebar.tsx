@@ -31,7 +31,6 @@ import {
 
 interface SidebarProps {
   className?: string;
-  section?: 'dashboard' | 'air-booking' | 'group-roster' | 'legacy';
 }
 
 interface NavItem {
@@ -124,7 +123,7 @@ const allMenuSections: MenuSection[] = [
   },
 ];
 
-export function Sidebar({ className = '', section = 'dashboard' }: SidebarProps) {
+export function Sidebar({ className = '' }: SidebarProps) {
   const pathname = usePathname();
   const [expandedSections, setExpandedSections] = useState<string[]>(['main', 'air-booking', 'group-roster', 'legacy']);
 
