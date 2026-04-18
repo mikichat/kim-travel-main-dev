@@ -261,6 +261,7 @@ export default function BookingsPage() {
         open={pnrModalOpen}
         onClose={() => setPnrModalOpen(false)}
         title="PNR 등록"
+        size="xxl"
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
