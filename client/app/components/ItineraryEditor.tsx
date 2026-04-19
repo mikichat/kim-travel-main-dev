@@ -58,7 +58,20 @@ export function ItineraryEditor({
   };
 
   const handlePreview = () => {
-    // TODO: Implement preview functionality
+    // Generate preview text
+    const previewText = localItems.length === 0
+      ? '일정이 없습니다.'
+      : days.map((dayNumber) => {
+          const dayItems = localItems.filter((item) => item.dayNumber === dayNumber);
+          const dayDate = getDayDate(dayNumber);
+          const dateStr = dayDate ? new Date(dayDate).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' }) : '';
+          const itemsStr = dayItems.length === 0
+            ? '  - 일정이 없습니다.'
+            : dayItems.map((item) => `  - ${item.time || ''} ${item.title}${item.location ? ` (${item.location})` : ''}`).join('\n');
+          return `[Day ${dayNumber}] ${dateStr}\n${itemsStr}`;
+        }).join('\n\n');
+
+    alert(`=== ${title} 미리보기 ===\n\n${previewText}`);
   };
 
   // Calculate the number of days

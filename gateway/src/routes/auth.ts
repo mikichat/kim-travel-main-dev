@@ -3,8 +3,16 @@ import bcrypt from 'bcrypt';
 import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
 import path from 'path';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const router = Router();
+
+// Default admin configuration from environment
+const DEFAULT_ADMIN_EMAIL = process.env.GATEWAY_ADMIN_EMAIL || 'admin@tourworld.com';
+const DEFAULT_ADMIN_PASSWORD = process.env.GATEWAY_ADMIN_PASSWORD;
+const DEFAULT_ADMIN_NAME = process.env.GATEWAY_ADMIN_NAME || '관리자';
 
 let db: Database | null = null;
 
@@ -31,19 +39,23 @@ async function getDb(): Promise<Database> {
     // Create default admin if not exists
     const admin = await db.get('SELECT id FROM gateway_users WHERE role = ?', ['admin']);
     if (!admin) {
-      const hash = await bcrypt.hash('admin1234', 10);
-      await db.run(
-        'INSERT INTO gateway_users (id, email, password_hash, name, role, permissions) VALUES (?, ?, ?, ?, ?, ?)',
-        [
-          crypto.randomUUID(),
-          'admin@tourworld.com',
-          hash,
-          '관리자 (김국진)',
-          'admin',
-          JSON.stringify({ main: ['read', 'write', 'delete'], air: ['read', 'write', 'delete'], landing: ['read', 'write', 'delete'] })
-        ]
-      );
-      console.log('[gateway] Default admin created: admin@tourworld.com / admin1234');
+      if (!DEFAULT_ADMIN_PASSWORD) {
+        console.warn('[gateway] GATEWAY_ADMIN_PASSWORD not set - skipping default admin creation');
+      } else {
+        const hash = await bcrypt.hash(DEFAULT_ADMIN_PASSWORD, 10);
+        await db.run(
+          'INSERT INTO gateway_users (id, email, password_hash, name, role, permissions) VALUES (?, ?, ?, ?, ?, ?)',
+          [
+            crypto.randomUUID(),
+            DEFAULT_ADMIN_EMAIL,
+            hash,
+            DEFAULT_ADMIN_NAME,
+            'admin',
+            JSON.stringify({ main: ['read', 'write', 'delete'], air: ['read', 'write', 'delete'], landing: ['read', 'write', 'delete'] })
+          ]
+        );
+        console.log(`[gateway] Default admin created: ${DEFAULT_ADMIN_EMAIL}`);
+      }
     }
   }
   return db;

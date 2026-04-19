@@ -1,0 +1,23 @@
+# Build outputs
+node_modules/
+.next/
+dist/
+build/
+*.min.js
+*.map
+
+# Generated type files
+.d.ts.map
+.js.map
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
