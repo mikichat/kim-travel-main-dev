@@ -3,13 +3,23 @@ import cors from 'cors';
 import session from 'express-session';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { authRouter } from './routes/auth';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
+
+// Session secret from environment
+const SESSION_SECRET = process.env.SESSION_SECRET;
+if (!SESSION_SECRET) {
+  console.error('[gateway] FATAL: SESSION_SECRET environment variable is required');
+  process.exit(1);
+}
 
 // Session
 app.use(session({
-  secret: 'tourworld-gateway-secret-2026',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 24 * 60 * 60 * 1000 }
@@ -53,5 +63,5 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`\nGateway running on http://localhost:${PORT}`);
   console.log('  /api/auth/*   → Gateway 내장 인증');
   console.log('  /api/*        → localhost:3001/api/*');
-  console.log(`\n  Admin: admin@tourworld.com / admin1234\n`);
+  console.log(`\n  Gateway ready on http://localhost:${PORT}`);
 });
