@@ -27,6 +27,9 @@ import {
   MapPin,
   NotebookPen,
   PlaneTakeoff,
+  List,
+  Upload,
+  Database,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -51,6 +54,7 @@ const dashboardNavItems: NavItem[] = [
   { to: '/dashboard', label: '대시보드', icon: <LayoutDashboard className="w-5 h-5" /> },
   { to: '/itineraries', label: '일정표', icon: <Calendar className="w-5 h-5" /> },
   { to: '/hotels', label: '호텔', icon: <Hotel className="w-5 h-5" /> },
+  { to: '/hotels/new', label: '호텔 등록', icon: <Hotel className="w-5 h-5" /> },
   { to: '/images', label: '이미지', icon: <Image className="w-5 h-5" /> },
 ];
 
@@ -93,6 +97,9 @@ const legacyNavItems: NavItem[] = [
   { to: '/itinerary', label: '일정 관리', icon: <Calendar className="w-5 h-5" /> },
   { to: '/flight-schedule', label: '항공 스케줄', icon: <Plane className="w-5 h-5" /> },
   { to: '/cost-calculator', label: '원가 계산', icon: <Calculator className="w-5 h-5" /> },
+  { to: '/schedules', label: '스케줄 목록', icon: <List className="w-5 h-5" /> },
+  { to: '/upload', label: '파일 업로드', icon: <Upload className="w-5 h-5" /> },
+  { to: '/backup-manager', label: '백업 관리', icon: <Database className="w-5 h-5" /> },
 ];
 
 // All Menu Sections for Main Layout
