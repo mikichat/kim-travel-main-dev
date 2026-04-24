@@ -31,29 +31,28 @@ Client (3000) → Gateway (8080) → /api/* → Next-Gen Server (3001)
 
 ## graphify
 
-This project has a graphify knowledge graph at graphify-out/.
+이 프로젝트에는 graphify 기반 지식 그래프가 graphify-out/ 디렉터리에 있습니다.
 
-Rules:
-- Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
-- If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
-- After modifying code files in this session, run `graphify update .` to keep the graph current (AST-only, no API cost)
+규칙:
+- 아키텍처나 코드베이스 질문에 답변하기 전에 graphify-out/GRAPH_REPORT.md를 읽고 주요 노드와 커뮤니티 구조를 확인하세요.
+- graphify-out/wiki/index.md가 있으면 원본 파일 대신 위키를 탐색하세요.
+- 이 세션에서 코드 파일을 수정한 후 `graphify update .`를 실행하여 그래프를 최신 상태로 유지하세요 (AST 전용, API 비용 없음).
 
-## Skill routing
+## Skill 라우팅
 
-When the user's request matches an available skill, ALWAYS invoke it using the Skill
-tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
-The skill has specialized workflows that produce better results than ad-hoc answers.
+사용자의 요청이 사용 가능한 skill과 일치하면, 항상 첫 번째 동작으로 Skill 도구를 사용하여 호출하세요. 직접 답변하지 말고, 다른 도구를 먼저 사용하지 마세요.
+Skill은 특정 워크플로우를 제공하여 임시 답변보다 더 나은 결과를 생성합니다.
 
-Key routing rules:
-- Product ideas, "is this worth building", brainstorming → invoke office-hours
-- Bugs, errors, "why is this broken", 500 errors → invoke investigate
-- Ship, deploy, push, create PR → invoke ship
-- QA, test the site, find bugs → invoke qa
-- Code review, check my diff → invoke review
-- Update docs after shipping → invoke document-release
-- Weekly retro → invoke retro
-- Design system, brand → invoke design-consultation
-- Visual audit, design polish → invoke design-review
-- Architecture review → invoke plan-eng-review
-- Save progress, checkpoint, resume → invoke checkpoint
-- Code quality, health check → invoke health
+주요 라우팅 규칙:
+- 제품 아이디어, "이것을 만드는 것이值得한가", 브레인스토밍 → office-hours 호출
+- 버그, 오류, "왜 이것이 고장났는지", 500 오류 → investigate 호출
+- Ship, 배포, 푸시, PR 생성 → ship 호출
+- QA, 사이트 테스트, 버그 찾기 → qa 호출
+- 코드 리뷰, diff 확인 → review 호출
+- 배송 후 문서 업데이트 → document-release 호출
+- 주간 회고 → retro 호출
+- 디자인 시스템, 브랜드 → design-consultation 호출
+- 비주얼 감사, 디자인 다듬기 → design-review 호출
+- 아키텍처 리뷰 → plan-eng-review 호출
+- 진행 상황 저장, 체크포인트, 재개 → checkpoint 호출
+- 코드 품질, 상태 확인 → health 호출
